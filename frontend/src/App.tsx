@@ -1,0 +1,39 @@
+import { useState } from 'react'
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
+import './App.css'
+
+function App() {
+  const [count, setCount] = useState(0)
+
+  return (
+    <>
+      <div>
+        <a href="https://vite.dev" target="_blank">
+          <img src={viteLogo} className="logo" alt="Vite logo" />
+        </a>
+        <a href="https://react.dev" target="_blank">
+          <img src={reactLogo} className="logo react" alt="React logo" />
+        </a>
+      </div>
+      <h1>🅿️ Parking in a Pinch</h1>
+      <div className="card">
+        <p>Welcome to NYC's Premier Parking Marketplace!</p>
+        <button onClick={() => setCount((count) => count + 1)}>
+          Parking spots found: {count}
+        </button>
+        <p>
+          Your frontend is running successfully! 🎉
+        </p>
+        <p>
+          Backend API available at: <a href="http://localhost:8000/api/docs/" target="_blank">localhost:8000/api/docs/</a>
+        </p>
+      </div>
+      <p className="read-the-docs">
+        Start building your parking marketplace features here
+      </p>
+    </>
+  )
+}
+
+export default App
