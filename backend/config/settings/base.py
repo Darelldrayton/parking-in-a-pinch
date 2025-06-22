@@ -21,7 +21,7 @@ SECRET_KEY = env('SECRET_KEY', default='django-insecure-change-me-in-production'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1', '0.0.0.0', '172.22.146.152', '10.255.255.254', '*'])
 
 # Application definition
 DJANGO_APPS = [
@@ -47,16 +47,22 @@ THIRD_PARTY_APPS = [
     'channels',
     'storages',
     'drf_spectacular',
+    'django_celery_beat',
 ]
 
 LOCAL_APPS = [
     'apps.users',
+    'apps.authentication',
     'apps.listings',
     'apps.bookings',
     'apps.payments',
     'apps.reviews',
     'apps.messaging',
     'apps.notifications',
+    'apps.disputes',
+    # 'apps.location',
+    # 'apps.qr_codes',
+    # 'apps.analytics',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -129,12 +135,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'OPTIONS': {
+            'min_length': 8,
+        }
     },
 ]
 
@@ -156,13 +159,16 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# URL configuration
+APPEND_SLASH = False  # Prevent conflicts with DRF router URLs
+
 # Django REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
@@ -201,6 +207,12 @@ ACCOUNT_USERNAME_REQUIRED = False
 CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[
     'http://localhost:3000',
     'http://127.0.0.1:3000',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://localhost:3007',
+    'http://127.0.0.1:3007',
+    'http://localhost:3008',
+    'http://127.0.0.1:3008',
 ])
 
 CORS_ALLOW_CREDENTIALS = True
@@ -216,10 +228,7 @@ CELERY_TIMEZONE = TIME_ZONE
 # Channels Configuration
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            'hosts': [env('REDIS_URL', default='redis://localhost:6379/1')],
-        },
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
     },
 }
 
@@ -227,9 +236,12 @@ CHANNEL_LAYERS = {
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'Parking in a Pinch <noreply@parkinginapinch.com>'
 
+# Frontend URL for email links
+FRONTEND_URL = env('FRONTEND_URL', default='http://localhost:3008')
+
 # Stripe Configuration
-STRIPE_PUBLIC_KEY = env('STRIPE_PUBLIC_KEY', default='')
-STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY', default='')
+STRIPE_PUBLIC_KEY = env('STRIPE_PUBLISHABLE_KEY', default='pk_test_51PmEWQ00h6I4dJo4hNkYWgwXXmLKUQ3wKf7O5PxJWs7aEg5aKf7YKdKPBhJ4zP5Q7bKdKdKdK00abc123')
+STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY', default='sk_test_51PmEWQ00h6I4dJo4test_key_for_development_only_do_not_use_in_production')
 STRIPE_WEBHOOK_SECRET = env('STRIPE_WEBHOOK_SECRET', default='')
 
 # API Documentation

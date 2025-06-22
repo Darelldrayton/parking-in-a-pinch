@@ -1,0 +1,111 @@
+{% extends "admin/change_list.html" %}
+{% load static i18n admin_urls %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+.refund-stats {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+.refund-stats h3 {
+    margin-top: 0;
+    color: #666;
+}
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+.stat-item {
+    text-align: center;
+    padding: 10px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+.stat-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+.stat-label {
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+}
+.pending { border-left: 4px solid #ffc107; }
+.approved { border-left: 4px solid #28a745; }
+.rejected { border-left: 4px solid #dc3545; }
+.processed { border-left: 4px solid #007bff; }
+
+.quick-filters {
+    margin-bottom: 15px;
+}
+.quick-filters a {
+    display: inline-block;
+    padding: 8px 15px;
+    margin-right: 10px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #333;
+    font-size: 13px;
+}
+.quick-filters a:hover, .quick-filters a.active {
+    background: #417690;
+    color: white;
+    border-color: #417690;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="refund-stats">
+    <h3>📊 Refund Request Overview</h3>
+    <div class="stats-grid">
+        <div class="stat-item pending">
+            <div class="stat-value">{{ pending_count|default:0 }}</div>
+            <div class="stat-label">Pending Review</div>
+        </div>
+        <div class="stat-item approved">
+            <div class="stat-value">{{ approved_count|default:0 }}</div>
+            <div class="stat-label">Approved Today</div>
+        </div>
+        <div class="stat-item rejected">
+            <div class="stat-value">{{ rejected_count|default:0 }}</div>
+            <div class="stat-label">Rejected Today</div>
+        </div>
+        <div class="stat-item processed">
+            <div class="stat-value">${{ total_amount|default:0|floatformat:0 }}</div>
+            <div class="stat-label">Total Refunded (30d)</div>
+        </div>
+    </div>
+</div>
+
+<div class="quick-filters">
+    <strong>Quick Filters:</strong>
+    <a href="?status__exact=pending" class="{% if request.GET.status__exact == 'pending' %}active{% endif %}">
+        🟡 Pending ({{ pending_count|default:0 }})
+    </a>
+    <a href="?status__exact=approved" class="{% if request.GET.status__exact == 'approved' %}active{% endif %}">
+        🔵 Approved
+    </a>
+    <a href="?status__exact=rejected" class="{% if request.GET.status__exact == 'rejected' %}active{% endif %}">
+        🔴 Rejected
+    </a>
+    <a href="?status__exact=processed" class="{% if request.GET.status__exact == 'processed' %}active{% endif %}">
+        🟢 Processed
+    </a>
+    <a href="?" class="{% if not request.GET.status__exact %}active{% endif %}">
+        📋 All
+    </a>
+</div>
+
+{{ block.super }}
+{% endblock %}

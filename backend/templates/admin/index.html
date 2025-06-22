@@ -1,0 +1,286 @@
+{% extends "admin/index.html" %}
+{% load i18n admin_urls static %}
+
+{% block content %}
+{{ block.super }}
+
+<style>
+.custom-admin-shortcuts {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.shortcut-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.shortcut-card {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 15px;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.2s;
+}
+
+.shortcut-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    text-decoration: none;
+    color: #007cba;
+}
+
+.shortcut-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.shortcut-desc {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.4;
+}
+</style>
+
+<!-- Prominent Booking Search Section -->
+<div style="background: linear-gradient(135deg, #007cba 0%, #005a87 100%); color: white; border-radius: 12px; padding: 25px; margin: 20px 0; box-shadow: 0 4px 20px rgba(0,123,186,0.3);">
+    <h2 style="margin: 0 0 15px 0; font-size: 24px; display: flex; align-items: center; gap: 10px;">
+        🔍 Quick Booking Search
+    </h2>
+    <p style="margin: 0 0 20px 0; opacity: 0.9; font-size: 16px;">Search for any booking instantly by reservation number</p>
+    
+    <form action="/admin/bookings/search/" method="post" style="margin: 0; display: flex; gap: 10px; align-items: center;">
+        {% csrf_token %}
+        <input 
+            type="text" 
+            name="search_term" 
+            placeholder="Enter reservation # (e.g., BK679E4363)..." 
+            style="flex: 1; padding: 12px 16px; border: none; border-radius: 8px; font-size: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"
+            autocomplete="off"
+            autofocus
+        >
+        <button 
+            type="submit" 
+            style="padding: 12px 24px; background: rgba(255,255,255,0.2); color: white; border: 2px solid white; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; transition: all 0.2s;"
+            onmouseover="this.style.background='white'; this.style.color='#007cba';"
+            onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.color='white';"
+        >
+            🔍 Search
+        </button>
+    </form>
+    
+    <div style="margin-top: 15px; display: flex; gap: 15px; align-items: center; font-size: 14px; opacity: 0.9;">
+        <span>✓ With or without # prefix</span>
+        <span>✓ Auto-redirects to booking detail</span>
+        <span>✓ Instant results</span>
+    </div>
+</div>
+
+<div class="custom-admin-shortcuts">
+    <h2 style="margin: 0 0 10px 0; color: #333;">🚀 Quick Actions</h2>
+    <p style="color: #666; margin-bottom: 0;">Common admin tasks and shortcuts</p>
+    
+    <div class="shortcut-grid">
+        <a href="/admin/bookings/search/" class="shortcut-card">
+            <div class="shortcut-title">
+                🔍 Advanced Booking Search
+            </div>
+            <div class="shortcut-desc">
+                Full search page with detailed booking information and multiple search options
+            </div>
+        </a>
+        
+        <a href="/admin/bookings/booking/" class="shortcut-card">
+            <div class="shortcut-title">
+                📋 All Bookings
+            </div>
+            <div class="shortcut-desc">
+                View and manage all bookings with advanced filtering and search options
+            </div>
+        </a>
+        
+        <a href="/admin/listings/parkinglisting/" class="shortcut-card">
+            <div class="shortcut-title">
+                🅿️ Parking Listings
+            </div>
+            <div class="shortcut-desc">
+                Manage parking space listings, approvals, and host settings
+            </div>
+        </a>
+        
+        <a href="/admin/users/user/" class="shortcut-card">
+            <div class="shortcut-title">
+                👥 User Management
+            </div>
+            <div class="shortcut-desc">
+                View and manage user accounts, permissions, and profiles
+            </div>
+        </a>
+        
+        <a href="/admin/payments/payment/" class="shortcut-card">
+            <div class="shortcut-title">
+                💳 Payments
+            </div>
+            <div class="shortcut-desc">
+                Track payments, refunds, and financial transactions
+            </div>
+        </a>
+        
+        <a href="/admin/reviews/review/" class="shortcut-card">
+            <div class="shortcut-title">
+                ⭐ Reviews
+            </div>
+            <div class="shortcut-desc">
+                Monitor and moderate user reviews and ratings
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Enhanced Floating Search Widget -->
+<div id="floating-search" style="position: fixed; top: 120px; right: 20px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); border: 1px solid #dee2e6; z-index: 1000; max-width: 320px; transition: all 0.3s;">
+    <h4 style="margin: 0 0 12px 0; font-size: 16px; color: #333; display: flex; align-items: center; gap: 8px;">
+        🔍 Quick Search
+        <button 
+            onclick="document.getElementById('floating-search').style.display='none'" 
+            style="margin-left: auto; background: none; border: none; font-size: 18px; cursor: pointer; color: #999;"
+            title="Hide"
+        >×</button>
+    </h4>
+    
+    <div style="margin-bottom: 15px;">
+        <input 
+            type="text" 
+            id="quick-search-input" 
+            placeholder="Type reservation #..." 
+            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;"
+            autocomplete="off"
+        >
+    </div>
+    
+    <div id="search-results" style="margin-bottom: 15px; display: none;"></div>
+    
+    <form action="/admin/bookings/search/" method="post" style="margin: 0;">
+        {% csrf_token %}
+        <input type="hidden" name="search_term" id="hidden-search-term">
+        <button 
+            type="button"
+            onclick="document.forms[document.forms.length-1].search_term.value = document.getElementById('quick-search-input').value; document.forms[document.forms.length-1].submit();"
+            style="width: 100%; padding: 10px; background: #007cba; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold;"
+        >
+            🔍 Open Booking Detail
+        </button>
+    </form>
+    
+    <div style="margin-top: 12px; font-size: 12px; color: #666; text-align: center;">
+        Enter: BK679E4363, #BK679E4363, or just the number
+    </div>
+</div>
+
+<!-- Show/Hide Floating Search Button -->
+<div style="position: fixed; top: 80px; right: 20px; z-index: 1001;">
+    <button 
+        onclick="var search = document.getElementById('floating-search'); search.style.display = search.style.display === 'none' ? 'block' : 'none';"
+        style="padding: 10px 15px; background: #007cba; color: white; border: none; border-radius: 20px; cursor: pointer; font-size: 14px; box-shadow: 0 2px 10px rgba(0,123,186,0.3);"
+        title="Toggle Quick Search"
+    >
+        🔍 Search
+    </button>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const quickInput = document.getElementById('quick-search-input');
+    const resultsDiv = document.getElementById('search-results');
+    
+    let searchTimeout;
+    
+    // Real-time search as user types
+    quickInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        const query = this.value.trim();
+        
+        if (query.length < 3) {
+            resultsDiv.style.display = 'none';
+            return;
+        }
+        
+        searchTimeout = setTimeout(() => {
+            fetch(`/admin/bookings/quick-lookup/?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const booking = data.booking;
+                        resultsDiv.innerHTML = `
+                            <div style="background: #f8f9fa; padding: 12px; border: 1px solid #dee2e6; border-radius: 6px; margin-bottom: 10px;">
+                                <div style="font-weight: bold; color: #007cba; margin-bottom: 4px;">${booking.booking_id}</div>
+                                <div style="font-size: 13px; color: #666; margin-bottom: 6px;">
+                                    ${booking.user_name} | ${booking.status}
+                                </div>
+                                <div style="font-size: 12px; color: #666;">
+                                    ${booking.parking_space} | $${booking.total_amount}
+                                </div>
+                                <div style="margin-top: 8px;">
+                                    <a href="${booking.detail_url}" target="_blank" style="color: #007cba; text-decoration: none; font-size: 12px;">→ Open Booking Detail</a>
+                                </div>
+                            </div>
+                        `;
+                        resultsDiv.style.display = 'block';
+                    } else {
+                        resultsDiv.innerHTML = `<div style="color: #666; font-style: italic; padding: 8px; text-align: center;">No booking found</div>`;
+                        resultsDiv.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Search error:', error);
+                    resultsDiv.style.display = 'none';
+                });
+        }, 300);
+    });
+    
+    // Enter key to search
+    quickInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (this.value.trim()) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/admin/bookings/search/';
+                
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrfmiddlewaretoken';
+                csrfInput.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                
+                const searchInput = document.createElement('input');
+                searchInput.type = 'hidden';
+                searchInput.name = 'search_term';
+                searchInput.value = this.value.trim();
+                
+                form.appendChild(csrfInput);
+                form.appendChild(searchInput);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+    });
+    
+    // Hide results when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('#floating-search')) {
+            resultsDiv.style.display = 'none';
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Listings API</title>
+</head>
+<body>
+    <h1>Debug Listings API</h1>
+    <button onclick="loginAdmin()">1. Login Admin</button>
+    <button onclick="testListingsAPI()">2. Test Listings API</button>
+    <button onclick="clearResults()">Clear Results</button>
+    <div id="results"></div>
+
+    <script>
+        function log(message) {
+            document.getElementById('results').innerHTML += '<pre>' + message + '</pre>';
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        async function loginAdmin() {
+            try {
+                const response = await fetch('/api/v1/auth/login/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@test.com',
+                        password: 'admin123'
+                    })
+                });
+                const data = await response.json();
+                log('Login response: ' + JSON.stringify(data, null, 2));
+                
+                if (data.access || data.tokens?.access) {
+                    const token = data.access || data.tokens?.access;
+                    localStorage.setItem('admin_access_token', token);
+                    localStorage.setItem('admin_refresh_token', data.refresh || data.tokens?.refresh);
+                    localStorage.setItem('admin_user', JSON.stringify(data.user));
+                    log('✅ Stored admin token successfully');
+                }
+            } catch (error) {
+                log('❌ Login error: ' + error.message);
+            }
+        }
+
+        async function testListingsAPI() {
+            const token = localStorage.getItem('admin_access_token');
+            if (!token) {
+                log('❌ No admin token found!');
+                return;
+            }
+
+            try {
+                log('🔍 Testing listings API...');
+                const response = await fetch('/api/v1/listings/admin/', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                log(`Status: ${response.status}`);
+                log(`Content-Type: ${response.headers.get('content-type')}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('Full API Response:');
+                    log(JSON.stringify(data, null, 2));
+                    
+                    const listings = data.results || data || [];
+                    log(`\n📊 Found ${listings.length} total listings`);
+                    
+                    const pendingListings = listings.filter(listing => listing.approval_status === 'PENDING');
+                    log(`📋 Pending listings: ${pendingListings.length}`);
+                    
+                    pendingListings.forEach((listing, index) => {
+                        log(`\n${index + 1}. Listing ID: ${listing.id}`);
+                        log(`   Title: ${listing.title}`);
+                        log(`   Status: ${listing.approval_status}`);
+                        log(`   can_be_reviewed: ${listing.can_be_reviewed}`);
+                        log(`   Host: ${listing.host_name}`);
+                    });
+                } else {
+                    const text = await response.text();
+                    log('❌ Error response: ' + text.substring(0, 500));
+                }
+            } catch (error) {
+                log('❌ Error testing listings API: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

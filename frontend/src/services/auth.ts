@@ -1,0 +1,265 @@
+import api from './api'
+
+export interface UserProfile {
+  primary_vehicle_make?: string
+  primary_vehicle_model?: string
+  primary_vehicle_year?: number
+  primary_vehicle_color?: string
+  primary_vehicle_license_plate?: string
+  primary_vehicle_state?: string
+  emergency_contact_name?: string
+  emergency_contact_phone?: string
+  auto_approve_bookings?: boolean
+  email_notifications?: boolean
+  sms_notifications?: boolean
+  push_notifications?: boolean
+  show_phone_to_guests?: boolean
+  show_last_name?: boolean
+  marketing_emails?: boolean
+}
+
+export interface User {
+  id: number
+  email: string
+  first_name: string
+  last_name: string
+  username: string
+  user_type: 'seeker' | 'host' | 'both'
+  is_verified: boolean
+  is_email_verified: boolean
+  phone_number?: string
+  profile_image?: string
+  bio?: string
+  created_at?: string
+  updated_at?: string
+  profile?: UserProfile
+  subscribe_to_newsletter?: boolean
+}
+
+export interface LoginCredentials {
+  email: string
+  password: string
+}
+
+export interface SignupData {
+  email: string
+  username: string
+  password: string
+  password2: string
+  first_name: string
+  last_name: string
+  user_type: 'seeker' | 'host' | 'both'
+  phone_number?: string
+  subscribe_to_newsletter?: boolean
+}
+
+export interface AuthResponse {
+  access?: string
+  refresh: string
+  user: User
+  tokens?: {
+    access: string
+    refresh: string
+  }
+}
+
+export interface TokenRefreshResponse {
+  access: string
+  refresh?: string
+}
+
+class AuthService {
+  async login(credentials: LoginCredentials): Promise<AuthResponse> {
+    console.log('AuthService: Attempting login with:', credentials)
+    const response = await api.post('/auth/login/', credentials)
+    console.log('AuthService: Login response status:', response.status)
+    console.log('AuthService: Login response data:', response.data)
+    const data = response.data
+    
+    // Store tokens and user data
+    this.storeAuthData(data)
+    console.log('AuthService: Auth data stored')
+    
+    return data
+  }
+
+  async signup(data: SignupData): Promise<AuthResponse> {
+    console.log('AuthService: Attempting signup with:', data)
+    const response = await api.post('/auth/register/', data)
+    console.log('AuthService: Signup response status:', response.status)
+    console.log('AuthService: Signup response data:', response.data)
+    
+    const rawData = response.data
+    
+    // Transform response to match expected format
+    const authData: AuthResponse = {
+      access: rawData.tokens?.access || rawData.access,
+      refresh: rawData.tokens?.refresh || rawData.refresh,
+      user: rawData.user || rawData,
+      tokens: rawData.tokens
+    }
+    
+    console.log('AuthService: Transformed auth data:', authData)
+    
+    // Store tokens and user data
+    this.storeAuthData(authData)
+    console.log('AuthService: Signup auth data stored')
+    
+    return authData
+  }
+
+  async logout(): Promise<void> {
+    try {
+      const refreshToken = localStorage.getItem('refresh_token')
+      if (refreshToken) {
+        await api.post('/auth/logout/', { refresh: refreshToken })
+      }
+    } catch (error) {
+      console.error('Logout error:', error)
+    } finally {
+      this.clearAuthData()
+    }
+  }
+
+  async refreshToken(refresh: string): Promise<TokenRefreshResponse> {
+    const response = await api.post('/auth/token/refresh/', { refresh })
+    const data = response.data
+    
+    // Update stored access token
+    localStorage.setItem('access_token', data.access)
+    if (data.refresh) {
+      localStorage.setItem('refresh_token', data.refresh)
+    }
+    
+    return data
+  }
+
+  async getCurrentUser(): Promise<User> {
+    const response = await api.get('/users/me/')
+    return response.data
+  }
+
+  async updateProfile(data: Partial<User>): Promise<User> {
+    // Filter out profile_image if it's empty or invalid, and flatten profile data
+    const { profile_image, profile, ...userData } = data
+    
+    // Only include profile_image if it's a valid file
+    const updateData: any = { ...userData }
+    if (profile_image && profile_image instanceof File) {
+      updateData.profile_image = profile_image
+    }
+    
+    // Flatten profile data into the main update data
+    if (profile && Object.keys(profile).length > 0) {
+      // Add profile fields directly to the update data
+      Object.keys(profile).forEach(key => {
+        updateData[key] = profile[key]
+      })
+    }
+    
+    try {
+      // Update user data (including flattened profile data)
+      const userResponse = await api.patch('/users/me/', updateData)
+      let updatedUser = userResponse.data
+      
+      // Get updated user data with profile to ensure we have the latest data
+      const refreshedUserResponse = await api.get('/users/me/')
+      updatedUser = refreshedUserResponse.data
+      
+      // Update stored user data
+      localStorage.setItem('user', JSON.stringify(updatedUser))
+      
+      return updatedUser
+    } catch (error) {
+      console.error('Error updating profile:', error)
+      throw error
+    }
+  }
+
+  async changePassword(data: {
+    old_password: string
+    new_password: string
+    new_password2: string
+  }): Promise<void> {
+    await api.patch('/auth/password/change/', data)
+  }
+
+  async resetPassword(email: string): Promise<void> {
+    console.log('AuthService: Attempting password reset for:', email)
+    try {
+      const response = await api.post('/auth/password/reset/', { email })
+      console.log('AuthService: Password reset response:', response.data)
+      return response.data
+    } catch (error) {
+      console.error('AuthService: Password reset error:', error)
+      throw error
+    }
+  }
+
+  async confirmResetPassword(data: {
+    uid: string
+    token: string
+    new_password: string
+    new_password2: string
+  }): Promise<void> {
+    await api.post('/auth/password/reset/confirm/', data)
+  }
+
+  async resendVerificationEmail(): Promise<void> {
+    await api.post('/auth/email/resend/')
+  }
+
+  async verifyEmail(token: string): Promise<void> {
+    await api.post('/auth/email/verify/', { token })
+  }
+
+  async deleteAccount(data: {
+    password: string
+    confirmation: string
+  }): Promise<void> {
+    await api.post('/auth/account/delete/', data)
+    // Clear stored auth data after successful deletion
+    this.clearAuthData()
+  }
+
+  isAuthenticated(): boolean {
+    return !!localStorage.getItem('access_token')
+  }
+
+  getStoredUser(): User | null {
+    const userStr = localStorage.getItem('user')
+    return userStr ? JSON.parse(userStr) : null
+  }
+
+  getAccessToken(): string | null {
+    return localStorage.getItem('access_token')
+  }
+
+  getRefreshToken(): string | null {
+    return localStorage.getItem('refresh_token')
+  }
+
+  private storeAuthData(data: AuthResponse): void {
+    // Handle both response formats (direct tokens or nested tokens object)
+    const accessToken = data.access || data.tokens?.access
+    const refreshToken = data.refresh || data.tokens?.refresh
+
+    if (accessToken) {
+      localStorage.setItem('access_token', accessToken)
+    }
+    if (refreshToken) {
+      localStorage.setItem('refresh_token', refreshToken)
+    }
+    if (data.user) {
+      localStorage.setItem('user', JSON.stringify(data.user))
+    }
+  }
+
+  private clearAuthData(): void {
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
+    localStorage.removeItem('user')
+  }
+}
+
+export default new AuthService()

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Worker Cleanup</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 2px solid #bee5eb;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffeaa7;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            margin: 15px;
+            min-width: 200px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .danger {
+            background: #dc3545;
+        }
+        .danger:hover {
+            background: #c82333;
+        }
+        .success-btn {
+            background: #28a745;
+        }
+        .success-btn:hover {
+            background: #218838;
+        }
+        #log {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            padding: 20px;
+            border-radius: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            text-align: left;
+            margin-top: 20px;
+        }
+        .step {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧹 Service Worker Nuclear Cleanup</h1>
+        <p>This tool will completely remove all service workers and cached data that are preventing the dashboard from loading.</p>
+        
+        <div id="status" class="status info">
+            🔍 Checking service worker status...
+        </div>
+        
+        <div class="step">
+            <h3>Step 1: Nuclear Cleanup</h3>
+            <button onclick="nuclearCleanup()" id="cleanupBtn">🚀 Nuclear Cleanup</button>
+            <button onclick="checkStatus()" id="checkBtn">🔍 Check Status</button>
+        </div>
+        
+        <div class="step">
+            <h3>Step 2: Clear Browser Data</h3>
+            <button onclick="clearBrowserData()" class="danger">🗑️ Clear All Browser Data</button>
+            <p><small>This will clear all localStorage, sessionStorage, and indexed DB</small></p>
+        </div>
+        
+        <div class="step">
+            <h3>Step 3: Go to Dashboard</h3>
+            <button onclick="goToDashboard()" class="success-btn" id="dashboardBtn" disabled>📊 Go to Dashboard</button>
+        </div>
+        
+        <h3>Activity Log:</h3>
+        <div id="log"></div>
+    </div>
+
+    <script>
+        const logElement = document.getElementById('log');
+        const statusElement = document.getElementById('status');
+        const cleanupBtn = document.getElementById('cleanupBtn');
+        const dashboardBtn = document.getElementById('dashboardBtn');
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logMessage = `[${timestamp}] ${message}\n`;
+            console.log(message);
+            logElement.textContent += logMessage;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        function setStatus(message, type = 'info') {
+            statusElement.textContent = message;
+            statusElement.className = `status ${type}`;
+        }
+        
+        async function checkStatus() {
+            log('🔍 Checking service worker status...');
+            
+            if (!('serviceWorker' in navigator)) {
+                log('❌ Service workers not supported in this browser');
+                setStatus('Service workers not supported', 'error');
+                return false;
+            }
+            
+            try {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                log(`📊 Found ${registrations.length} service worker registrations`);
+                
+                if (registrations.length === 0) {
+                    log('✅ No service workers found - browser is clean!');
+                    setStatus('✅ Browser is clean! Ready to use dashboard.', 'success');
+                    dashboardBtn.disabled = false;
+                    return true;
+                } else {
+                    log('⚠️  Service workers detected - cleanup needed');
+                    setStatus(`⚠️ Found ${registrations.length} service workers - cleanup needed`, 'warning');
+                    dashboardBtn.disabled = true;
+                    
+                    for (let i = 0; i < registrations.length; i++) {
+                        const reg = registrations[i];
+                        log(`   ${i + 1}. ${reg.scope} (state: ${reg.active?.state || 'unknown'})`);
+                    }
+                    return false;
+                }
+            } catch (error) {
+                log(`❌ Error checking service workers: ${error.message}`);
+                setStatus(`Error: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function nuclearCleanup() {
+            log('🚀 Starting NUCLEAR cleanup procedure...');
+            setStatus('🚀 Nuclear cleanup in progress...', 'info');
+            cleanupBtn.disabled = true;
+            
+            try {
+                // Step 1: Unregister all service workers
+                log('Step 1: Unregistering all service workers...');
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                
+                for (const registration of registrations) {
+                    try {
+                        const result = await registration.unregister();
+                        log(`   ✅ Unregistered: ${registration.scope} (${result})`);
+                    } catch (error) {
+                        log(`   ❌ Failed to unregister ${registration.scope}: ${error.message}`);
+                    }
+                }
+                
+                // Step 2: Clear all caches
+                log('Step 2: Clearing all caches...');
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    log(`   Found ${cacheNames.length} caches to delete`);
+                    
+                    for (const cacheName of cacheNames) {
+                        try {
+                            await caches.delete(cacheName);
+                            log(`   ✅ Deleted cache: ${cacheName}`);
+                        } catch (error) {
+                            log(`   ❌ Failed to delete cache ${cacheName}: ${error.message}`);
+                        }
+                    }
+                } else {
+                    log('   ⚠️  Cache API not available');
+                }
+                
+                // Step 3: Clear storage
+                log('Step 3: Clearing browser storage...');
+                await clearBrowserData(false);
+                
+                log('✅ NUCLEAR CLEANUP COMPLETED!');
+                setStatus('✅ Nuclear cleanup completed! Browser should be clean.', 'success');
+                
+                // Check status after cleanup
+                setTimeout(async () => {
+                    const isClean = await checkStatus();
+                    if (isClean) {
+                        log('🎉 Cleanup successful - ready to use dashboard!');
+                    } else {
+                        log('⚠️  Some service workers may still be present. Try manual browser cleanup.');
+                        setStatus('⚠️ Manual browser cleanup may be needed', 'warning');
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                log(`❌ Nuclear cleanup failed: ${error.message}`);
+                setStatus(`❌ Cleanup failed: ${error.message}`, 'error');
+            } finally {
+                cleanupBtn.disabled = false;
+            }
+        }
+        
+        async function clearBrowserData(showLogs = true) {
+            if (showLogs) {
+                log('🗑️ Clearing browser data...');
+                setStatus('Clearing browser data...', 'info');
+            }
+            
+            try {
+                // Clear localStorage
+                localStorage.clear();
+                if (showLogs) log('   ✅ localStorage cleared');
+                
+                // Clear sessionStorage
+                sessionStorage.clear();
+                if (showLogs) log('   ✅ sessionStorage cleared');
+                
+                // Clear IndexedDB (if available)
+                if ('indexedDB' in window) {
+                    // Note: This is a simplified approach
+                    if (showLogs) log('   ℹ️  IndexedDB may need manual clearing');
+                }
+                
+                if (showLogs) {
+                    log('✅ Browser data cleared!');
+                    setStatus('✅ Browser data cleared!', 'success');
+                }
+                
+            } catch (error) {
+                if (showLogs) {
+                    log(`❌ Error clearing browser data: ${error.message}`);
+                    setStatus(`❌ Error: ${error.message}`, 'error');
+                }
+            }
+        }
+        
+        function goToDashboard() {
+            log('🚀 Navigating to dashboard...');
+            window.location.href = '/dashboard';
+        }
+        
+        // Auto-check status on page load
+        window.addEventListener('load', () => {
+            log('🔧 Service Worker Nuclear Cleanup Tool loaded');
+            log('🌐 Current URL: ' + window.location.href);
+            log('📋 Browser: ' + navigator.userAgent);
+            log('');
+            checkStatus();
+        });
+    </script>
+</body>
+</html>

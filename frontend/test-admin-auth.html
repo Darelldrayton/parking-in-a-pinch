@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Auth Test</title>
+</head>
+<body>
+    <h1>Admin Authentication Test</h1>
+    <button onclick="checkToken()">Check Current Token</button>
+    <button onclick="loginAdmin()">Login Admin</button>
+    <button onclick="testEndpoints()">Test Admin Endpoints</button>
+    <div id="results"></div>
+
+    <script>
+        function log(message) {
+            document.getElementById('results').innerHTML += '<pre>' + message + '</pre>';
+        }
+
+        function checkToken() {
+            const token = localStorage.getItem('admin_access_token');
+            log('Current admin token: ' + (token ? token.substring(0, 50) + '...' : 'None'));
+        }
+
+        async function loginAdmin() {
+            try {
+                const response = await fetch('/api/v1/auth/login/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@test.com',
+                        password: 'admin123'
+                    })
+                });
+                const data = await response.json();
+                log('Login response: ' + JSON.stringify(data, null, 2));
+                
+                if (data.access || data.tokens?.access) {
+                    const token = data.access || data.tokens?.access;
+                    localStorage.setItem('admin_access_token', token);
+                    localStorage.setItem('admin_refresh_token', data.refresh || data.tokens?.refresh);
+                    localStorage.setItem('admin_user', JSON.stringify(data.user));
+                    log('Stored admin token successfully');
+                }
+            } catch (error) {
+                log('Login error: ' + error.message);
+            }
+        }
+
+        async function testEndpoints() {
+            const token = localStorage.getItem('admin_access_token');
+            if (!token) {
+                log('No admin token found!');
+                return;
+            }
+
+            const endpoints = [
+                '/api/v1/listings/admin/stats/',
+                '/api/v1/users/admin/users/stats/',
+                '/api/v1/users/admin/verification-requests/stats/',
+                '/api/v1/payments/admin/refund-requests/stats/',
+                '/api/v1/listings/admin/'
+            ];
+
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(endpoint, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    const contentType = response.headers.get('content-type');
+                    log(`\n${endpoint}:`);
+                    log(`Status: ${response.status}`);
+                    log(`Content-Type: ${contentType}`);
+                    
+                    if (contentType && contentType.includes('application/json')) {
+                        const data = await response.json();
+                        log('Response: ' + JSON.stringify(data, null, 2));
+                    } else {
+                        const text = await response.text();
+                        log('HTML Response (first 200 chars): ' + text.substring(0, 200));
+                    }
+                } catch (error) {
+                    log(`Error testing ${endpoint}: ${error.message}`);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

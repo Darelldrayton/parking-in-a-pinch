@@ -5,6 +5,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 
 
 class User(AbstractUser):
@@ -168,6 +169,13 @@ class User(AbstractUser):
         help_text=_('Total number of reviews received as a guest')
     )
     
+    # Marketing preferences
+    subscribe_to_newsletter = models.BooleanField(
+        _('subscribe to newsletter'),
+        default=False,
+        help_text=_('Whether the user wants to receive marketing emails')
+    )
+    
     # Timestamps
     created_at = models.DateTimeField(_('created at'), auto_now_add=True)
     updated_at = models.DateTimeField(_('updated at'), auto_now=True)
@@ -227,6 +235,178 @@ class User(AbstractUser):
         return self.email.split('@')[0]
 
 
+class VerificationRequest(models.Model):
+    """
+    Model to store user verification requests for admin approval.
+    """
+    
+    class VerificationType(models.TextChoices):
+        IDENTITY = 'IDENTITY', _('Identity Verification')
+        PHONE = 'PHONE', _('Phone Verification')
+        EMAIL = 'EMAIL', _('Email Verification')
+    
+    class VerificationStatus(models.TextChoices):
+        PENDING = 'PENDING', _('Pending Review')
+        APPROVED = 'APPROVED', _('Approved')
+        REJECTED = 'REJECTED', _('Rejected')
+        REVISION_REQUESTED = 'REVISION_REQUESTED', _('Revision Requested')
+    
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='verification_requests'
+    )
+    verification_type = models.CharField(
+        _('verification type'),
+        max_length=20,
+        choices=VerificationType.choices,
+        default=VerificationType.IDENTITY
+    )
+    status = models.CharField(
+        _('status'),
+        max_length=20,
+        choices=VerificationStatus.choices,
+        default=VerificationStatus.PENDING
+    )
+    
+    # Identity verification documents
+    id_document_front = models.ImageField(
+        _('ID document front'),
+        upload_to='verification/id_documents/',
+        blank=True,
+        null=True,
+        help_text=_('Front side of government-issued ID')
+    )
+    id_document_back = models.ImageField(
+        _('ID document back'),
+        upload_to='verification/id_documents/',
+        blank=True,
+        null=True,
+        help_text=_('Back side of government-issued ID')
+    )
+    selfie_with_id = models.ImageField(
+        _('selfie with ID'),
+        upload_to='verification/selfies/',
+        blank=True,
+        null=True,
+        help_text=_('Selfie holding the ID document')
+    )
+    
+    # Document information
+    document_type = models.CharField(
+        _('document type'),
+        max_length=50,
+        blank=True,
+        help_text=_('Type of ID document (e.g., Driver License, Passport)')
+    )
+    document_number = models.CharField(
+        _('document number'),
+        max_length=100,
+        blank=True,
+        help_text=_('Document number (encrypted for security)')
+    )
+    document_expiry_date = models.DateField(
+        _('document expiry date'),
+        blank=True,
+        null=True,
+        help_text=_('When the document expires')
+    )
+    
+    # Additional verification data
+    verification_data = models.JSONField(
+        _('verification data'),
+        default=dict,
+        blank=True,
+        help_text=_('Additional verification information')
+    )
+    
+    # Admin review
+    reviewed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reviewed_verifications',
+        help_text=_('Admin who reviewed this request')
+    )
+    reviewed_at = models.DateTimeField(
+        _('reviewed at'),
+        null=True,
+        blank=True,
+        help_text=_('When the request was reviewed')
+    )
+    admin_notes = models.TextField(
+        _('admin notes'),
+        blank=True,
+        help_text=_('Notes from admin review')
+    )
+    rejection_reason = models.CharField(
+        _('rejection reason'),
+        max_length=200,
+        blank=True,
+        help_text=_('Reason for rejection if applicable')
+    )
+    
+    # Timestamps
+    created_at = models.DateTimeField(_('created at'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('updated at'), auto_now=True)
+    
+    class Meta:
+        db_table = 'verification_requests'
+        verbose_name = _('Verification Request')
+        verbose_name_plural = _('Verification Requests')
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'verification_type']),
+            models.Index(fields=['status', 'created_at']),
+            models.Index(fields=['reviewed_by', 'reviewed_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.user.get_full_name()} - {self.verification_type} ({self.status})"
+    
+    def can_be_reviewed(self):
+        """Check if this request can be reviewed."""
+        return self.status == self.VerificationStatus.PENDING
+    
+    def approve(self, admin_user, notes=''):
+        """Approve the verification request."""
+        self.status = self.VerificationStatus.APPROVED
+        self.reviewed_by = admin_user
+        self.reviewed_at = timezone.now()
+        self.admin_notes = notes
+        self.save()
+        
+        # Update user verification status
+        if self.verification_type == self.VerificationType.IDENTITY:
+            self.user.is_identity_verified = True
+            self.user.save()
+        elif self.verification_type == self.VerificationType.PHONE:
+            self.user.is_phone_verified = True
+            self.user.save()
+        elif self.verification_type == self.VerificationType.EMAIL:
+            self.user.is_email_verified = True
+            self.user.save()
+    
+    def reject(self, admin_user, reason, notes=''):
+        """Reject the verification request."""
+        self.status = self.VerificationStatus.REJECTED
+        self.reviewed_by = admin_user
+        self.reviewed_at = timezone.now()
+        self.rejection_reason = reason
+        self.admin_notes = notes
+        self.save()
+    
+    def request_revision(self, admin_user, reason, notes=''):
+        """Request revision of the verification request."""
+        self.status = self.VerificationStatus.REVISION_REQUESTED
+        self.reviewed_by = admin_user
+        self.reviewed_at = timezone.now()
+        self.rejection_reason = reason
+        self.admin_notes = notes
+        self.save()
+
+
 class UserProfile(models.Model):
     """
     Extended profile information for users.
@@ -281,6 +461,12 @@ class UserProfile(models.Model):
         max_length=20,
         blank=True,
         help_text=_('License plate of primary vehicle')
+    )
+    primary_vehicle_state = models.CharField(
+        _('primary vehicle state'),
+        max_length=2,
+        blank=True,
+        help_text=_('State where primary vehicle is registered')
     )
     
     # Preferences

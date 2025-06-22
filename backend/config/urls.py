@@ -16,17 +16,23 @@ urlpatterns = [
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     
     # Authentication
-    path('api/v1/auth/', include('dj_rest_auth.urls')),
-    path('api/v1/auth/registration/', include('dj_rest_auth.registration.urls')),
+    path('api/v1/auth/', include('apps.authentication.urls')),
     
     # API endpoints
     path('api/v1/users/', include('apps.users.urls')),
-    # path('api/v1/listings/', include('apps.listings.urls')),
-    # path('api/v1/bookings/', include('apps.bookings.urls')),
-    # path('api/v1/payments/', include('apps.payments.urls')),
-    # path('api/v1/reviews/', include('apps.reviews.urls')),
-    # path('api/v1/messages/', include('apps.messaging.urls')),
-    # path('api/v1/notifications/', include('apps.notifications.urls')),
+    path('api/v1/listings/', include('apps.listings.urls')),
+    path('api/v1/bookings/', include('apps.bookings.urls')),
+    path('api/v1/payments/', include('apps.payments.urls')),
+    path('api/v1/reviews/', include('apps.reviews.urls')),
+    path('api/v1/messages/', include('apps.messaging.urls')),
+    path('api/v1/notifications/', include('apps.notifications.urls')),
+    path('api/v1/disputes/', include('apps.disputes.urls')),
+    # path('api/v1/location/', include('apps.location.urls')),
+    # path('api/v1/qr-codes/', include('apps.qr_codes.urls')),
+    # path('api/v1/analytics/', include('apps.analytics.urls')),
+    
+    # Admin booking search
+    path('admin/bookings/', include('apps.bookings.urls')),
 ]
 
 # Serve media files in development

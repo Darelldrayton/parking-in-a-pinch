@@ -1,0 +1,70 @@
+import { loadStripe } from '@stripe/stripe-js';
+
+// This is a public key, so it's safe to expose
+// Using a test key for development - replace with your actual key from Stripe Dashboard
+const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51RZFGKIn7MlQnCgsh4RzLG68rWHCR3zh08NWEVfvm3kZh8M2i4jOvIOR7tFgMFlbdsBUbFohFqemLZ3k4FnhOhXT00krFrBl5c';
+
+if (!stripeKey || stripeKey.includes('pk_test_51...')) {
+  console.warn('⚠️ Stripe publishable key not found in environment variables. Payment functionality will not work properly.');
+}
+
+const stripePromise = loadStripe(stripeKey);
+
+export default stripePromise;
+
+export interface PaymentData {
+  amount: number;
+  currency: string;
+  bookingId: number;
+  description: string;
+}
+
+export interface PaymentIntent {
+  id: string;
+  client_secret: string;
+  amount: number;
+  currency: string;
+  status: string;
+}
+
+export const createPaymentIntent = async (paymentData: PaymentData): Promise<PaymentIntent> => {
+  // Backend expects only booking_id
+  const backendPayload = {
+    booking_id: paymentData.bookingId,
+  };
+
+  const response = await fetch('http://localhost:8000/api/v1/payments/v2/create-payment-intent/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+    },
+    body: JSON.stringify(backendPayload),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to create payment intent');
+  }
+
+  return response.json();
+};
+
+export const confirmPayment = async (paymentIntentId: string, bookingId: number) => {
+  const response = await fetch('http://localhost:8000/api/v1/payments/v2/confirm-real-payment/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+    },
+    body: JSON.stringify({ 
+      payment_intent_id: paymentIntentId,
+      booking_id: bookingId 
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to confirm payment');
+  }
+
+  return response.json();
+};

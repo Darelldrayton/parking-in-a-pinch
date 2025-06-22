@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Password Reset</title>
+</head>
+<body>
+    <h1>Test Password Reset</h1>
+    <form id="resetForm">
+        <input type="email" id="email" placeholder="Email" value="darelldrayton93@gmail.com" required><br><br>
+        <button type="submit">Request Password Reset</button>
+    </form>
+    
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('resetForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.innerHTML = 'Sending reset request...';
+            
+            try {
+                console.log('Sending password reset request for:', email);
+                
+                const response = await fetch('http://127.0.0.1:8001/api/v1/auth/password/reset/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email })
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = '<h3>Success!</h3><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                } else {
+                    resultDiv.innerHTML = '<h3>Error!</h3><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                }
+                
+            } catch (error) {
+                console.error('Full error:', error);
+                resultDiv.innerHTML = '<h3>Network Error!</h3><pre>' + error.message + '</pre>';
+            }
+        });
+    </script>
+</body>
+</html>

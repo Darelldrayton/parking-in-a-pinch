@@ -1,0 +1,53 @@
+{% extends "admin/base.html" %}
+{% load static i18n %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block nav-global %}
+<div id="nav-global">
+    <div class="nav-sidebar">
+        <a href="{% url 'admin:index' %}">🏠 Admin Home</a>
+        <a href="/admin/payments/refundrequest/">💰 Refund Requests</a>
+        <a href="/payments/admin/dashboard/">📊 Refund Dashboard</a>
+        <a href="/admin/bookings/booking/">🚗 Bookings</a>
+        <a href="/admin/listings/parkinglisting/">📍 Listings</a>
+        <a href="/admin/users/user/">👥 Users</a>
+    </div>
+</div>
+
+<style>
+#nav-global {
+    background: #417690;
+    padding: 0;
+}
+.nav-sidebar {
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    height: 40px;
+    overflow-x: auto;
+}
+.nav-sidebar a {
+    color: white;
+    text-decoration: none;
+    padding: 10px 15px;
+    white-space: nowrap;
+    border-radius: 4px;
+    margin-right: 5px;
+    font-size: 13px;
+    font-weight: 500;
+}
+.nav-sidebar a:hover {
+    background: rgba(255,255,255,0.2);
+}
+@media (max-width: 768px) {
+    .nav-sidebar {
+        padding: 0 10px;
+    }
+    .nav-sidebar a {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+}
+</style>
+{% endblock %}

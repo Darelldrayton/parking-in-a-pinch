@@ -1,0 +1,116 @@
+import axios, { type AxiosResponse, type AxiosError } from 'axios'
+import toast from 'react-hot-toast'
+
+// API Configuration
+const getApiBaseUrl = () => {
+  // Check if we have a custom API URL from environment
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return `${import.meta.env.VITE_API_BASE_URL}/${import.meta.env.VITE_API_VERSION || 'v1'}`
+  }
+  
+  // Legacy support for VITE_API_URL
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL
+  }
+  
+  // Production: Use relative URLs when served from same domain
+  if (import.meta.env.PROD) {
+    return '/api/v1'
+  }
+  
+  // Development: Use localhost
+  return 'http://localhost:8000/api/v1'
+}
+
+const API_BASE_URL = getApiBaseUrl()
+
+// Create axios instance
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  timeout: 10000,
+})
+
+// Request interceptor to add auth token
+api.interceptors.request.use(
+  (config) => {
+    console.log('API Request:', config.method?.toUpperCase(), config.url, config.data)
+    console.log('API Base URL:', API_BASE_URL)
+    console.log('Full URL:', `${API_BASE_URL}${config.url}`)
+    
+    // Try multiple token formats for compatibility
+    const bearerToken = localStorage.getItem('access_token')
+    const drf_token = localStorage.getItem('token')
+    
+    if (bearerToken) {
+      config.headers.Authorization = `Bearer ${bearerToken}`
+      console.log('Using Bearer token authentication')
+    } else if (drf_token) {
+      config.headers.Authorization = `Token ${drf_token}`
+      console.log('Using DRF Token authentication')
+    } else {
+      console.log('No authentication token found')
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  }
+)
+
+// Response interceptor for error handling
+api.interceptors.response.use(
+  (response: AxiosResponse) => {
+    console.log('API Response:', response.status, response.data)
+    return response
+  },
+  async (error: AxiosError) => {
+    console.error('API Error:', error.response?.status, error.response?.data)
+    const originalRequest = error.config as any
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true
+      
+      try {
+        const refreshToken = localStorage.getItem('refresh_token')
+        if (refreshToken) {
+          const response = await axios.post(`${API_BASE_URL}/auth/token/refresh/`, {
+            refresh: refreshToken
+          })
+          
+          const { access } = response.data
+          localStorage.setItem('access_token', access)
+          
+          // Retry original request with new token
+          originalRequest.headers.Authorization = `Bearer ${access}`
+          return api(originalRequest)
+        }
+      } catch (refreshError) {
+        // Refresh failed, logout user
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('refresh_token')
+        localStorage.removeItem('user')
+        window.location.href = '/login'
+        return Promise.reject(refreshError)
+      }
+    }
+
+    // Handle other errors
+    if (error.response?.status && error.response.status >= 400) {
+      const errorData = error.response?.data as any
+      const message = errorData?.detail || 
+                     errorData?.message || 
+                     'An error occurred'
+      
+      if (error.response?.status !== 401) {
+        toast.error(message)
+      }
+    }
+
+    return Promise.reject(error)
+  }
+)
+
+export default api

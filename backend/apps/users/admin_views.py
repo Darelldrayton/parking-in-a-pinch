@@ -1,0 +1,354 @@
+"""
+Admin views for user management and identity verification
+"""
+from rest_framework import viewsets, permissions, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from django.utils import timezone
+from django.db import transaction
+from django.db.models import Q
+import logging
+
+from .models import User, VerificationRequest
+from .serializers import (
+    UserSerializer, VerificationRequestSerializer, 
+    VerificationRequestDetailSerializer
+)
+
+logger = logging.getLogger(__name__)
+
+
+class AdminUserViewSet(viewsets.ModelViewSet):
+    """
+    Admin viewset for managing users
+    """
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        """
+        Only admins and staff can view all users
+        """
+        if not self.request.user.is_staff:
+            return User.objects.none()
+        
+        return User.objects.select_related().order_by('-created_at')
+    
+    def get_permissions(self):
+        """
+        Only allow staff to perform admin actions
+        """
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [permissions.IsAdminUser()]
+        return [permissions.IsAuthenticated()]
+    
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        """
+        Get user statistics
+        """
+        if not request.user.is_staff:
+            return Response(
+                {'error': 'Only admin users can view user stats'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        queryset = self.get_queryset()
+        
+        stats = {
+            'total_users': queryset.count(),
+            'verified_users': queryset.filter(is_identity_verified=True).count(),
+            'email_verified_users': queryset.filter(is_email_verified=True).count(),
+            'phone_verified_users': queryset.filter(is_phone_verified=True).count(),
+            'hosts': queryset.filter(
+                Q(user_type=User.UserType.HOST) | 
+                Q(user_type=User.UserType.BOTH)
+            ).count(),
+            'seekers': queryset.filter(
+                Q(user_type=User.UserType.SEEKER) | 
+                Q(user_type=User.UserType.BOTH)
+            ).count(),
+            'recent_signups': queryset.filter(
+                created_at__gte=timezone.now() - timezone.timedelta(days=7)
+            ).count(),
+        }
+        
+        return Response(stats)
+
+
+class VerificationRequestViewSet(viewsets.ModelViewSet):
+    """
+    Admin viewset for managing identity verification requests
+    """
+    serializer_class = VerificationRequestDetailSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        """
+        Only admins and staff can view verification requests
+        """
+        if not self.request.user.is_staff:
+            return VerificationRequest.objects.none()
+        
+        return VerificationRequest.objects.select_related(
+            'user', 'reviewed_by'
+        ).order_by('-created_at')
+    
+    
+    @action(detail=True, methods=['post'])
+    def approve(self, request, pk=None):
+        """
+        Approve an identity verification request
+        """
+        if not request.user.is_staff:
+            return Response(
+                {'error': 'Only admin users can approve verification requests'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        verification_request = self.get_object()
+        
+        if not verification_request.can_be_reviewed():
+            return Response(
+                {'error': 'This verification request cannot be approved'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            with transaction.atomic():
+                admin_notes = request.data.get('admin_notes', '')
+                
+                # Approve the verification request
+                verification_request.approve(request.user, admin_notes)
+                
+                # Send notification to user about approval
+                try:
+                    from apps.notifications.services import NotificationService
+                    from apps.notifications.models import NotificationChannel
+                    
+                    variables = {
+                        'user_name': verification_request.user.first_name,
+                        'verification_type': verification_request.get_verification_type_display(),
+                    }
+                    
+                    NotificationService.send_notification(
+                        user=verification_request.user,
+                        template_name='verification_approved',
+                        variables=variables,
+                        channel=NotificationChannel.EMAIL
+                    )
+                except Exception as e:
+                    logger.warning(f"Failed to send approval notification: {str(e)}")
+                
+                logger.info(f"Verification request {verification_request.id} approved by {request.user.email}")
+                
+                # Return updated request
+                serializer = VerificationRequestDetailSerializer(verification_request)
+                return Response({
+                    'message': 'Verification request approved successfully',
+                    'verification_request': serializer.data
+                })
+                
+        except Exception as e:
+            logger.error(f"Error approving verification request: {str(e)}")
+            return Response(
+                {'error': f'Failed to approve verification: {str(e)}'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    @action(detail=True, methods=['post'])
+    def reject(self, request, pk=None):
+        """
+        Reject an identity verification request
+        """
+        if not request.user.is_staff:
+            return Response(
+                {'error': 'Only admin users can reject verification requests'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        verification_request = self.get_object()
+        
+        if not verification_request.can_be_reviewed():
+            return Response(
+                {'error': 'This verification request cannot be rejected'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            rejection_reason = request.data.get('rejection_reason', '')
+            admin_notes = request.data.get('admin_notes', '')
+            
+            if not rejection_reason:
+                return Response(
+                    {'error': 'Rejection reason is required'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Reject the verification request
+            verification_request.reject(request.user, rejection_reason, admin_notes)
+            
+            # Send notification to user about rejection
+            try:
+                from apps.notifications.services import NotificationService
+                from apps.notifications.models import NotificationChannel
+                
+                variables = {
+                    'user_name': verification_request.user.first_name,
+                    'verification_type': verification_request.get_verification_type_display(),
+                    'rejection_reason': rejection_reason,
+                }
+                
+                NotificationService.send_notification(
+                    user=verification_request.user,
+                    template_name='verification_rejected',
+                    variables=variables,
+                    channel=NotificationChannel.EMAIL
+                )
+            except Exception as e:
+                logger.warning(f"Failed to send rejection notification: {str(e)}")
+            
+            logger.info(f"Verification request {verification_request.id} rejected by {request.user.email}")
+            
+            # Return updated request
+            serializer = VerificationRequestDetailSerializer(verification_request)
+            return Response({
+                'message': 'Verification request rejected',
+                'verification_request': serializer.data
+            })
+            
+        except Exception as e:
+            logger.error(f"Error rejecting verification request: {str(e)}")
+            return Response(
+                {'error': f'Failed to reject verification: {str(e)}'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    @action(detail=True, methods=['post'])
+    def request_revision(self, request, pk=None):
+        """
+        Request revision for a verification request
+        """
+        if not request.user.is_staff:
+            return Response(
+                {'error': 'Only admin users can request revisions'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        verification_request = self.get_object()
+        
+        if not verification_request.can_be_reviewed():
+            return Response(
+                {'error': 'This verification request cannot be revised'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            revision_reason = request.data.get('revision_reason', '')
+            admin_notes = request.data.get('admin_notes', '')
+            
+            if not revision_reason:
+                return Response(
+                    {'error': 'Revision reason is required'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Request revision for the verification request
+            verification_request.request_revision(request.user, revision_reason, admin_notes)
+            
+            # Send notification to user about revision request
+            try:
+                from apps.notifications.services import NotificationService
+                from apps.notifications.models import NotificationChannel
+                
+                variables = {
+                    'user_name': verification_request.user.first_name,
+                    'verification_type': verification_request.get_verification_type_display(),
+                    'revision_reason': revision_reason,
+                }
+                
+                NotificationService.send_notification(
+                    user=verification_request.user,
+                    template_name='verification_revision_requested',
+                    variables=variables,
+                    channel=NotificationChannel.EMAIL
+                )
+            except Exception as e:
+                logger.warning(f"Failed to send revision notification: {str(e)}")
+            
+            logger.info(f"Verification request {verification_request.id} revision requested by {request.user.email}")
+            
+            # Return updated request
+            serializer = VerificationRequestDetailSerializer(verification_request)
+            return Response({
+                'message': 'Revision requested successfully',
+                'verification_request': serializer.data
+            })
+            
+        except Exception as e:
+            logger.error(f"Error requesting verification revision: {str(e)}")
+            return Response(
+                {'error': f'Failed to request revision: {str(e)}'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    @action(detail=False, methods=['get'])
+    def pending(self, request):
+        """
+        Get all pending verification requests
+        """
+        if not request.user.is_staff:
+            return Response(
+                {'error': 'Only admin users can view pending verifications'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        pending_requests = self.get_queryset().filter(
+            status=VerificationRequest.VerificationStatus.PENDING
+        )
+        
+        serializer = self.get_serializer(pending_requests, many=True)
+        return Response({
+            'count': pending_requests.count(),
+            'results': serializer.data
+        })
+    
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        """
+        Get verification request statistics
+        """
+        if not request.user.is_staff:
+            return Response(
+                {'error': 'Only admin users can view verification stats'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        queryset = self.get_queryset()
+        
+        stats = {
+            'total_requests': queryset.count(),
+            'pending_requests': queryset.filter(
+                status=VerificationRequest.VerificationStatus.PENDING
+            ).count(),
+            'approved_requests': queryset.filter(
+                status=VerificationRequest.VerificationStatus.APPROVED
+            ).count(),
+            'rejected_requests': queryset.filter(
+                status=VerificationRequest.VerificationStatus.REJECTED
+            ).count(),
+            'revision_requested': queryset.filter(
+                status=VerificationRequest.VerificationStatus.REVISION_REQUESTED
+            ).count(),
+            'identity_requests': queryset.filter(
+                verification_type=VerificationRequest.VerificationType.IDENTITY
+            ).count(),
+            'phone_requests': queryset.filter(
+                verification_type=VerificationRequest.VerificationType.PHONE
+            ).count(),
+            'email_requests': queryset.filter(
+                verification_type=VerificationRequest.VerificationType.EMAIL
+            ).count(),
+        }
+        
+        return Response(stats)

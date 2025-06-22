@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Environment Variables</title>
+</head>
+<body>
+    <h1>Environment Test</h1>
+    <div id="info"></div>
+    
+    <script type="module">
+        console.log('All environment variables:', import.meta.env);
+        console.log('API Base URL:', import.meta.env.VITE_API_BASE_URL);
+        console.log('API Version:', import.meta.env.VITE_API_VERSION);
+        
+        const infoDiv = document.getElementById('info');
+        infoDiv.innerHTML = `
+            <h3>Environment Variables:</h3>
+            <p><strong>API Base URL:</strong> ${import.meta.env.VITE_API_BASE_URL || 'Not set'}</p>
+            <p><strong>API Version:</strong> ${import.meta.env.VITE_API_VERSION || 'Not set'}</p>
+            <p><strong>Computed API URL:</strong> ${
+                import.meta.env.VITE_API_BASE_URL 
+                ? `${import.meta.env.VITE_API_BASE_URL}/api/${import.meta.env.VITE_API_VERSION || 'v1'}`
+                : 'http://127.0.0.1:8001/api/v1'
+            }</p>
+        `;
+    </script>
+</body>
+</html>

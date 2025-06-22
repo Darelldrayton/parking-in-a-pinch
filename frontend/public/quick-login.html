@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quick Login - Parking in a Pinch</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #1565c0;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quick Login Fix</h1>
+        
+        <div class="info">
+            <p>This page will help you log in directly to bypass any frontend caching issues.</p>
+            <p><strong>User:</strong> darelldrayton93@gmail.com</p>
+            <p><strong>Password:</strong> temppass123</p>
+        </div>
+
+        <button onclick="performLogin()">Login Now</button>
+        <button onclick="clearAndLogin()">Clear Cache & Login</button>
+        
+        <div id="status"></div>
+        
+        <div id="result" style="margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        async function performLogin() {
+            const statusDiv = document.getElementById('status');
+            const resultDiv = document.getElementById('result');
+            
+            statusDiv.innerHTML = '<p>Attempting login...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/auth/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'darelldrayton93@gmail.com',
+                        password: 'temppass123'
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Save tokens to localStorage
+                    localStorage.setItem('access_token', data.access);
+                    localStorage.setItem('refresh_token', data.refresh);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    statusDiv.innerHTML = '<p class="success">✓ Login successful!</p>';
+                    resultDiv.innerHTML = `
+                        <div class="info">
+                            <h3>Success! You are now logged in as:</h3>
+                            <p><strong>Name:</strong> ${data.user.first_name} ${data.user.last_name}</p>
+                            <p><strong>Email:</strong> ${data.user.email}</p>
+                            <p><strong>User Type:</strong> ${data.user.user_type}</p>
+                            <br>
+                            <p><strong>Next Steps:</strong></p>
+                            <ol>
+                                <li>Go back to your main application tab</li>
+                                <li>Refresh the page (Ctrl+F5 or Cmd+Shift+R)</li>
+                                <li>You should now be logged in!</li>
+                            </ol>
+                            <br>
+                            <button onclick="window.location.href='/'">Go to App</button>
+                        </div>
+                    `;
+                } else {
+                    const error = await response.text();
+                    statusDiv.innerHTML = `<p class="error">Login failed: ${response.status}</p>`;
+                    resultDiv.innerHTML = `<pre>${error}</pre>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<p class="error">Connection error: ${error.message}</p>`;
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <p>Could not connect to the backend server.</p>
+                        <p>Make sure the Django server is running on http://localhost:8000</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function clearAndLogin() {
+            // Clear all auth-related items from localStorage
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            localStorage.removeItem('user');
+            
+            // Clear IndexedDB if used
+            if (window.indexedDB) {
+                const databases = await indexedDB.databases();
+                databases.forEach(db => {
+                    if (db.name && db.name.includes('auth')) {
+                        indexedDB.deleteDatabase(db.name);
+                    }
+                });
+            }
+            
+            // Clear session storage
+            sessionStorage.clear();
+            
+            // Now perform login
+            performLogin();
+        }
+        
+        // Check current login status
+        window.onload = function() {
+            const user = localStorage.getItem('user');
+            const token = localStorage.getItem('access_token');
+            
+            if (user && token) {
+                const userData = JSON.parse(user);
+                document.getElementById('status').innerHTML = `
+                    <div class="info">
+                        <p><strong>Currently logged in as:</strong> ${userData.email}</p>
+                        <p>If you're still having issues, try the "Clear Cache & Login" button.</p>
+                    </div>
+                `;
+            }
+        };
+    </script>
+</body>
+</html>

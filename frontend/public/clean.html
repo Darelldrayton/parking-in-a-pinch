@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clean Dashboard Access</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 100px auto;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9fa;
+        }
+        .container {
+            background: white;
+            padding: 50px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 10px;
+            min-width: 250px;
+        }
+        button:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+        .nuclear {
+            background: #dc3545;
+        }
+        .nuclear:hover {
+            background: #c82333;
+        }
+        .success {
+            background: #28a745;
+        }
+        .success:hover {
+            background: #218838;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .success-status { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧹 Emergency Dashboard Access</h1>
+        <p>Use this page to completely clear service workers and access the dashboard.</p>
+        
+        <div id="status" class="status info">Ready to clean...</div>
+        
+        <button onclick="nuclearClean()" class="nuclear">🚀 NUCLEAR CLEAN</button>
+        <br>
+        <button onclick="directAccess()" class="success">📊 ACCESS DASHBOARD</button>
+        <br>
+        <button onclick="checkStatus()">🔍 Check Status</button>
+        
+        <div id="log" style="margin-top: 30px; text-align: left; background: #f8f9fa; padding: 20px; border-radius: 8px; font-family: monospace; font-size: 14px; max-height: 300px; overflow-y: auto;"></div>
+    </div>
+
+    <script>
+        const log = document.getElementById('log');
+        const status = document.getElementById('status');
+        
+        function logMessage(msg) {
+            console.log(msg);
+            log.innerHTML += new Date().toLocaleTimeString() + ': ' + msg + '<br>';
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function setStatus(msg, type = 'info') {
+            status.textContent = msg;
+            status.className = `status ${type}`;
+        }
+        
+        async function nuclearClean() {
+            logMessage('🚨 NUCLEAR CLEANUP INITIATED');
+            setStatus('Nuclear cleanup in progress...', 'info');
+            
+            try {
+                if ('serviceWorker' in navigator) {
+                    // Get all registrations
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    logMessage(`Found ${registrations.length} service worker(s)`);
+                    
+                    // Unregister all
+                    for (const reg of registrations) {
+                        await reg.unregister();
+                        logMessage('✅ Service worker unregistered');
+                    }
+                    
+                    // Clear all caches
+                    if ('caches' in window) {
+                        const cacheNames = await caches.keys();
+                        logMessage(`Clearing ${cacheNames.length} cache(s)`);
+                        
+                        for (const name of cacheNames) {
+                            await caches.delete(name);
+                            logMessage(`✅ Cache deleted: ${name}`);
+                        }
+                    }
+                    
+                    // Clear storage
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    logMessage('✅ Storage cleared');
+                    
+                    logMessage('🎉 NUCLEAR CLEANUP COMPLETE!');
+                    setStatus('✅ Cleanup complete! Ready for dashboard.', 'success-status');
+                    
+                } else {
+                    logMessage('Service workers not supported');
+                    setStatus('✅ No service workers to clean', 'success-status');
+                }
+            } catch (error) {
+                logMessage(`❌ Error: ${error.message}`);
+                setStatus('❌ Cleanup failed', 'error');
+            }
+        }
+        
+        function directAccess() {
+            logMessage('🚀 Navigating to dashboard...');
+            // Use a timestamp to bypass any cache
+            window.location.href = '/dashboard?clean=' + Date.now();
+        }
+        
+        async function checkStatus() {
+            logMessage('🔍 Checking service worker status...');
+            
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                logMessage(`Service workers found: ${registrations.length}`);
+                
+                if (registrations.length === 0) {
+                    setStatus('✅ No service workers - Clean!', 'success-status');
+                } else {
+                    setStatus('⚠️ Service workers detected', 'error');
+                }
+            } else {
+                logMessage('Service workers not supported');
+                setStatus('✅ Browser doesn\'t support service workers', 'success-status');
+            }
+        }
+        
+        // Auto-check on load
+        window.onload = () => {
+            logMessage('🔧 Emergency dashboard access tool loaded');
+            checkStatus();
+        };
+    </script>
+</body>
+</html>

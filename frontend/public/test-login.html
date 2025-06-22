@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Test</title>
+</head>
+<body>
+    <h1>Backend Connection Test</h1>
+    <p>Current API URL: <span id="api-url">http://localhost:8000/api/v1</span></p>
+    
+    <div>
+        <h2>Test Login</h2>
+        <button onclick="testLogin()">Test Login</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function testLogin() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/auth/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'darelldrayton93@gmail.com',
+                        password: 'temppass123'
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `
+                        <h3 style="color: green;">SUCCESS!</h3>
+                        <p>User: ${data.user.first_name} ${data.user.last_name}</p>
+                        <p>Email: ${data.user.email}</p>
+                        <p>Tokens received: ✓</p>
+                    `;
+                } else {
+                    const errorData = await response.text();
+                    resultDiv.innerHTML = `
+                        <h3 style="color: orange;">Response Error</h3>
+                        <p>Status: ${response.status}</p>
+                        <p>Error: ${errorData}</p>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h3 style="color: red;">Connection Error</h3>
+                    <p>Error: ${error.message}</p>
+                    <p>This means the backend server is not reachable.</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

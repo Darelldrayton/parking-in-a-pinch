@@ -4,6 +4,9 @@ Admin configuration for the users app.
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
+from django.http import HttpResponse
+import csv
+from datetime import datetime
 from .models import User, UserProfile
 
 
@@ -14,12 +17,12 @@ class UserAdmin(BaseUserAdmin):
     list_display = (
         'email', 'username', 'first_name', 'last_name', 
         'user_type', 'is_email_verified', 'is_identity_verified',
-        'created_at', 'is_active'
+        'subscribe_to_newsletter', 'created_at', 'is_active'
     )
     list_filter = (
         'user_type', 'is_email_verified', 'is_phone_verified', 
-        'is_identity_verified', 'is_active', 'is_staff', 
-        'created_at'
+        'is_identity_verified', 'subscribe_to_newsletter', 'is_active', 
+        'is_staff', 'created_at'
     )
     search_fields = ('email', 'username', 'first_name', 'last_name', 'phone_number')
     ordering = ('-created_at',)
@@ -51,7 +54,7 @@ class UserAdmin(BaseUserAdmin):
             'fields': ('stripe_customer_id', 'stripe_account_id')
         }),
         (_('Preferences'), {
-            'fields': ('preferred_notification_method',)
+            'fields': ('preferred_notification_method', 'subscribe_to_newsletter')
         }),
         (_('Ratings'), {
             'fields': (
@@ -84,6 +87,72 @@ class UserAdmin(BaseUserAdmin):
     )
     
     readonly_fields = ('created_at', 'updated_at', 'last_login')
+    actions = ['export_to_csv', 'export_subscribers_to_csv']
+    
+    def export_to_csv(self, request, queryset):
+        """Export selected users to CSV."""
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="users_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+        
+        writer = csv.writer(response)
+        # Header row
+        writer.writerow([
+            'ID', 'Email', 'First Name', 'Last Name', 'Username',
+            'Phone Number', 'User Type', 'Email Verified', 'Identity Verified',
+            'Newsletter Subscriber', 'Created Date', 'Last Login', 'Active'
+        ])
+        
+        # Data rows
+        for user in queryset:
+            writer.writerow([
+                user.id,
+                user.email,
+                user.first_name,
+                user.last_name,
+                user.username,
+                user.phone_number or '',
+                user.get_user_type_display(),
+                'Yes' if user.is_email_verified else 'No',
+                'Yes' if user.is_identity_verified else 'No',
+                'Yes' if user.subscribe_to_newsletter else 'No',
+                user.created_at.strftime('%Y-%m-%d %H:%M:%S') if user.created_at else '',
+                user.last_login.strftime('%Y-%m-%d %H:%M:%S') if user.last_login else 'Never',
+                'Yes' if user.is_active else 'No'
+            ])
+        
+        return response
+    
+    export_to_csv.short_description = "Export selected users to CSV"
+    
+    def export_subscribers_to_csv(self, request, queryset):
+        """Export newsletter subscribers to CSV."""
+        # Filter only subscribers
+        subscribers = queryset.filter(subscribe_to_newsletter=True, is_active=True)
+        
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="newsletter_subscribers_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+        
+        writer = csv.writer(response)
+        # Header row
+        writer.writerow([
+            'Email', 'First Name', 'Last Name', 'User Type',
+            'Joined Date', 'Email Verified'
+        ])
+        
+        # Data rows
+        for user in subscribers:
+            writer.writerow([
+                user.email,
+                user.first_name,
+                user.last_name,
+                user.get_user_type_display(),
+                user.created_at.strftime('%Y-%m-%d') if user.created_at else '',
+                'Yes' if user.is_email_verified else 'No'
+            ])
+        
+        return response
+    
+    export_subscribers_to_csv.short_description = "Export newsletter subscribers to CSV"
     
     def get_queryset(self, request):
         """Filter out deleted users by default."""

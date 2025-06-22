@@ -1,0 +1,1 @@
+# QR Code generation and verification app

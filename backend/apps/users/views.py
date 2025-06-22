@@ -7,10 +7,15 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from .models import UserProfile
+from django.db.models import Q
+from django.utils import timezone
+from .models import UserProfile, VerificationRequest
 from .serializers import (
     UserSerializer, UserCreateSerializer, UserUpdateSerializer,
-    UserListSerializer, UserPublicSerializer, UserProfileSerializer
+    UserListSerializer, UserPublicSerializer, UserProfileSerializer,
+    FrontendUserSerializer, VerificationRequestSerializer,
+    CreateVerificationRequestSerializer, AdminVerificationActionSerializer,
+    AdminUserListSerializer
 )
 
 User = get_user_model()
@@ -83,15 +88,26 @@ class UserViewSet(ModelViewSet):
         user = request.user
         
         if request.method == 'GET':
-            serializer = UserSerializer(user)
+            serializer = FrontendUserSerializer(user, context={'request': request})
             return Response(serializer.data)
         
         elif request.method in ['PUT', 'PATCH']:
+            # Convert frontend user_type to backend format if provided
+            if 'user_type' in request.data:
+                type_mapping = {
+                    'renter': 'SEEKER',
+                    'host': 'HOST',
+                    'both': 'BOTH'
+                }
+                request.data['user_type'] = type_mapping.get(request.data['user_type'], user.user_type)
+            
             partial = request.method == 'PATCH'
-            serializer = UserUpdateSerializer(user, data=request.data, partial=partial)
+            # Use UserUpdateSerializer for updates to handle vehicle fields
+            serializer = UserUpdateSerializer(user, data=request.data, partial=partial, context={'request': request})
             if serializer.is_valid():
                 serializer.save()
-                return Response(UserSerializer(user).data)
+                # Return updated user data using FrontendUserSerializer
+                return Response(FrontendUserSerializer(user, context={'request': request}).data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     @action(detail=False, methods=['post'])
@@ -120,12 +136,14 @@ class UserViewSet(ModelViewSet):
         user = request.user
         
         # Count user's bookings and listings
-        total_bookings = user.bookings_as_guest.count()
+        total_bookings = user.bookings.count()
         total_listings = user.listings.count()
         
         # Count reviews
         reviews_given = user.reviews_given.count()
-        reviews_received = user.reviews_received.count()
+        # For reviews received, we need to count reviews where the user is the reviewed object
+        # This would require filtering reviews based on the reviewed object
+        reviews_received = 0  # TODO: Implement proper count for reviews received
         
         stats = {
             'total_bookings': total_bookings,
@@ -161,3 +179,217 @@ class UserProfileViewSet(ModelViewSet):
     def perform_create(self, serializer):
         """Create profile for current user."""
         serializer.save(user=self.request.user)
+
+
+class VerificationRequestViewSet(ModelViewSet):
+    """
+    ViewSet for managing verification requests.
+    """
+    queryset = VerificationRequest.objects.all()
+    permission_classes = [permissions.AllowAny]
+    serializer_class = VerificationRequestSerializer
+    
+    def get_serializer_class(self):
+        """Return appropriate serializer class based on action."""
+        print(f"DEBUG: VerificationRequestViewSet action={self.action}")
+        if self.action == 'create':
+            return CreateVerificationRequestSerializer
+        return VerificationRequestSerializer
+    
+    def get_queryset(self):
+        """Return user's own verification requests."""
+        return VerificationRequest.objects.filter(user=self.request.user)
+    
+    def perform_create(self, serializer):
+        """Create verification request for current user."""
+        serializer.save(user=self.request.user)
+    
+    @action(detail=False, methods=['get'])
+    def latest(self, request):
+        """Get the latest verification request for each type."""
+        latest_requests = {}
+        for verification_type in VerificationRequest.VerificationType.values:
+            latest = self.get_queryset().filter(
+                verification_type=verification_type
+            ).first()
+            if latest:
+                latest_requests[verification_type] = VerificationRequestSerializer(
+                    latest, context={'request': request}
+                ).data
+        
+        return Response(latest_requests)
+
+
+class AdminVerificationViewSet(ModelViewSet):
+    """
+    Admin ViewSet for managing verification requests.
+    """
+    serializer_class = VerificationRequestSerializer
+    permission_classes = [permissions.IsAdminUser]
+    
+    def get_queryset(self):
+        """Return all verification requests for admin review."""
+        queryset = VerificationRequest.objects.select_related(
+            'user', 'reviewed_by'
+        ).all()
+        
+        # Filter by status
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        
+        # Filter by verification type
+        type_filter = self.request.query_params.get('type')
+        if type_filter:
+            queryset = queryset.filter(verification_type=type_filter)
+        
+        # Search by user name or email
+        search = self.request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(user__first_name__icontains=search) |
+                Q(user__last_name__icontains=search) |
+                Q(user__email__icontains=search)
+            )
+        
+        return queryset
+    
+    @action(detail=True, methods=['post'])
+    def review(self, request, pk=None):
+        """Review a verification request (approve/reject/request_revision)."""
+        verification_request = self.get_object()
+        
+        if not verification_request.can_be_reviewed():
+            return Response(
+                {'error': 'This verification request has already been reviewed'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        serializer = AdminVerificationActionSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        action = serializer.validated_data['action']
+        notes = serializer.validated_data.get('notes', '')
+        reason = serializer.validated_data.get('reason', '')
+        
+        if action == 'approve':
+            verification_request.approve(request.user, notes)
+            message = 'Verification request approved successfully'
+        elif action == 'reject':
+            verification_request.reject(request.user, reason, notes)
+            message = 'Verification request rejected'
+        elif action == 'request_revision':
+            verification_request.request_revision(request.user, reason, notes)
+            message = 'Revision requested'
+        
+        # Return updated verification request
+        updated_request = VerificationRequestSerializer(
+            verification_request, context={'request': request}
+        )
+        
+        return Response({
+            'message': message,
+            'verification_request': updated_request.data
+        })
+    
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        """Get verification statistics for admin dashboard."""
+        stats = {
+            'pending_count': VerificationRequest.objects.filter(
+                status=VerificationRequest.VerificationStatus.PENDING
+            ).count(),
+            'approved_today': VerificationRequest.objects.filter(
+                status=VerificationRequest.VerificationStatus.APPROVED,
+                reviewed_at__date=timezone.now().date()
+            ).count(),
+            'rejected_today': VerificationRequest.objects.filter(
+                status=VerificationRequest.VerificationStatus.REJECTED,
+                reviewed_at__date=timezone.now().date()
+            ).count(),
+            'total_verified_users': User.objects.filter(
+                is_identity_verified=True
+            ).count(),
+            'total_users': User.objects.filter(is_active=True).count(),
+        }
+        
+        # Get verification counts by type
+        verification_counts = {}
+        for verification_type in VerificationRequest.VerificationType.values:
+            verification_counts[verification_type] = {
+                'pending': VerificationRequest.objects.filter(
+                    verification_type=verification_type,
+                    status=VerificationRequest.VerificationStatus.PENDING
+                ).count(),
+                'approved': VerificationRequest.objects.filter(
+                    verification_type=verification_type,
+                    status=VerificationRequest.VerificationStatus.APPROVED
+                ).count(),
+                'rejected': VerificationRequest.objects.filter(
+                    verification_type=verification_type,
+                    status=VerificationRequest.VerificationStatus.REJECTED
+                ).count(),
+            }
+        
+        stats['by_type'] = verification_counts
+        
+        return Response(stats)
+
+
+class AdminUserViewSet(ModelViewSet):
+    """
+    Admin ViewSet for managing users.
+    """
+    serializer_class = AdminUserListSerializer
+    permission_classes = [permissions.IsAdminUser]
+    
+    def get_queryset(self):
+        """Return all users for admin management."""
+        queryset = User.objects.filter(is_deleted=False).prefetch_related(
+            'verification_requests'
+        )
+        
+        # Filter by verification status
+        verified_filter = self.request.query_params.get('verified')
+        if verified_filter == 'true':
+            queryset = queryset.filter(is_identity_verified=True)
+        elif verified_filter == 'false':
+            queryset = queryset.filter(is_identity_verified=False)
+        
+        # Search by name or email
+        search = self.request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(
+                Q(first_name__icontains=search) |
+                Q(last_name__icontains=search) |
+                Q(email__icontains=search) |
+                Q(username__icontains=search)
+            )
+        
+        return queryset.order_by('-created_at')
+    
+    @action(detail=True, methods=['post'])
+    def toggle_verification(self, request, pk=None):
+        """Manually toggle user verification status."""
+        user = self.get_object()
+        verification_type = request.data.get('verification_type', 'identity')
+        
+        if verification_type == 'identity':
+            user.is_identity_verified = not user.is_identity_verified
+        elif verification_type == 'email':
+            user.is_email_verified = not user.is_email_verified
+        elif verification_type == 'phone':
+            user.is_phone_verified = not user.is_phone_verified
+        else:
+            return Response(
+                {'error': 'Invalid verification type'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        user.save()
+        
+        return Response({
+            'message': f'{verification_type.title()} verification toggled',
+            'user': AdminUserListSerializer(user, context={'request': request}).data
+        })
