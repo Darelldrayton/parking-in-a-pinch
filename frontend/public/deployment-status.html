@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Deployment Status Check</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .warning { background: #fff3cd; border: 1px solid #ffeaa7; color: #856404; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Deployment Status Check</h1>
+        <p><strong>Last Updated:</strong> <span id="timestamp"></span></p>
+        
+        <h2>Deployment Tests:</h2>
+        <div id="results"></div>
+        
+        <h2>Manual Tests:</h2>
+        <button onclick="testRulerLogin()">Test /ruler/login</button>
+        <button onclick="testDeploymentTrigger()">Test Deployment Trigger</button>
+        <button onclick="checkGitCommit()">Check Git Commit</button>
+        
+        <h2>Debugging Info:</h2>
+        <div id="debug-info"></div>
+    </div>
+
+    <script>
+        document.getElementById('timestamp').textContent = new Date().toLocaleString();
+        
+        function addResult(title, message, type = 'warning') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = `<strong>${title}</strong><br>${message}`;
+            document.getElementById('results').appendChild(div);
+        }
+
+        function testRulerLogin() {
+            addResult('Testing /ruler/login', 'Checking if route works...', 'warning');
+            
+            fetch('/ruler/login', {
+                method: 'HEAD',
+                redirect: 'manual'
+            }).then(response => {
+                if (response.type === 'opaqueredirect') {
+                    addResult('❌ /ruler/login', 'Still redirecting to home page', 'error');
+                } else if (response.ok) {
+                    addResult('✅ /ruler/login', 'Route is working correctly', 'success');
+                } else {
+                    addResult('⚠️ /ruler/login', `Got status: ${response.status}`, 'warning');
+                }
+            }).catch(err => {
+                addResult('❌ /ruler/login', `Error: ${err.message}`, 'error');
+            });
+        }
+
+        function testDeploymentTrigger() {
+            addResult('Testing Deployment Trigger', 'Checking if trigger file exists...', 'warning');
+            
+            fetch('/FORCE_DEPLOY_TRIGGER.txt')
+            .then(response => {
+                if (response.ok) {
+                    return response.text();
+                } else {
+                    throw new Error(`Status: ${response.status}`);
+                }
+            })
+            .then(text => {
+                if (text.includes('DEPLOYMENT TRIGGER')) {
+                    addResult('✅ Deployment Trigger', 'Latest changes are deployed!', 'success');
+                } else {
+                    addResult('⚠️ Deployment Trigger', 'File exists but content unexpected', 'warning');
+                }
+            })
+            .catch(err => {
+                addResult('❌ Deployment Trigger', `File not found - deployment not working: ${err.message}`, 'error');
+            });
+        }
+
+        function checkGitCommit() {
+            const expectedCommit = '776e146'; // Latest commit
+            addResult('Git Commit Check', `Looking for commit: ${expectedCommit}`, 'warning');
+            
+            // This is just for display - we can't actually check git commit from frontend
+            addResult('ℹ️ Git Info', 'Check if the latest commit (776e146) is deployed', 'warning');
+        }
+
+        // Auto-run tests
+        window.onload = () => {
+            setTimeout(() => {
+                testRulerLogin();
+                testDeploymentTrigger();
+                checkGitCommit();
+            }, 1000);
+            
+            // Debug info
+            const debugInfo = {
+                userAgent: navigator.userAgent,
+                url: window.location.href,
+                timestamp: new Date().toISOString(),
+                referrer: document.referrer
+            };
+            
+            document.getElementById('debug-info').innerHTML = `
+                <pre>${JSON.stringify(debugInfo, null, 2)}</pre>
+            `;
+        };
+    </script>
+</body>
+</html>
