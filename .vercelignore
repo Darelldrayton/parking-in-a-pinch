@@ -1,0 +1,4 @@
+# Disable Vercel deployment
+# This project deploys to Digital Ocean instead
+*
+!README.md

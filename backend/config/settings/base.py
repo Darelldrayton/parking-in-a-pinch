@@ -240,8 +240,8 @@ DEFAULT_FROM_EMAIL = 'Parking in a Pinch <noreply@parkinginapinch.com>'
 FRONTEND_URL = env('FRONTEND_URL', default='http://localhost:3008')
 
 # Stripe Configuration
-STRIPE_PUBLIC_KEY = env('STRIPE_PUBLISHABLE_KEY', default='pk_test_51PmEWQ00h6I4dJo4hNkYWgwXXmLKUQ3wKf7O5PxJWs7aEg5aKf7YKdKPBhJ4zP5Q7bKdKdKdK00abc123')
-STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY', default='sk_test_#######################
+STRIPE_PUBLIC_KEY = env('STRIPE_PUBLISHABLE_KEY', default='pk_test_your_stripe_publishable_key_here')
+STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY', default='sk_test_your_stripe_secret_key_here')
 STRIPE_WEBHOOK_SECRET = env('STRIPE_WEBHOOK_SECRET', default='')
 
 # API Documentation
