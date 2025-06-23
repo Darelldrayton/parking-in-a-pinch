@@ -1,0 +1,15 @@
+DEPLOYMENT TRIGGER - TIMESTAMP: 2024-12-23 17:45:00
+
+This file forces a rebuild and deployment.
+
+Recent changes that should be live:
+- /ruler/login route fix
+- Booking form default times (5 min + 1 hour)  
+- Neighborhood display improvements
+- Apple Pay / Google Pay implementation
+- Deployment conflicts resolved (Vercel/Render disabled)
+
+If you're reading this on the live site, deployment is working.
+If not, there's a server-side deployment issue.
+
+TEST DEPLOYMENT: d5fed08_to_8a0bc10
