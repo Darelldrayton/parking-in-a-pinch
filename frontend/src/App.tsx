@@ -308,6 +308,7 @@ function AppRoutes() {
         
         {/* Admin Routes */}
         <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/ruler/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         
         {/* Development Helper (only in development) */}
