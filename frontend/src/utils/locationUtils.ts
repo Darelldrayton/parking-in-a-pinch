@@ -230,17 +230,23 @@ export function getMapZoomLevel(showExactLocation: boolean): number {
 
 /**
  * Formats address for display based on booking status
- * Only shows full address after check-in for privacy
+ * Shows neighborhood when available, falls back to general area for privacy
  */
 export function formatAddressForDisplay(
   fullAddress: string,
   borough: string,
   isHost: boolean,
-  hasCheckedIn: boolean
+  hasCheckedIn: boolean,
+  neighborhood?: string
 ): string {
   // Only show full address to hosts or users who have checked in
   if (isHost || hasCheckedIn) {
     return fullAddress;
+  }
+  
+  // If neighborhood is available, show it instead of general area
+  if (neighborhood) {
+    return `${neighborhood}, ${borough}`;
   }
   
   // Extract approximate area from full address for privacy
@@ -254,4 +260,54 @@ export function formatAddressForDisplay(
   
   // If it's just a street name without numbers, can show it
   return `Near ${streetPart}, ${borough}`;
+}
+
+/**
+ * Extracts neighborhood from address based on known NYC neighborhoods
+ */
+export function extractNeighborhoodFromAddress(
+  address: string,
+  borough: string
+): string | undefined {
+  if (!address || !borough) return undefined;
+  
+  const addressLower = address.toLowerCase();
+  const neighborhoods = NYC_NEIGHBORHOODS[borough as keyof typeof NYC_NEIGHBORHOODS];
+  
+  if (!neighborhoods) return undefined;
+  
+  // Find neighborhood mentioned in the address
+  for (const neighborhood of neighborhoods) {
+    if (addressLower.includes(neighborhood.toLowerCase())) {
+      return neighborhood;
+    }
+  }
+  
+  return undefined;
+}
+
+/**
+ * Gets the best display location for a listing
+ * Prioritizes neighborhood, falls back to borough with general area
+ */
+export function getListingDisplayLocation(
+  address: string,
+  borough: string,
+  neighborhood?: string,
+  isHost: boolean = false,
+  hasCheckedIn: boolean = false
+): string {
+  // If we have an explicit neighborhood, use it
+  if (neighborhood) {
+    return isHost || hasCheckedIn ? address : `${neighborhood}, ${borough}`;
+  }
+  
+  // Try to extract neighborhood from address
+  const extractedNeighborhood = extractNeighborhoodFromAddress(address, borough);
+  if (extractedNeighborhood) {
+    return isHost || hasCheckedIn ? address : `${extractedNeighborhood}, ${borough}`;
+  }
+  
+  // Fall back to the existing privacy logic
+  return formatAddressForDisplay(address, borough, isHost, hasCheckedIn);
 }

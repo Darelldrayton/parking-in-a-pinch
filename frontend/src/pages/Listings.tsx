@@ -54,6 +54,7 @@ import type { FilterOptions } from '../components/search/AdvancedFilters';
 import SmartLocationSearch from '../components/search/SmartLocationSearch';
 import { bookingsService, listingsService } from '../services/listings';
 import { PrivateImage } from '../components/common/PrivateImage';
+import { getListingDisplayLocation } from '../utils/locationUtils';
 
 // Urban Manhattan parking images
 const urbanParkingImages = [
@@ -79,6 +80,7 @@ interface Listing {
   updated_at: string;
   images: any[];
   borough?: string;
+  neighborhood?: string;
   max_vehicle_size?: string;
   is_covered?: boolean;
   has_ev_charging?: boolean;
@@ -825,7 +827,11 @@ export default function Listings() {
                         <Stack direction="row" spacing={0.5} alignItems="center">
                           <LocationOn sx={{ fontSize: 16, color: 'text.secondary' }} />
                           <Typography variant="body2" color="text.secondary">
-                            {listing.borough || listing.address?.split(',')[1]?.trim() || 'NYC'} • {listing.space_type}
+                            {getListingDisplayLocation(
+                              listing.address || '',
+                              listing.borough || 'NYC',
+                              listing.neighborhood
+                            )} • {listing.space_type}
                           </Typography>
                         </Stack>
 

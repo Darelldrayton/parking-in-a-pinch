@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cleanup Listings - Admin Tool</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        .listing { margin: 10px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .keep { border-color: #4CAF50; background: #f1f8e9; }
+        .delete { border-color: #f44336; background: #ffebee; }
+        button {
+            background: #6366f1; color: white; border: none; padding: 10px 20px; 
+            border-radius: 5px; cursor: pointer; margin: 5px;
+        }
+        .delete-btn { background: #f44336; }
+        .keep-btn { background: #4CAF50; }
+        button:hover { opacity: 0.9; }
+        .auth-section { margin-bottom: 20px; padding: 15px; background: #e3f2fd; border-radius: 5px; }
+        .results { margin-top: 20px; padding: 15px; background: #f0f0f0; border-radius: 5px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🧹 Cleanup Listings Tool</h2>
+        <p>This tool helps you delete old test listings and keep only the ones you want.</p>
+        
+        <!-- Auth Section -->
+        <div class="auth-section">
+            <h3>Authentication</h3>
+            <input type="email" id="email" placeholder="Admin Email" style="width: 200px; padding: 8px; margin: 5px;">
+            <input type="password" id="password" placeholder="Admin Password" style="width: 200px; padding: 8px; margin: 5px;">
+            <button onclick="login()">Login</button>
+            <div id="auth-status"></div>
+        </div>
+
+        <!-- Main Content -->
+        <div id="main-content" class="hidden">
+            <button onclick="loadListings()">Load All Listings</button>
+            <button onclick="deleteMarkedListings()" class="delete-btn">Delete Marked Listings</button>
+            
+            <div id="listings-container"></div>
+            <div id="results" class="results hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = '';
+        let listings = [];
+        let listingsToDelete = new Set();
+
+        // Get API base URL
+        const getApiUrl = () => {
+            return window.location.origin.includes('localhost') ? 
+                'http://localhost:8000/api/v1' : '/api/v1';
+        };
+
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const authStatus = document.getElementById('auth-status');
+
+            try {
+                const response = await fetch(`${getApiUrl()}/auth/login/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    authToken = data.access_token;
+                    authStatus.innerHTML = '<span style="color: green;">✅ Logged in successfully!</span>';
+                    document.getElementById('main-content').classList.remove('hidden');
+                    loadListings();
+                } else {
+                    const error = await response.json();
+                    authStatus.innerHTML = `<span style="color: red;">❌ Login failed: ${error.detail || 'Invalid credentials'}</span>`;
+                }
+            } catch (error) {
+                authStatus.innerHTML = `<span style="color: red;">❌ Error: ${error.message}</span>`;
+            }
+        }
+
+        async function loadListings() {
+            const container = document.getElementById('listings-container');
+            container.innerHTML = '<p>Loading listings...</p>';
+
+            try {
+                const response = await fetch(`${getApiUrl()}/listings/`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    listings = data.results || data;
+                    displayListings();
+                } else {
+                    container.innerHTML = '<p style="color: red;">Failed to load listings</p>';
+                }
+            } catch (error) {
+                container.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+
+        function displayListings() {
+            const container = document.getElementById('listings-container');
+            
+            if (listings.length === 0) {
+                container.innerHTML = '<p>No listings found</p>';
+                return;
+            }
+
+            let html = '<h3>All Listings</h3>';
+            
+            listings.forEach(listing => {
+                const shouldKeep = ['test2', 'tesing'].some(keep => 
+                    listing.title?.toLowerCase().includes(keep.toLowerCase())
+                );
+                
+                const cssClass = shouldKeep ? 'keep' : 'delete';
+                const status = shouldKeep ? '✅ KEEP' : '❌ DELETE';
+                
+                html += `
+                    <div class="listing ${cssClass}" id="listing-${listing.id}">
+                        <h4>${listing.title || 'Untitled'} - ${status}</h4>
+                        <p><strong>ID:</strong> ${listing.id}</p>
+                        <p><strong>Address:</strong> ${listing.address || 'No address'}</p>
+                        <p><strong>Borough:</strong> ${listing.borough || 'Unknown'}</p>
+                        <p><strong>Created:</strong> ${new Date(listing.created_at).toLocaleDateString()}</p>
+                        <p><strong>Host:</strong> ${listing.host_name || 'Unknown'}</p>
+                        
+                        <button onclick="toggleListingAction(${listing.id})" 
+                                class="${shouldKeep ? 'delete-btn' : 'keep-btn'}">
+                            ${shouldKeep ? 'Mark for Deletion' : 'Keep This Listing'}
+                        </button>
+                    </div>
+                `;
+                
+                if (!shouldKeep) {
+                    listingsToDelete.add(listing.id);
+                }
+            });
+
+            container.innerHTML = html;
+            updateSummary();
+        }
+
+        function toggleListingAction(listingId) {
+            if (listingsToDelete.has(listingId)) {
+                listingsToDelete.delete(listingId);
+            } else {
+                listingsToDelete.add(listingId);
+            }
+            
+            const listingDiv = document.getElementById(`listing-${listingId}`);
+            const isMarkedForDeletion = listingsToDelete.has(listingId);
+            
+            listingDiv.className = `listing ${isMarkedForDeletion ? 'delete' : 'keep'}`;
+            
+            const button = listingDiv.querySelector('button');
+            button.textContent = isMarkedForDeletion ? 'Keep This Listing' : 'Mark for Deletion';
+            button.className = isMarkedForDeletion ? 'keep-btn' : 'delete-btn';
+            
+            const status = listingDiv.querySelector('h4');
+            const listing = listings.find(l => l.id === listingId);
+            status.textContent = `${listing.title || 'Untitled'} - ${isMarkedForDeletion ? '❌ DELETE' : '✅ KEEP'}`;
+            
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const total = listings.length;
+            const toDelete = listingsToDelete.size;
+            const toKeep = total - toDelete;
+            
+            document.querySelector('h2').innerHTML = 
+                `🧹 Cleanup Listings Tool - ${toKeep} to keep, ${toDelete} to delete`;
+        }
+
+        async function deleteMarkedListings() {
+            if (listingsToDelete.size === 0) {
+                alert('No listings marked for deletion');
+                return;
+            }
+
+            const confirmMsg = `Are you sure you want to delete ${listingsToDelete.size} listings? This cannot be undone!`;
+            if (!confirm(confirmMsg)) {
+                return;
+            }
+
+            const results = document.getElementById('results');
+            results.classList.remove('hidden');
+            results.innerHTML = '<h3>Deletion Results</h3><p>Deleting listings...</p>';
+
+            let successCount = 0;
+            let failCount = 0;
+            let resultHtml = '<h3>Deletion Results</h3>';
+
+            for (const listingId of listingsToDelete) {
+                try {
+                    const response = await fetch(`${getApiUrl()}/listings/${listingId}/`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const listing = listings.find(l => l.id === listingId);
+                    const title = listing?.title || `ID ${listingId}`;
+
+                    if (response.ok) {
+                        successCount++;
+                        resultHtml += `<p style="color: green;">✅ Deleted: ${title}</p>`;
+                        
+                        // Remove from display
+                        const listingDiv = document.getElementById(`listing-${listingId}`);
+                        if (listingDiv) listingDiv.remove();
+                    } else {
+                        failCount++;
+                        const error = await response.text();
+                        resultHtml += `<p style="color: red;">❌ Failed to delete ${title}: ${error}</p>`;
+                    }
+                } catch (error) {
+                    failCount++;
+                    const listing = listings.find(l => l.id === listingId);
+                    const title = listing?.title || `ID ${listingId}`;
+                    resultHtml += `<p style="color: red;">❌ Error deleting ${title}: ${error.message}</p>`;
+                }
+            }
+
+            resultHtml += `<p><strong>Summary: ${successCount} deleted, ${failCount} failed</strong></p>`;
+            results.innerHTML = resultHtml;
+
+            // Clear the deletion set and reload
+            listingsToDelete.clear();
+            setTimeout(() => loadListings(), 2000);
+        }
+    </script>
+</body>
+</html>
