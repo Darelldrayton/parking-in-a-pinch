@@ -50,7 +50,7 @@ import {
   Security,
 } from '@mui/icons-material';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import { addHours, addDays, format } from 'date-fns';
+import { addHours, addMinutes, addDays, format } from 'date-fns';
 
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -243,8 +243,8 @@ export default function BookingForm() {
   } = useForm<FormData>({
     resolver: yupResolver(schema),
     defaultValues: {
-      start_time: addHours(new Date(), 1), // Default to 1 hour from now
-      end_time: addHours(new Date(), 3), // Default to 3 hours from now
+      start_time: addMinutes(new Date(), 5), // Default to 5 minutes from now
+      end_time: addHours(addMinutes(new Date(), 5), 1), // Default to 1 hour from start time
       vehicle_license_plate: '',
       vehicle_state: '',
       vehicle_make: '',
