@@ -72,8 +72,11 @@ const Login: React.FC = () => {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    try {
-      await login(data.email, data.password);
+  console.log('Form submitted:', data); // Add this line
+  try {
+    console.log('About to call login...'); // Add this line
+    await login(data.email, data.password);
+    // ... rest of the function
       
       // Check if user is admin and store admin tokens
       const user = JSON.parse(localStorage.getItem('user') || '{}');
