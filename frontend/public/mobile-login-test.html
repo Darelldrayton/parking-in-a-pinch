@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚨 EMERGENCY Mobile Login Test</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            margin: 0; padding: 16px; background: #f5f5f5; 
+        }
+        .container { 
+            max-width: 100%; background: white; padding: 16px; 
+            border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+        }
+        input, button { 
+            width: 100%; padding: 14px; margin: 8px 0; 
+            border: 2px solid #ddd; border-radius: 8px; 
+            font-size: 16px; /* Prevents zoom on iOS */
+        }
+        button { 
+            background: #1976d2; color: white; border: none; 
+            font-weight: bold; cursor: pointer; 
+        }
+        button:active { background: #1565c0; }
+        .result { 
+            margin: 12px 0; padding: 12px; border-radius: 8px; 
+            font-size: 14px; word-break: break-all; 
+        }
+        .success { background: #e8f5e8; color: #2e7d32; border-left: 4px solid #4caf50; }
+        .error { background: #ffebee; color: #c62828; border-left: 4px solid #f44336; }
+        .info { background: #e3f2fd; color: #1976d2; border-left: 4px solid #2196f3; }
+        .warning { background: #fff3e0; color: #f57c00; border-left: 4px solid #ff9800; }
+        .device-info { font-size: 12px; color: #666; }
+        h1 { margin-top: 0; color: #1976d2; }
+        h2 { color: #666; font-size: 18px; }
+        .test-btn { margin: 4px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚨 EMERGENCY Mobile Login Test</h1>
+        
+        <div class="device-info">
+            <p><strong>Device:</strong> <span id="deviceInfo"></span></p>
+            <p><strong>IP:</strong> 165.227.111.160</p>
+            <p><strong>Time:</strong> <span id="timestamp"></span></p>
+        </div>
+
+        <h2>🔐 Quick Login Test</h2>
+        <input type="email" id="email" placeholder="Email" value="admin@test.com" autocomplete="email">
+        <input type="password" id="password" placeholder="Password" value="admin123" autocomplete="current-password">
+        <button onclick="testLogin()" class="test-btn">🚀 TEST LOGIN NOW</button>
+        
+        <h2>🔧 Diagnostic Tests</h2>
+        <button onclick="testCORS()" class="test-btn">Test CORS</button>
+        <button onclick="testAPI()" class="test-btn">Test API</button>
+        <button onclick="testDjango()" class="test-btn">Test Django</button>
+        <button onclick="clearAll()" class="test-btn">Clear All Data</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://165.227.111.160/api/v1';
+        
+        // Initialize page
+        document.getElementById('deviceInfo').textContent = navigator.userAgent;
+        document.getElementById('timestamp').textContent = new Date().toLocaleString();
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            document.getElementById('results').appendChild(div);
+            console.log(`[${type.toUpperCase()}] ${message}`);
+            
+            // Auto-scroll to bottom
+            div.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            log('🔄 Starting emergency login test...', 'info');
+            log(`📧 Email: ${email}`, 'info');
+            log(`🌐 API URL: ${API_URL}/auth/login/`, 'info');
+            
+            try {
+                log('📡 Sending login request...', 'info');
+                
+                const response = await fetch(`${API_URL}/auth/login/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Origin': window.location.origin,
+                        'User-Agent': navigator.userAgent
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                });
+                
+                log(`📊 Response Status: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+                log(`📋 Response Headers: ${JSON.stringify([...response.headers])}`, 'info');
+                
+                const responseText = await response.text();
+                log(`📄 Raw Response: ${responseText}`, 'info');
+                
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (parseError) {
+                    log(`❌ Failed to parse JSON: ${parseError.message}`, 'error');
+                    log(`🔍 Response was: ${responseText}`, 'error');
+                    return;
+                }
+                
+                if (response.ok) {
+                    log('✅ LOGIN SUCCESS!', 'success');
+                    log(`🎫 Access Token: ${data.access ? '✓ Present' : '✗ Missing'}`, data.access ? 'success' : 'error');
+                    log(`🔄 Refresh Token: ${data.refresh ? '✓ Present' : '✗ Missing'}`, data.refresh ? 'success' : 'error');
+                    log(`👤 User Data: ${data.user ? '✓ Present' : '✗ Missing'}`, data.user ? 'success' : 'error');
+                    
+                    if (data.access) {
+                        localStorage.setItem('access_token', data.access);
+                        log('💾 Token saved successfully!', 'success');
+                    }
+                } else {
+                    log('❌ LOGIN FAILED!', 'error');
+                    log(`💥 Error: ${JSON.stringify(data, null, 2)}`, 'error');
+                    
+                    // Common error analysis
+                    if (response.status === 400) {
+                        log('🔍 Bad Request - Check email/password format', 'warning');
+                    } else if (response.status === 401) {
+                        log('🔍 Unauthorized - Invalid credentials', 'warning');
+                    } else if (response.status === 403) {
+                        log('🔍 Forbidden - CORS or permissions issue', 'warning');
+                    } else if (response.status === 500) {
+                        log('🔍 Server Error - Backend problem', 'warning');
+                    }
+                }
+                
+            } catch (error) {
+                log(`💥 NETWORK ERROR: ${error.message}`, 'error');
+                log('🔍 This usually means CORS blocking or server unreachable', 'warning');
+            }
+        }
+        
+        async function testCORS() {
+            log('🌐 Testing CORS preflight...', 'info');
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/login/`, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Origin': window.location.origin,
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'Content-Type'
+                    }
+                });
+                
+                log(`✅ CORS Status: ${response.status}`, response.ok ? 'success' : 'error');
+                
+                const corsHeaders = {
+                    'Access-Control-Allow-Origin': response.headers.get('Access-Control-Allow-Origin'),
+                    'Access-Control-Allow-Methods': response.headers.get('Access-Control-Allow-Methods'),
+                    'Access-Control-Allow-Headers': response.headers.get('Access-Control-Allow-Headers'),
+                    'Access-Control-Allow-Credentials': response.headers.get('Access-Control-Allow-Credentials')
+                };
+                
+                log(`🔧 CORS Headers: ${JSON.stringify(corsHeaders, null, 2)}`, 'info');
+                
+            } catch (error) {
+                log(`❌ CORS Test Failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testAPI() {
+            log('🏥 Testing API health...', 'info');
+            
+            try {
+                const response = await fetch(`${API_URL}/`);
+                log(`✅ API Health: ${response.status}`, response.ok ? 'success' : 'error');
+                
+                const text = await response.text();
+                log(`📄 API Response: ${text.substring(0, 200)}...`, 'info');
+                
+            } catch (error) {
+                log(`❌ API Test Failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testDjango() {
+            log('🏛️ Testing Django admin...', 'info');
+            
+            try {
+                const response = await fetch('http://165.227.111.160/admin/');
+                log(`✅ Django Status: ${response.status}`, response.ok ? 'success' : 'error');
+                
+            } catch (error) {
+                log(`❌ Django Test Failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function clearAll() {
+            localStorage.clear();
+            sessionStorage.clear();
+            document.getElementById('results').innerHTML = '';
+            log('🧹 All data cleared', 'info');
+        }
+        
+        // Auto-run device test
+        window.onload = function() {
+            log('📱 Device test started', 'info');
+            log(`🔍 User Agent: ${navigator.userAgent}`, 'info');
+            log(`📏 Screen: ${screen.width}x${screen.height}`, 'info');
+            log(`💾 Storage: ${typeof(Storage) !== "undefined" ? '✓ Available' : '✗ Not Available'}`, 'info');
+            log(`🌐 Online: ${navigator.onLine ? '✓ Online' : '✗ Offline'}`, 'info');
+        };
+    </script>
+</body>
+</html>

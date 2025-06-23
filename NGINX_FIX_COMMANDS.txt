@@ -1,0 +1,87 @@
+🚨 EMERGENCY NGINX FIX - Copy and paste these commands:
+
+# 1. SSH into your server
+ssh root@165.227.111.160
+
+# 2. Check current nginx config
+cat /etc/nginx/sites-enabled/default
+
+# 3. Backup current config
+cp /etc/nginx/sites-enabled/default /etc/nginx/sites-enabled/default.backup
+
+# 4. Create new nginx config
+cat > /etc/nginx/sites-available/parking << 'EOF'
+server {
+    listen 80;
+    server_name 165.227.111.160;
+    
+    # API proxy - MUST be first
+    location /api/ {
+        proxy_pass http://127.0.0.1:8000/api/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # CORS headers for mobile
+        add_header Access-Control-Allow-Origin *;
+        add_header Access-Control-Allow-Methods "GET, POST, OPTIONS, PUT, DELETE";
+        add_header Access-Control-Allow-Headers "Content-Type, Authorization";
+        
+        if ($request_method = 'OPTIONS') {
+            add_header Access-Control-Allow-Origin *;
+            add_header Access-Control-Allow-Methods "GET, POST, OPTIONS, PUT, DELETE";
+            add_header Access-Control-Allow-Headers "Content-Type, Authorization";
+            return 204;
+        }
+    }
+    
+    # Django admin
+    location /admin/ {
+        proxy_pass http://127.0.0.1:8000/admin/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+    
+    # Static files
+    location /static/ {
+        alias /var/www/parkinginapinch/backend/static/;
+    }
+    
+    # Media files  
+    location /media/ {
+        alias /var/www/parkinginapinch/backend/media/;
+    }
+    
+    # Serve specific HTML files directly
+    location ~* \.(html)$ {
+        root /var/www/parkinginapinch/frontend/dist;
+        try_files $uri =404;
+        add_header Cache-Control "no-cache";
+    }
+    
+    # Frontend - LAST
+    location / {
+        root /var/www/parkinginapinch/frontend/dist;
+        try_files $uri $uri/ /index.html;
+    }
+}
+EOF
+
+# 5. Enable new config
+rm /etc/nginx/sites-enabled/default
+ln -s /etc/nginx/sites-available/parking /etc/nginx/sites-enabled/
+
+# 6. Test and restart nginx
+nginx -t
+systemctl restart nginx
+
+# 7. Check if Django is running
+ps aux | grep gunicorn
+netstat -tlnp | grep 8000
+
+# 8. If Django is not running, start it
+cd /var/www/parkinginapinch/backend
+source venv/bin/activate
+gunicorn config.wsgi:application --bind 127.0.0.1:8000 --daemon

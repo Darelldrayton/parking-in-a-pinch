@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Direct Django Test - Port 8000</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 400px; margin: 0 auto; }
+        input, button { width: 100%; padding: 12px; margin: 8px 0; font-size: 16px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #2196F3; color: white; border: none; cursor: pointer; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 4px; font-size: 14px; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+        .error { background: #ffebee; color: #c62828; }
+        .info { background: #e3f2fd; color: #1976d2; }
+        pre { white-space: pre-wrap; word-wrap: break-word; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>🔥 EMERGENCY TEST</h1>
+    <p><strong>This connects DIRECTLY to Django on port 8000</strong></p>
+    <p>Bypasses nginx completely!</p>
+    
+    <input type="email" id="email" placeholder="Email" value="admin@test.com">
+    <input type="password" id="password" placeholder="Password" value="admin123">
+    <button onclick="testDirect()">🚀 TEST DJANGO DIRECT</button>
+    <button onclick="testNginx()">🌐 TEST VIA NGINX</button>
+    
+    <div id="result"></div>
+
+    <script>
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = message;
+            document.getElementById('result').appendChild(div);
+        }
+        
+        async function testDirect() {
+            document.getElementById('result').innerHTML = '';
+            log('🔥 Testing Django DIRECTLY on port 8000...', 'info');
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                // DIRECT connection to Django - bypassing nginx
+                const response = await fetch('http://165.227.111.160:8000/api/v1/auth/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('✅ DIRECT DJANGO SUCCESS!', 'success');
+                    log(`Status: ${response.status}`, 'success');
+                    log(`Token: ${data.access ? 'Present' : 'Missing'}`, 'success');
+                    log(`User: ${data.user?.email || 'N/A'}`, 'success');
+                    log('<pre>' + JSON.stringify(data, null, 2) + '</pre>', 'success');
+                } else {
+                    log('❌ Django returned error:', 'error');
+                    log(`Status: ${response.status}`, 'error');
+                    log('<pre>' + JSON.stringify(data, null, 2) + '</pre>', 'error');
+                }
+            } catch (error) {
+                log('💥 Network error connecting to Django:', 'error');
+                log(error.message, 'error');
+                log('Django might not be running on port 8000', 'error');
+            }
+        }
+        
+        async function testNginx() {
+            log('🌐 Testing via nginx (port 80)...', 'info');
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                // Via nginx proxy
+                const response = await fetch('http://165.227.111.160/api/v1/auth/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('✅ NGINX PROXY SUCCESS!', 'success');
+                    log(`Status: ${response.status}`, 'success');
+                    log(`Token: ${data.access ? 'Present' : 'Missing'}`, 'success');
+                    log('<pre>' + JSON.stringify(data, null, 2) + '</pre>', 'success');
+                } else {
+                    log('❌ Nginx proxy returned error:', 'error');
+                    log(`Status: ${response.status}`, 'error');
+                    log('<pre>' + JSON.stringify(data, null, 2) + '</pre>', 'error');
+                }
+            } catch (error) {
+                log('💥 Network error via nginx:', 'error');
+                log(error.message, 'error');
+                log('Nginx proxy might be misconfigured', 'error');
+            }
+        }
+        
+        // Auto-run tests
+        window.onload = function() {
+            log('📱 Device: ' + (navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop'), 'info');
+            log('🌐 Testing both direct Django and nginx proxy...', 'info');
+        };
+    </script>
+</body>
+</html>

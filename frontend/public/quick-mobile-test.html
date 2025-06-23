@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Mobile Login Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        .container { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        input, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; }
+        button { background: #2196F3; color: white; border: none; cursor: pointer; }
+        button:hover { background: #1976D2; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+        .error { background: #ffebee; color: #c62828; }
+        .info { background: #e3f2fd; color: #1976d2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🔐 Quick Mobile Login Test</h2>
+        
+        <div id="status" class="info">Ready to test...</div>
+        
+        <input type="email" id="email" placeholder="Email" value="admin@test.com">
+        <input type="password" id="password" placeholder="Password" value="admin123">
+        <button onclick="testLogin()">🚀 Test Login</button>
+        
+        <div id="result"></div>
+        
+        <h3>Troubleshooting Tests:</h3>
+        <button onclick="testCORS()">Test CORS</button>
+        <button onclick="testAPI()">Test API Health</button>
+        <button onclick="clearStorage()">Clear Storage</button>
+        
+        <div id="debug"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://165.227.111.160/api/v1';
+        
+        function log(message, type = 'info') {
+            const result = document.getElementById('result');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = message;
+            result.appendChild(div);
+            console.log(message);
+        }
+        
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+        
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            document.getElementById('result').innerHTML = '';
+            updateStatus('Testing login...');
+            
+            try {
+                log('🔍 Starting login test...', 'info');
+                log(`📧 Email: ${email}`, 'info');
+                log(`🌐 API URL: ${API_URL}/auth/login/`, 'info');
+                
+                const response = await fetch(`${API_URL}/auth/login/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                });
+                
+                log(`📡 Response Status: ${response.status}`, response.ok ? 'success' : 'error');
+                log(`📋 Response Headers: ${JSON.stringify([...response.headers])}`, 'info');
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('✅ Login SUCCESS!', 'success');
+                    log(`🎫 Response Data: ${JSON.stringify(data, null, 2)}`, 'success');
+                    
+                    if (data.access || data.tokens?.access) {
+                        const token = data.access || data.tokens.access;
+                        localStorage.setItem('access_token', token);
+                        log('💾 Token saved to localStorage', 'success');
+                        updateStatus('✅ Login successful!');
+                    } else {
+                        log('⚠️ No access token in response', 'error');
+                    }
+                } else {
+                    log('❌ Login FAILED!', 'error');
+                    log(`💥 Error Data: ${JSON.stringify(data, null, 2)}`, 'error');
+                    updateStatus(`❌ Login failed: ${response.status}`);
+                }
+                
+            } catch (error) {
+                log(`💥 Network Error: ${error.message}`, 'error');
+                updateStatus(`💥 Network error: ${error.message}`);
+            }
+        }
+        
+        async function testCORS() {
+            document.getElementById('debug').innerHTML = '';
+            log('🌐 Testing CORS...', 'info');
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/login/`, {
+                    method: 'OPTIONS'
+                });
+                
+                log(`✅ CORS Test: ${response.status}`, response.ok ? 'success' : 'error');
+                log(`🔧 CORS Headers: ${JSON.stringify([...response.headers])}`, 'info');
+                
+            } catch (error) {
+                log(`❌ CORS Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testAPI() {
+            log('🏥 Testing API Health...', 'info');
+            
+            try {
+                const response = await fetch(`${API_URL}/`);
+                log(`✅ API Health: ${response.status}`, response.ok ? 'success' : 'error');
+                
+            } catch (error) {
+                log(`❌ API Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function clearStorage() {
+            localStorage.clear();
+            sessionStorage.clear();
+            log('🧹 Storage cleared', 'info');
+        }
+        
+        // Auto-detect device info
+        window.onload = function() {
+            const info = {
+                userAgent: navigator.userAgent,
+                mobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+                screen: `${screen.width}x${screen.height}`,
+                localStorage: typeof(Storage) !== "undefined"
+            };
+            
+            log(`📱 Device: ${info.mobile ? 'Mobile' : 'Desktop'}`, 'info');
+            log(`📏 Screen: ${info.screen}`, 'info');
+            log(`💾 Storage: ${info.localStorage ? 'Available' : 'Not Available'}`, info.localStorage ? 'success' : 'error');
+        };
+    </script>
+</body>
+</html>

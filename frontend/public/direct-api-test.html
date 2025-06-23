@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Direct API Test - Bypass Frontend</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 400px; margin: 0 auto; }
+        input, button { width: 100%; padding: 12px; margin: 8px 0; font-size: 16px; }
+        button { background: #2196F3; color: white; border: none; cursor: pointer; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+        .error { background: #ffebee; color: #c62828; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+    <h1>Direct API Test</h1>
+    <p>This bypasses ALL frontend code and tests Django directly.</p>
+    
+    <input type="email" id="email" placeholder="Email" value="admin@test.com">
+    <input type="password" id="password" placeholder="Password" value="admin123">
+    <button onclick="testDirectAPI()">Test Direct API Call</button>
+    
+    <div id="result"></div>
+
+    <script>
+        async function testDirectAPI() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.innerHTML = '<div class="result">Testing...</div>';
+            
+            try {
+                // Direct API call - no axios, no interceptors, just pure fetch
+                const response = await fetch('http://165.227.111.160/api/v1/auth/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <h3>✅ SUCCESS! Django API is working!</h3>
+                            <p>Status: ${response.status}</p>
+                            <p>Access Token: ${data.access ? '✓ Present' : '✗ Missing'}</p>
+                            <p>User: ${data.user?.email || 'N/A'}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Login Failed</h3>
+                            <p>Status: ${response.status}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>💥 Network Error</h3>
+                        <p>${error.message}</p>
+                        <p>This usually means CORS is still blocking requests.</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
