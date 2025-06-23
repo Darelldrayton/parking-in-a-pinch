@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "*",
+      "Bash",
+      "Edit",
+      "Search"
+    ],
+    "deny": [
+      "Read(*.log)",
+      "Read(.git)",
+      "Read(node_modules)"
+    ]
+  }
+}
