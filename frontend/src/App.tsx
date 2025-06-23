@@ -63,8 +63,9 @@ const AdminDashboard = lazy(() => import('./pages/AdminDashboardEnhanced'));
 
 // Test Pages
 const TestDeploy = lazy(() => import('./pages/TestDeploy'));
+const CleanupListings = lazy(() => import('./pages/CleanupListings'));
 
-// Deployment timestamp: 2024-12-23 19:15
+// Deployment timestamp: 2024-12-23 19:20
 
 // Loading component
 const PageLoader = () => (
@@ -315,6 +316,7 @@ function AppRoutes() {
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/ruler/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/cleanup-listings" element={<PrivateRoute><CleanupListings /></PrivateRoute>} />
         
         {/* Development Helper (only in development) */}
         <Route path="/dev-helper" element={<Layout><DevHelper /></Layout>} />
