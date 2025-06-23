@@ -269,6 +269,9 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
         <Typography variant="h6" color="primary" fontWeight="bold">
           Parking in a Pinch
         </Typography>
+        <Typography variant="caption" color="text.secondary">
+          v2.1 - Dashboard Fixed
+        </Typography>
       </Box>
       <Divider />
       <List>
