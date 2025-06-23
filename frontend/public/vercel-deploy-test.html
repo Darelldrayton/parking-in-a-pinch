@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vercel Deploy Test</title>
+</head>
+<body>
+    <h1>🚀 Vercel Deployment Test</h1>
+    <p><strong>Timestamp:</strong> <span id="timestamp"></span></p>
+    <p><strong>Test ID:</strong> VERCEL_TEST_2024_12_23_18_00</p>
+    
+    <p>If you can see this page, Vercel deployment is working!</p>
+    
+    <h2>Expected Updates:</h2>
+    <ul>
+        <li>/ruler/login should work (not redirect to home)</li>
+        <li>Booking times: 5 min + 1 hour defaults</li>
+        <li>Neighborhoods display instead of "General Area"</li>
+    </ul>
+
+    <script>
+        document.getElementById('timestamp').textContent = new Date().toLocaleString();
+    </script>
+</body>
+</html>
