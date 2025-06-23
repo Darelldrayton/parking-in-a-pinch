@@ -61,6 +61,9 @@ const HostResources = lazy(() => import('./pages/HostResources'));
 const AdminLogin = lazy(() => import('./pages/AdminLogin'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboardEnhanced'));
 
+// Test Pages
+const TestDeploy = lazy(() => import('./pages/TestDeploy'));
+
 // Loading component
 const PageLoader = () => (
   <Box
@@ -315,6 +318,7 @@ function AppRoutes() {
         <Route path="/dev-helper" element={<Layout><DevHelper /></Layout>} />
         <Route path="/payment-debug" element={<Layout><PaymentDebug /></Layout>} />
         <Route path="/system-monitoring" element={<Layout><SystemMonitoring /></Layout>} />
+        <Route path="/test-deploy" element={<TestDeploy />} />
         
         {/* Fallback Route */}
         <Route path="*" element={<Navigate to="/" replace />} />
