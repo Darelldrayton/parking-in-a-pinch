@@ -66,7 +66,7 @@ const TestDeploy = lazy(() => import('./pages/TestDeploy'));
 const CleanupListings = lazy(() => import('./pages/CleanupListings'));
 const RulerTest = lazy(() => import('./pages/RulerTest'));
 
-// Deployment timestamp: 2024-12-23 19:30
+// Deployment timestamp: 2024-12-23 20:00 PST - Forcing rebuild for /ruler routes
 
 // Loading component
 const PageLoader = () => (
@@ -338,9 +338,10 @@ function AppRoutes() {
 }
 
 function App() {
-  console.log('🚀 App component rendering...');
+  console.log('🚀 App component rendering - v2024-12-23-20:00...');
   console.log('Current path:', window.location.pathname);
-  console.log('Routes available: /ruler/login, /ruler/dashboard, /ruler/cleanup-listings');
+  console.log('🎯 Routes available: /ruler/login, /ruler/dashboard, /ruler/cleanup-listings');
+  console.log('🔄 Attempting to force Vercel rebuild...');
   
   return (
     <ThemeModeProvider>

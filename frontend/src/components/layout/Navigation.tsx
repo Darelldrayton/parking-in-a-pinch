@@ -270,7 +270,7 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
           Parking in a Pinch
         </Typography>
         <Typography variant="caption" color="text.secondary">
-          v2.1 - Dashboard Fixed
+          v2.2 - Ruler Routes Active
         </Typography>
       </Box>
       <Divider />
