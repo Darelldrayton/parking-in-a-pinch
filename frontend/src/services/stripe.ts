@@ -27,13 +27,21 @@ export interface PaymentIntent {
   status: string;
 }
 
+// Get API base URL from environment or use relative path
+const getApiUrl = () => {
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return `${import.meta.env.VITE_API_BASE_URL}/${import.meta.env.VITE_API_VERSION || 'v1'}`;
+  }
+  return import.meta.env.PROD ? '/api/v1' : 'http://localhost:8000/api/v1';
+};
+
 export const createPaymentIntent = async (paymentData: PaymentData): Promise<PaymentIntent> => {
   // Backend expects only booking_id
   const backendPayload = {
     booking_id: paymentData.bookingId,
   };
 
-  const response = await fetch('http://localhost:8000/api/v1/payments/v2/create-payment-intent/', {
+  const response = await fetch(`${getApiUrl()}/payments/v2/create-payment-intent/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -50,7 +58,7 @@ export const createPaymentIntent = async (paymentData: PaymentData): Promise<Pay
 };
 
 export const confirmPayment = async (paymentIntentId: string, bookingId: number) => {
-  const response = await fetch('http://localhost:8000/api/v1/payments/v2/confirm-real-payment/', {
+  const response = await fetch(`${getApiUrl()}/payments/v2/confirm-real-payment/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

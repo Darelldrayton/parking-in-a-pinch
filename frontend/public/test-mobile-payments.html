@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Payment Test - Parking in a Pinch</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background: #f5f5f5;
+        }
+        .container { 
+            max-width: 400px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-item { 
+            margin: 15px 0; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px;
+        }
+        .success { border-color: #4CAF50; background: #f1f8e9; }
+        .warning { border-color: #FF9800; background: #fff3e0; }
+        .error { border-color: #f44336; background: #ffebee; }
+        button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            margin: 10px 0;
+        }
+        button:hover { background: #5856eb; }
+        .info { font-size: 12px; color: #666; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🍎📱 Mobile Payment Test</h2>
+        <p>Test Apple Pay and Google Pay functionality on your mobile device</p>
+        
+        <div id="results"></div>
+        
+        <button onclick="testApplePay()">Test Apple Pay Availability</button>
+        <button onclick="testGooglePay()">Test Google Pay Availability</button>
+        <button onclick="testStripePaymentRequest()">Test Stripe Payment Request</button>
+        <button onclick="testDeviceFeatures()">Check Device Features</button>
+        
+        <div class="info">
+            <strong>Testing Instructions:</strong><br>
+            1. Open this page on your mobile device<br>
+            2. Click each test button<br>
+            3. Check results below<br>
+            4. For full test, visit: <a href="/checkout">Checkout Page</a>
+        </div>
+    </div>
+
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        const results = document.getElementById('results');
+        
+        function addResult(title, message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `test-item ${type}`;
+            div.innerHTML = `<strong>${title}</strong><br>${message}`;
+            results.appendChild(div);
+        }
+
+        function testApplePay() {
+            if (window.ApplePaySession) {
+                if (ApplePaySession.canMakePayments()) {
+                    addResult('✅ Apple Pay', 'Apple Pay is available on this device!', 'success');
+                    
+                    // Test with merchant check
+                    ApplePaySession.canMakePaymentsWithActiveCard('merchant.example').then(canMakePayments => {
+                        if (canMakePayments) {
+                            addResult('✅ Apple Pay Cards', 'User has active Apple Pay cards', 'success');
+                        } else {
+                            addResult('⚠️ Apple Pay Cards', 'No active Apple Pay cards found', 'warning');
+                        }
+                    }).catch(err => {
+                        addResult('⚠️ Apple Pay Cards', 'Could not check for active cards (merchant ID needed)', 'warning');
+                    });
+                } else {
+                    addResult('❌ Apple Pay', 'Apple Pay not available (no cards or device not supported)', 'error');
+                }
+            } else {
+                addResult('❌ Apple Pay', 'Apple Pay not supported on this device/browser', 'error');
+            }
+        }
+
+        function testGooglePay() {
+            if (window.google && window.google.payments) {
+                addResult('✅ Google Pay', 'Google Pay API is loaded', 'success');
+            } else {
+                // Try to load Google Pay
+                const script = document.createElement('script');
+                script.src = 'https://pay.google.com/gp/p/js/pay.js';
+                script.onload = () => {
+                    addResult('✅ Google Pay', 'Google Pay API loaded successfully', 'success');
+                };
+                script.onerror = () => {
+                    addResult('❌ Google Pay', 'Failed to load Google Pay API', 'error');
+                };
+                document.head.appendChild(script);
+            }
+        }
+
+        function testStripePaymentRequest() {
+            // This requires your actual Stripe publishable key
+            const stripe = Stripe('pk_test_51RZFGKIn7MlQnCgsh4RzLG68rWHCR3zh08NWEVfvm3kZh8M2i4jOvIOR7tFgMFlbdsBUbFohFqemLZ3k4FnhOhXT00krFrBl5c');
+            
+            const paymentRequest = stripe.paymentRequest({
+                country: 'US',
+                currency: 'usd',
+                total: {
+                    label: 'Test Payment',
+                    amount: 1000, // $10.00
+                },
+                requestPayerName: true,
+                requestPayerEmail: true,
+            });
+
+            paymentRequest.canMakePayment().then(result => {
+                if (result) {
+                    addResult('✅ Stripe Payment Request', 
+                        `Payment methods available: ${Object.keys(result).join(', ')}`, 'success');
+                } else {
+                    addResult('❌ Stripe Payment Request', 'No payment methods available', 'error');
+                }
+            }).catch(err => {
+                addResult('❌ Stripe Payment Request', `Error: ${err.message}`, 'error');
+            });
+        }
+
+        function testDeviceFeatures() {
+            const features = [];
+            
+            // User Agent
+            features.push(`Device: ${navigator.userAgent}`);
+            
+            // Touch support
+            features.push(`Touch: ${('ontouchstart' in window) ? 'Yes' : 'No'}`);
+            
+            // Screen size
+            features.push(`Screen: ${screen.width}x${screen.height}`);
+            
+            // Viewport
+            features.push(`Viewport: ${window.innerWidth}x${window.innerHeight}`);
+            
+            // HTTPS
+            features.push(`HTTPS: ${location.protocol === 'https:' ? 'Yes' : 'No'}`);
+            
+            // Service Worker
+            features.push(`Service Worker: ${'serviceWorker' in navigator ? 'Yes' : 'No'}`);
+            
+            addResult('📱 Device Info', features.join('<br>'));
+        }
+
+        // Auto-run basic tests on load
+        window.onload = () => {
+            addResult('🚀 Starting Tests', 'Mobile payment compatibility check initiated...');
+            testDeviceFeatures();
+        };
+    </script>
+</body>
+</html>

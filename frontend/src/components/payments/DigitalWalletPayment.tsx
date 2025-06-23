@@ -72,8 +72,13 @@ const DigitalWalletPayment: React.FC<DigitalWalletPaymentProps> = ({
       setError(null);
 
       try {
+        // Get API base URL
+        const apiUrl = import.meta.env.VITE_API_BASE_URL 
+          ? `${import.meta.env.VITE_API_BASE_URL}/${import.meta.env.VITE_API_VERSION || 'v1'}`
+          : import.meta.env.PROD ? '/api/v1' : 'http://localhost:8000/api/v1';
+
         // Create payment intent on backend
-        const response = await fetch('/api/v1/payments/v2/create-payment-intent/', {
+        const response = await fetch(`${apiUrl}/payments/v2/create-payment-intent/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -107,7 +112,7 @@ const DigitalWalletPayment: React.FC<DigitalWalletPaymentProps> = ({
           ev.complete('success');
           
           // Confirm payment on backend
-          await fetch('/api/v1/payments/v2/confirm-real-payment/', {
+          await fetch(`${apiUrl}/payments/v2/confirm-real-payment/`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

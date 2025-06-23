@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import {
   Box,
@@ -27,6 +27,7 @@ import {
   Android,
 } from '@mui/icons-material';
 import stripePromise, { createPaymentIntent, confirmPayment, type PaymentData } from '../../services/stripe';
+import DigitalWalletPayment from './DigitalWalletPayment';
 import toast from 'react-hot-toast';
 
 interface PaymentFormProps {
@@ -50,7 +51,8 @@ const PaymentFormInner: React.FC<PaymentFormProps> = ({
   const elements = useElements();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'apple' | 'google' | 'paypal'>('card');
+  const [paymentMethod, setPaymentMethod] = useState<'express' | 'card'>('express');
+  const [showDigitalWallet, setShowDigitalWallet] = useState(true);
 
   // Debug logging
   React.useEffect(() => {
@@ -128,6 +130,16 @@ const PaymentFormInner: React.FC<PaymentFormProps> = ({
     },
   };
 
+  // Check if device supports digital wallets
+  useEffect(() => {
+    if (window.ApplePaySession) {
+      // Check if Apple Pay is available
+      if (ApplePaySession.canMakePayments()) {
+        console.log('Apple Pay is available');
+      }
+    }
+  }, []);
+
   const handleAlternativePayment = async (method: 'apple' | 'google' | 'paypal') => {
     setLoading(true);
     setError(null);
@@ -180,59 +192,55 @@ const PaymentFormInner: React.FC<PaymentFormProps> = ({
             </Typography>
           </Box>
 
-          {/* Payment Method Selection */}
-          <FormControl component="fieldset">
-            <FormLabel component="legend" sx={{ fontWeight: 600, mb: 2 }}>
-              Choose Payment Method
-            </FormLabel>
-            <RadioGroup
-              value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value as any)}
-            >
-              <FormControlLabel
-                value="card"
-                control={<Radio />}
-                label={
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <CreditCardIcon />
-                    <Typography>Credit/Debit Card</Typography>
-                  </Stack>
-                }
-              />
-              <FormControlLabel
-                value="apple"
-                control={<Radio />}
-                label={
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <Apple />
-                    <Typography>Apple Pay</Typography>
-                    <Chip label="Fast" size="small" color="primary" />
-                  </Stack>
-                }
-              />
-              <FormControlLabel
-                value="google"
-                control={<Radio />}
-                label={
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <Android />
-                    <Typography>Google Pay</Typography>
-                    <Chip label="Fast" size="small" color="primary" />
-                  </Stack>
-                }
-              />
-              <FormControlLabel
-                value="paypal"
-                control={<Radio />}
-                label={
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <AccountBalanceWallet />
-                    <Typography>PayPal</Typography>
-                  </Stack>
-                }
-              />
-            </RadioGroup>
-          </FormControl>
+          {/* Show Digital Wallet Option First */}
+          {showDigitalWallet && paymentMethod === 'express' ? (
+            <DigitalWalletPayment
+              amount={amount}
+              bookingId={bookingId}
+              description={description}
+              onSuccess={onSuccess}
+              onFallback={() => {
+                setPaymentMethod('card');
+                setShowDigitalWallet(false);
+              }}
+            />
+          ) : (
+            /* Payment Method Selection */
+            <FormControl component="fieldset">
+              <FormLabel component="legend" sx={{ fontWeight: 600, mb: 2 }}>
+                Payment Method
+              </FormLabel>
+              <RadioGroup
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value as any)}
+              >
+                <FormControlLabel
+                  value="express"
+                  control={<Radio />}
+                  label={
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <Stack direction="row" spacing={0.5}>
+                        <Apple />
+                        <Android />
+                      </Stack>
+                      <Typography>Express Checkout (Apple Pay / Google Pay)</Typography>
+                      <Chip label="Recommended" size="small" color="primary" />
+                    </Stack>
+                  }
+                />
+                <FormControlLabel
+                  value="card"
+                  control={<Radio />}
+                  label={
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <CreditCardIcon />
+                      <Typography>Credit/Debit Card</Typography>
+                    </Stack>
+                  }
+                />
+              </RadioGroup>
+            </FormControl>
+          )}
 
 
           {/* Error Alert */}
