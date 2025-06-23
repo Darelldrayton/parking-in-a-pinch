@@ -316,7 +316,9 @@ function AppRoutes() {
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/ruler/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/ruler/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/cleanup-listings" element={<PrivateRoute><CleanupListings /></PrivateRoute>} />
+        <Route path="/ruler/cleanup-listings" element={<PrivateRoute><CleanupListings /></PrivateRoute>} />
         
         {/* Development Helper (only in development) */}
         <Route path="/dev-helper" element={<Layout><DevHelper /></Layout>} />
