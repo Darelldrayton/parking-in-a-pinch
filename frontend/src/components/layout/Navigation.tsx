@@ -163,6 +163,7 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
   ];
 
   const renterMenuItems = [
+    { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
     { text: 'Search Parking', icon: <Search />, path: '/listings' },
     { text: 'My Bookings', icon: <CalendarMonth />, path: '/my-bookings' },
     { text: 'Favorites', icon: <FavoriteOutlined />, path: '/favorites' },
@@ -375,7 +376,20 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
             </Box>
 
             <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' }, justifyContent: 'center' }}>
-              <Typography variant="h6" color="primary" fontWeight="bold">
+              <Typography 
+                variant="h6" 
+                color="primary" 
+                fontWeight="bold"
+                component="a"
+                href="/dashboard"
+                sx={{
+                  textDecoration: 'none',
+                  cursor: 'pointer',
+                  '&:hover': {
+                    opacity: 0.8,
+                  },
+                }}
+              >
                 Parking in a Pinch
               </Typography>
             </Box>
@@ -444,7 +458,13 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
                     open={Boolean(anchorElUser)}
                     onClose={handleCloseUserMenu}
                   >
-                    <MenuItem onClick={() => navigate('/profile')}>
+                    <MenuItem onClick={() => { navigate('/dashboard'); handleCloseUserMenu(); }}>
+                      <ListItemIcon>
+                        <Dashboard fontSize="small" />
+                      </ListItemIcon>
+                      Dashboard
+                    </MenuItem>
+                    <MenuItem onClick={() => { navigate('/profile'); handleCloseUserMenu(); }}>
                       <ListItemIcon>
                         <Person fontSize="small" />
                       </ListItemIcon>
