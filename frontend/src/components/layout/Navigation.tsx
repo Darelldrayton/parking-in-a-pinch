@@ -375,10 +375,23 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
             </Box>
 
             <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' }, justifyContent: 'center' }}>
-              <Typography variant="h6" color="primary" fontWeight="bold">
-                Parking in a Pinch
-              </Typography>
-            </Box>
+  <Typography
+    variant="h6"
+    color="primary"
+    fontWeight="bold"
+    component="a"
+    href="/dashboard"
+    sx={{
+      textDecoration: 'none',
+      cursor: 'pointer',
+      '&:hover': {
+        opacity: 0.8,
+      },
+    }}
+  >
+    Parking in a Pinch
+  </Typography>
+</Box>
 
             <Stack direction="row" spacing={1} alignItems="center">
               {isAuthenticated && (
@@ -450,6 +463,12 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
                       </ListItemIcon>
                       Profile
                     </MenuItem>
+                    <MenuItem onClick={() => { navigate('/dashboard'); handleCloseUserMenu(); }}>
+  <ListItemIcon>
+    <Dashboard fontSize="small" />
+  </ListItemIcon>
+  Dashboard
+</MenuItem>
                     <MenuItem onClick={handleLogout}>
                       <ListItemIcon>
                         <Logout fontSize="small" />
