@@ -241,7 +241,7 @@ FRONTEND_URL = env('FRONTEND_URL', default='http://localhost:3008')
 
 # Stripe Configuration
 STRIPE_PUBLIC_KEY = env('STRIPE_PUBLISHABLE_KEY', default='pk_test_51PmEWQ00h6I4dJo4hNkYWgwXXmLKUQ3wKf7O5PxJWs7aEg5aKf7YKdKPBhJ4zP5Q7bKdKdKdK00abc123')
-STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY', default='sk_test_51PmEWQ00h6I4dJo4test_key_for_development_only_do_not_use_in_production')
+STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY', default='sk_test_#######################
 STRIPE_WEBHOOK_SECRET = env('STRIPE_WEBHOOK_SECRET', default='')
 
 # API Documentation

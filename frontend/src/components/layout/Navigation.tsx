@@ -376,9 +376,9 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
             </Box>
 
             <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' }, justifyContent: 'center' }}>
-              <Typography 
-                variant="h6" 
-                color="primary" 
+              <Typography
+                variant="h6"
+                color="primary"
                 fontWeight="bold"
                 component="a"
                 href="/dashboard"

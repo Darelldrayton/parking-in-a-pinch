@@ -1,65 +1,40 @@
 """
-Development settings for Parking in a Pinch project.
+Emergency Mobile Fix Settings
+Apply these settings to fix mobile login issues
 """
+
 from .base import *
+import os
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '172.22.146.152', '10.255.255.254', '*']
-
-# Development-specific apps
-INSTALLED_APPS += [
-    'django_extensions',
-    'debug_toolbar',
-]
-
-# Development middleware
-MIDDLEWARE += [
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
-]
-
-# Debug toolbar configuration
-INTERNAL_IPS = [
-    '127.0.0.1',
+# Production allowed hosts
+ALLOWED_HOSTS = [
+    '165.227.111.160',
+    'parkinginapinch.com',
+    'www.parkinginapinch.com',
+    'pinchparking.com',
+    'www.pinchparking.com',
     'localhost',
+    '127.0.0.1',
 ]
 
-# Email backend for development
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# CORS settings for mobile fix
+CORS_ALLOWED_ORIGINS = [
+    "http://165.227.111.160",
+    "https://parkinginapinch.com",
+    "https://www.parkinginapinch.com",
+    "https://pinchparking.com",
+    "https://www.pinchparking.com",
+]
 
-# Static files - use local storage in development
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+CORS_ALLOW_ALL_ORIGINS = True  # Emergency setting for mobile compatibility
 
-# Media files - use local storage in development
-DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+# Additional mobile-specific settings
+SECURE_CROSS_ORIGIN_OPENER_POLICY = None
+SECURE_REFERRER_POLICY = "no-referrer-when-downgrade"
 
-# CORS settings for development
-CORS_ALLOW_ALL_ORIGINS = True
-
-# Logging configuration
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'root': {
-        'handlers': ['console'],
-        'level': 'INFO',
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'apps': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-    },
-}
+# Session settings for mobile
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
