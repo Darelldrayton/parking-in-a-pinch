@@ -113,9 +113,9 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': env('DB_ENGINE', default='django.contrib.gis.db.backends.postgis'),
-            'NAME': env('DB_NAME', default='parking_pinch'),
-            'USER': env('DB_USER', default='parking_app'),
-            'PASSWORD': env('DB_PASSWORD', default='password'),
+            'NAME': env('DB_NAME', default='parking_db'),
+            'USER': env('DB_USER', default='postgres'),
+            'PASSWORD': env('DB_PASSWORD', default='postgres123'),
             'HOST': env('DB_HOST', default='localhost'),
             'PORT': env('DB_PORT', default='5432'),
             'CONN_MAX_AGE': 600,
