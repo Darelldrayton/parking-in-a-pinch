@@ -64,8 +64,9 @@ const AdminDashboard = lazy(() => import('./pages/AdminDashboardEnhanced'));
 // Test Pages
 const TestDeploy = lazy(() => import('./pages/TestDeploy'));
 const CleanupListings = lazy(() => import('./pages/CleanupListings'));
+const RulerTest = lazy(() => import('./pages/RulerTest'));
 
-// Deployment timestamp: 2024-12-23 19:20
+// Deployment timestamp: 2024-12-23 19:30
 
 // Loading component
 const PageLoader = () => (
@@ -123,6 +124,9 @@ function AppRoutes() {
         <Route path="/" element={<Home />} />
         <Route path="/listings" element={<Layout><Listings /></Layout>} />
         <Route path="/listings/:id" element={<Layout><ListingDetail /></Layout>} />
+        
+        {/* Test route to debug ruler routes */}
+        <Route path="/ruler-test" element={<RulerTest />} />
         
         {/* Auth Routes (redirect to dashboard if already logged in) */}
         <Route 
@@ -335,6 +339,8 @@ function AppRoutes() {
 
 function App() {
   console.log('🚀 App component rendering...');
+  console.log('Current path:', window.location.pathname);
+  console.log('Routes available: /ruler/login, /ruler/dashboard, /ruler/cleanup-listings');
   
   return (
     <ThemeModeProvider>
