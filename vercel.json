@@ -1,0 +1,28 @@
+{
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "https://www.parkinginapinch.com",
+      "permanent": true,
+      "host": "pinchparking.com"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "https://www.parkinginapinch.com/$1",
+      "permanent": true,
+      "host": "pinchparking.com"
+    },
+    {
+      "source": "/",
+      "destination": "https://www.parkinginapinch.com",
+      "permanent": true,
+      "host": "www.pinchparking.com"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "https://www.parkinginapinch.com/$1",
+      "permanent": true,
+      "host": "www.pinchparking.com"
+    }
+  ]
+}
