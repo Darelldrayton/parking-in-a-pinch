@@ -13,9 +13,9 @@ const getApiBaseUrl = () => {
     return import.meta.env.VITE_API_URL
   }
   
-  // Production: Use relative URLs when served from same domain
+  // Production: HARD-CODED FIX - Point to DigitalOcean backend
   if (import.meta.env.PROD) {
-    return '/api/v1'
+    return 'http://165.227.111.160:8001/api/v1'
   }
   
   // Development: Use localhost
