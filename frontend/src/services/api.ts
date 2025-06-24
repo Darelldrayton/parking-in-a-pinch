@@ -13,8 +13,9 @@ const getApiBaseUrl = () => {
     return import.meta.env.VITE_API_URL
   }
   
-  // Production: HARD-CODED FIX - Point to DigitalOcean backend
+  // Production: HARD-CODED FIX - Point to DigitalOcean backend (FORCE v3.0)
   if (import.meta.env.PROD) {
+    console.log('🔥 FORCING API URL: http://165.227.111.160:8001/api/v1')
     return 'http://165.227.111.160:8001/api/v1'
   }
   
