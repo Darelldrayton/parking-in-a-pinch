@@ -65,6 +65,7 @@ const AdminDashboard = lazy(() => import('./pages/AdminDashboardEnhanced'));
 const TestDeploy = lazy(() => import('./pages/TestDeploy'));
 const CleanupListings = lazy(() => import('./pages/CleanupListings'));
 const RulerTest = lazy(() => import('./pages/RulerTest'));
+const TestUpdate = lazy(() => import('./pages/TestUpdate'));
 
 // Deployment timestamp: 2024-12-23 20:00 PST - Forcing rebuild for /ruler routes
 
@@ -127,6 +128,7 @@ function AppRoutes() {
         
         {/* Test route to debug ruler routes */}
         <Route path="/ruler-test" element={<RulerTest />} />
+        <Route path="/test-update" element={<TestUpdate />} />
         
         {/* Auth Routes (redirect to dashboard if already logged in) */}
         <Route 
