@@ -67,7 +67,7 @@ const CleanupListings = lazy(() => import('./pages/CleanupListings'));
 const RulerTest = lazy(() => import('./pages/RulerTest'));
 const TestUpdate = lazy(() => import('./pages/TestUpdate'));
 
-// Deployment timestamp: 2024-12-23 20:00 PST - Forcing rebuild for /ruler routes
+// FORCE REDEPLOYMENT: 2024-12-23 20:15 PST - Cache busting for API fix
 
 // Loading component
 const PageLoader = () => (

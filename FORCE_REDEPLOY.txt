@@ -1,0 +1,15 @@
+FORCE REDEPLOYMENT - 2024-12-23 20:15 PST
+
+🚀 CHANGES TO FORCE CACHE INVALIDATION:
+- Updated homepage title to "Find Parking in a Pinch 🚀 v4.0"
+- Updated App.tsx deployment timestamp 
+- Force Vercel to rebuild and clear all caches
+- Should finally fix API URL from /api/v1 to http://165.227.111.160:8001/api/v1
+
+🎯 Expected Console Output After This Deploy:
+- Homepage shows "v4.0" in title
+- Console shows: "🔥 FORCING API URL: http://165.227.111.160:8001/api/v1"
+- API Base URL: http://165.227.111.160:8001/api/v1
+- Login should work without 405 errors
+
+Deploy ID: CACHE_BUST_v4.0
