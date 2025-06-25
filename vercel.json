@@ -15,8 +15,12 @@
       "dest": "https://165.227.111.160/api/$1"
     },
     {
+      "src": "/favicon.ico",
+      "dest": "frontend/dist/favicon.ico"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/frontend/$1"
+      "dest": "frontend/dist/index.html"
     }
   ]
 }
