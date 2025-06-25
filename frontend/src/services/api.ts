@@ -4,8 +4,8 @@ import toast from 'react-hot-toast'
 // AGGRESSIVE API FIX - FORCE DIGITALOCEAN URL v5.0
 console.log('🚀 API Configuration Loading - FORCE DigitalOcean v5.0')
 
-// COMPLETELY BYPASS ALL ENVIRONMENT VARIABLES - USE HTTPS FOR SECURITY
-const API_BASE_URL = 'https://165.227.111.160/api/v1'
+// USE VERCEL PROXY TO BYPASS HTTPS/HTTP MIXED CONTENT
+const API_BASE_URL = '/api/v1'
 
 console.log('💥 FORCED API BASE URL:', API_BASE_URL)
 console.log('🎯 This should fix login on parkinginapinch.com')
