@@ -12,4 +12,4 @@ FORCE REDEPLOYMENT - 2024-12-23 20:15 PST
 - API Base URL: http://165.227.111.160:8001/api/v1
 - Login should work without 405 errors
 
-Deploy ID: CACHE_BUST_v4.0
+Deploy ID: CACHE_BUST_v4.0# Force redeploy Wed Jun 25 11:34:18 EDT 2025
