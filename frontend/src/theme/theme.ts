@@ -36,12 +36,12 @@ const themeOptions = {
       dark: '#059669',
     },
     background: {
-      default: '#F9FAFB',
-      paper: '#FFFFFF',
+      default: '#1a1a1a',
+      paper: '#2a2a2a',
     },
     text: {
-      primary: '#111827',
-      secondary: '#6B7280',
+      primary: '#ffffff',
+      secondary: '#e0e0e0',
     },
   },
   typography: {

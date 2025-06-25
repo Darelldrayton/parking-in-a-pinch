@@ -362,7 +362,7 @@ function Home() {
                     mb: 3,
                   }}
                 >
-                  Find Parking in a Pinch 🚀 v8.0 VERCEL.JSON FIXED
+                  Find Parking in a Pinch
                 </Typography>
                 <Typography
                   variant="h5"
