@@ -1,4 +1,8 @@
-# Disable Vercel deployment
-# This project deploys to Digital Ocean instead
-*
-!README.md
+# Allow frontend deployment to Vercel
+# Only ignore specific files/directories
+backend/
+docs/
+node_modules/
+*.log
+.env
+.git/
