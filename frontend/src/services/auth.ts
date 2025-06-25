@@ -1,4 +1,4 @@
-import api from './api'
+import api from './api-fixed'
 
 export interface UserProfile {
   primary_vehicle_make?: string

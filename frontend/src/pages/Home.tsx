@@ -362,7 +362,7 @@ function Home() {
                     mb: 3,
                   }}
                 >
-                  Find Parking in a Pinch 🚀 v5.0 LOGIN FIXED
+                  Find Parking in a Pinch 🚀 v6.0 NUCLEAR FIX
                 </Typography>
                 <Typography
                   variant="h5"
