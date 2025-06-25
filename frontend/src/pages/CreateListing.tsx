@@ -1216,8 +1216,12 @@ export default function CreateListing() {
           {days.map((day) => (
             <Grid size={12} key={day.key}>
               <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
-                <Stack direction="row" alignItems="center" spacing={3}>
-                  <Box sx={{ minWidth: 120 }}>
+                <Stack 
+                  direction={{ xs: 'column', md: 'row' }} 
+                  alignItems={{ xs: 'stretch', md: 'center' }} 
+                  spacing={3}
+                >
+                  <Box sx={{ minWidth: { xs: 'auto', md: 120 } }}>
                     <Typography variant="h6" fontWeight="bold">
                       {day.label}
                     </Typography>
@@ -1235,12 +1239,18 @@ export default function CreateListing() {
                           />
                         }
                         label="Available"
+                        sx={{ alignSelf: { xs: 'flex-start', md: 'center' } }}
                       />
                     )}
                   />
 
                   {watch(`availability.${day.key}.available` as any) && (
-                    <>
+                    <Stack 
+                      direction={{ xs: 'column', sm: 'row' }} 
+                      alignItems={{ xs: 'stretch', sm: 'center' }} 
+                      spacing={2}
+                      sx={{ width: { xs: '100%', md: 'auto' } }}
+                    >
                       <Controller
                         name={`availability.${day.key}.start` as any}
                         control={control}
@@ -1250,12 +1260,23 @@ export default function CreateListing() {
                             type="time"
                             label="Start Time"
                             size="small"
-                            sx={{ minWidth: 120 }}
+                            sx={{ 
+                              minWidth: { xs: 'auto', sm: 120 },
+                              width: { xs: '100%', sm: 'auto' }
+                            }}
                           />
                         )}
                       />
                       
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary"
+                        sx={{ 
+                          alignSelf: 'center',
+                          textAlign: { xs: 'center', sm: 'left' },
+                          py: { xs: 0.5, sm: 0 }
+                        }}
+                      >
                         to
                       </Typography>
                       
@@ -1268,11 +1289,14 @@ export default function CreateListing() {
                             type="time"
                             label="End Time"
                             size="small"
-                            sx={{ minWidth: 120 }}
+                            sx={{ 
+                              minWidth: { xs: 'auto', sm: 120 },
+                              width: { xs: '100%', sm: 'auto' }
+                            }}
                           />
                         )}
                       />
-                    </>
+                    </Stack>
                   )}
                 </Stack>
               </Paper>
