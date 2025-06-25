@@ -1,29 +1,14 @@
 import axios, { type AxiosResponse, type AxiosError } from 'axios'
 import toast from 'react-hot-toast'
 
-// API Configuration
-const getApiBaseUrl = () => {
-  // Check if we have a custom API URL from environment
-  if (import.meta.env.VITE_API_BASE_URL) {
-    return `${import.meta.env.VITE_API_BASE_URL}/${import.meta.env.VITE_API_VERSION || 'v1'}`
-  }
-  
-  // Legacy support for VITE_API_URL
-  if (import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL
-  }
-  
-  // Production: HARD-CODED FIX - Point to DigitalOcean backend (FORCE v3.0)
-  if (import.meta.env.PROD) {
-    console.log('🔥 FORCING API URL: http://165.227.111.160:8001/api/v1')
-    return 'http://165.227.111.160:8001/api/v1'
-  }
-  
-  // Development: Use localhost
-  return 'http://localhost:8000/api/v1'
-}
+// AGGRESSIVE API FIX - FORCE DIGITALOCEAN URL v5.0
+console.log('🚀 API Configuration Loading - FORCE DigitalOcean v5.0')
 
-const API_BASE_URL = getApiBaseUrl()
+// COMPLETELY BYPASS ALL ENVIRONMENT VARIABLES
+const API_BASE_URL = 'http://165.227.111.160:8001/api/v1'
+
+console.log('💥 FORCED API BASE URL:', API_BASE_URL)
+console.log('🎯 This should fix login on parkinginapinch.com')
 
 // Create axios instance
 const api = axios.create({
