@@ -4,8 +4,8 @@ import toast from 'react-hot-toast'
 // NUCLEAR API FIX v6.0 - NEW FILE TO BYPASS CACHE
 console.log('🔥 NUCLEAR API FIX v6.0 - FORCING DIGITALOCEAN CONNECTION')
 
-// ABSOLUTE HARD-CODED URL - NO VARIABLES
-const API_BASE_URL = 'http://165.227.111.160:8001/api/v1'
+// ABSOLUTE HARD-CODED URL - DIRECT TO DIGITALOCEAN SERVER
+const API_BASE_URL = 'http://165.227.111.160/api/v1'
 
 console.log('💥 NUCLEAR API BASE URL:', API_BASE_URL)
 console.log('🎯 This WILL fix login on parkinginapinch.com')
