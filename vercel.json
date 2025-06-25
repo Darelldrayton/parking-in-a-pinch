@@ -22,14 +22,12 @@
     {
       "source": "/",
       "destination": "https://www.parkinginapinch.com",
-      "permanent": true,
-      "host": "pinchparking.com"
+      "permanent": true
     },
     {
       "source": "/(.*)",
       "destination": "https://www.parkinginapinch.com/$1",
-      "permanent": true,
-      "host": "pinchparking.com"
+      "permanent": true
     }
   ]
 }
