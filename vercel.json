@@ -6,6 +6,10 @@
     {
       "source": "/api/(.*)",
       "destination": "http://165.227.111.160/api/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ],
   "headers": [
