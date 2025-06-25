@@ -5,7 +5,7 @@ import toast from 'react-hot-toast'
 console.log('🚀 API Configuration Loading - FORCE DigitalOcean v5.0')
 
 // COMPLETELY BYPASS ALL ENVIRONMENT VARIABLES
-const API_BASE_URL = 'http://165.227.111.160:8001/api/v1'
+const API_BASE_URL = 'http://165.227.111.160/api/v1'
 
 console.log('💥 FORCED API BASE URL:', API_BASE_URL)
 console.log('🎯 This should fix login on parkinginapinch.com')
