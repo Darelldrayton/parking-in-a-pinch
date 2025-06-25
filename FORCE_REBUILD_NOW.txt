@@ -1,0 +1,25 @@
+EMERGENCY REBUILD TRIGGER - 2024-12-23 20:35 PST
+
+🚨 CRITICAL DEPLOYMENT ISSUE:
+- v5.0 changes not deploying to Vercel
+- User still seeing old code with /api/v1 
+- Console shows wrong domain (pinchparking.com)
+- Need to force Vercel to rebuild immediately
+
+🔧 DEPLOYMENT STATUS:
+- Git push successful: af6f187
+- Code changes committed: api.ts, Home.tsx, Navigation.tsx
+- Expected: API URL should be http://165.227.111.160:8001/api/v1
+- Actual: Still showing /api/v1
+
+⚡ FORCE REBUILD ACTIONS:
+1. Create new trigger file to force cache invalidation
+2. Modify multiple files to ensure change detection
+3. Push with emergency deployment flag
+
+🎯 EXPECTED RESULT:
+- parkinginapinch.com shows "v5.0 LOGIN FIXED"
+- Console shows forced API URL messages
+- Login works with DigitalOcean backend
+
+REBUILD ID: EMERGENCY_v5.0_FORCE

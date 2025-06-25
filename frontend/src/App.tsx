@@ -67,7 +67,7 @@ const CleanupListings = lazy(() => import('./pages/CleanupListings'));
 const RulerTest = lazy(() => import('./pages/RulerTest'));
 const TestUpdate = lazy(() => import('./pages/TestUpdate'));
 
-// FORCE REDEPLOYMENT: 2024-12-23 20:15 PST - Cache busting for API fix
+// EMERGENCY REBUILD v5.0: 2024-12-23 20:35 PST - FORCE LOGIN FIX NOW
 
 // Loading component
 const PageLoader = () => (
