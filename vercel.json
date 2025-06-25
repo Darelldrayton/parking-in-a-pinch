@@ -16,11 +16,11 @@
     },
     {
       "src": "/favicon.ico",
-      "dest": "frontend/dist/favicon.ico"
+      "dest": "/favicon.ico"
     },
     {
       "src": "/(.*)",
-      "dest": "frontend/dist/index.html"
+      "dest": "/index.html"
     }
   ]
 }
