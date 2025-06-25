@@ -1,6 +1,12 @@
 {
-  "buildCommand": "cd frontend && npm install && npm run build",
+  "build": {
+    "env": {
+      "ENABLE_EXPERIMENTAL_COREPACK": "1"
+    }
+  },
+  "buildCommand": "npm install --prefix frontend && npm run build --prefix frontend",
   "outputDirectory": "frontend/dist",
+  "installCommand": "echo 'Skipping root install'",
   "rewrites": [
     {
       "source": "/api/(.*)",
@@ -16,18 +22,6 @@
           "value": "no-cache, no-store, must-revalidate"
         }
       ]
-    }
-  ],
-  "redirects": [
-    {
-      "source": "/",
-      "destination": "https://www.parkinginapinch.com",
-      "permanent": true
-    },
-    {
-      "source": "/(.*)",
-      "destination": "https://www.parkinginapinch.com/$1",
-      "permanent": true
     }
   ]
 }
