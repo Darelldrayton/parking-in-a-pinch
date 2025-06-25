@@ -1,12 +1,6 @@
 {
-  "buildCommand": "cd frontend && npm install && npm run build",
+  "buildCommand": "cd frontend && npm ci && npm run build",
   "outputDirectory": "frontend/dist",
-  "framework": null,
-  "functions": {
-    "app/api/**/*.js": {
-      "maxDuration": 30
-    }
-  },
   "rewrites": [
     {
       "source": "/api/(.*)",
@@ -20,14 +14,6 @@
         {
           "key": "Cache-Control",
           "value": "no-cache, no-store, must-revalidate"
-        },
-        {
-          "key": "Pragma", 
-          "value": "no-cache"
-        },
-        {
-          "key": "Expires",
-          "value": "0"
         }
       ]
     }
@@ -44,19 +30,6 @@
       "destination": "https://www.parkinginapinch.com/$1",
       "permanent": true,
       "host": "pinchparking.com"
-    },
-    {
-      "source": "/",
-      "destination": "https://www.parkinginapinch.com",
-      "permanent": true,
-      "host": "www.pinchparking.com"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "https://www.parkinginapinch.com/$1",
-      "permanent": true,
-      "host": "www.pinchparking.com"
     }
-  ],
-  "cleanUrls": true
+  ]
 }
