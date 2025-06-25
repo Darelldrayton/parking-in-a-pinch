@@ -17,14 +17,28 @@
   ],
   "redirects": [
     {
-      "source": "/parkinginapinch.com/:path*",
-      "destination": "https://parkinginapinch.com/:path*",
-      "permanent": true
+      "source": "/",
+      "destination": "https://www.parkinginapinch.com",
+      "permanent": true,
+      "host": "pinchparking.com"
     },
     {
-      "source": "/www.parkinginapinch.com/:path*", 
-      "destination": "https://parkinginapinch.com/:path*",
-      "permanent": true
+      "source": "/(.*)",
+      "destination": "https://www.parkinginapinch.com/$1",
+      "permanent": true,
+      "host": "pinchparking.com"
+    },
+    {
+      "source": "/",
+      "destination": "https://www.parkinginapinch.com",
+      "permanent": true,
+      "host": "www.pinchparking.com"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "https://www.parkinginapinch.com/$1",
+      "permanent": true,
+      "host": "www.pinchparking.com"
     }
   ]
 }
