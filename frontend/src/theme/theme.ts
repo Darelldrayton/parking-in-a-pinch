@@ -36,8 +36,8 @@ const themeOptions = {
       dark: '#059669',
     },
     background: {
-      default: '#1a1a1a',
-      paper: '#2a2a2a',
+      default: '#F9FAFB',
+      paper: '#FFFFFF',
     },
     text: {
       primary: '#ffffff',
