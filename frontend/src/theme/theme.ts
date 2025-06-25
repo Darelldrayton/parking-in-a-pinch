@@ -40,8 +40,8 @@ const themeOptions = {
       paper: '#FFFFFF',
     },
     text: {
-      primary: '#ffffff',
-      secondary: '#e0e0e0',
+      primary: '#111827',
+      secondary: '#6B7280',
     },
   },
   typography: {
