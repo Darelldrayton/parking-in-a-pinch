@@ -54,23 +54,7 @@
     {
       "source": "/(.*)",
       "destination": "https://www.parkinginapinch.com/$1",
-const API_BASE_URL = '/api/v1'
-
-// To:
-const API_BASE_URL = 'http://165.227.111.160/api/v1'
-
-// OR if you have environment-based config:
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'http://165.227.111.160/api/v1'
-  : '/api/v1'
-
-// Make sure your axios/fetch calls use this base URL
-export const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});      "permanent": true,
+      "permanent": true,
       "host": "www.pinchparking.com"
     }
   ],
