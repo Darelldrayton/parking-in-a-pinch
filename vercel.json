@@ -1,22 +1,11 @@
 {
-  "buildCommand": "cd frontend && npm install && npm run build && cp -r dist/* ../",
+  "buildCommand": "ls -la && pwd && find . -name 'package.json' -type f | head -10",
   "outputDirectory": ".",
-  "installCommand": "echo 'Custom build process'",
+  "installCommand": "echo 'Debug directory structure'",
   "rewrites": [
     {
       "source": "/api/(.*)",
       "destination": "https://165.227.111.160/api/$1"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate"
-        }
-      ]
     }
   ]
 }
