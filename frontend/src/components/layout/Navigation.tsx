@@ -147,7 +147,6 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
   };
 
   const hostMenuItems = [
-    { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
     { text: 'My Listings', icon: <LocalParking />, path: '/my-listings' },
     { text: 'Add Listing', icon: <Add />, path: '/create-listing' },
     { text: 'Bookings', icon: <CalendarMonth />, path: '/bookings' },
@@ -163,7 +162,6 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
   ];
 
   const renterMenuItems = [
-    { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
     { text: 'Search Parking', icon: <Search />, path: '/listings' },
     { text: 'My Bookings', icon: <CalendarMonth />, path: '/my-bookings' },
     { text: 'Favorites', icon: <FavoriteOutlined />, path: '/favorites' },
