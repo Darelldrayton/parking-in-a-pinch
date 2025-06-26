@@ -168,7 +168,7 @@ export default function CookiePolicy() {
               <Card key={index} sx={{ borderRadius: 3 }}>
                 <CardContent sx={{ p: 4 }}>
                   <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
-                    <Box sx={{ color: 'primary.main' }}>
+                    <Box sx={{}}>
                       {cookie.icon}
                     </Box>
                     <Typography variant="h6" fontWeight={600}>

@@ -248,8 +248,8 @@ export default function CommunityGuidelines() {
             <Grid item xs={12} md={6}>
               <Paper elevation={3} sx={{ p: 4, borderRadius: 3, height: '100%' }}>
                 <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
-                  <DirectionsCar sx={{ fontSize: 32, color: 'primary.main' }} />
-                  <Typography variant="h4" fontWeight={600} color="primary.main">
+                  <DirectionsCar sx={{ fontSize: 32 }} />
+                  <Typography variant="h4" fontWeight={600}>
                     For Renters
                   </Typography>
                 </Stack>

@@ -50,7 +50,7 @@ export default function TermsAndConditions() {
           </Typography>
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight={600} gutterBottom color="primary">
+            <Typography variant="h4" fontWeight={600} gutterBottom >
               1. Acceptance of Terms
             </Typography>
             <Typography variant="body1" paragraph>
@@ -62,7 +62,7 @@ export default function TermsAndConditions() {
           <Divider sx={{ my: 4 }} />
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight={600} gutterBottom color="primary">
+            <Typography variant="h4" fontWeight={600} gutterBottom >
               2. Service Description
             </Typography>
             <Typography variant="body1" paragraph>
@@ -84,7 +84,7 @@ export default function TermsAndConditions() {
           <Divider sx={{ my: 4 }} />
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight={600} gutterBottom color="primary">
+            <Typography variant="h4" fontWeight={600} gutterBottom >
               3. User Accounts and Registration
             </Typography>
             <Typography variant="body1" paragraph>
@@ -101,7 +101,7 @@ export default function TermsAndConditions() {
           <Divider sx={{ my: 4 }} />
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight={600} gutterBottom color="primary">
+            <Typography variant="h4" fontWeight={600} gutterBottom >
               4. Host Responsibilities
             </Typography>
             <Typography variant="body1" paragraph>
@@ -119,7 +119,7 @@ export default function TermsAndConditions() {
           <Divider sx={{ my: 4 }} />
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight={600} gutterBottom color="primary">
+            <Typography variant="h4" fontWeight={600} gutterBottom >
               5. Renter Responsibilities
             </Typography>
             <Typography variant="body1" paragraph>
@@ -137,7 +137,7 @@ export default function TermsAndConditions() {
           <Divider sx={{ my: 4 }} />
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight={600} gutterBottom color="primary">
+            <Typography variant="h4" fontWeight={600} gutterBottom >
               6. Payment and Fees
             </Typography>
             <Typography variant="body1" paragraph>
@@ -145,7 +145,7 @@ export default function TermsAndConditions() {
               Payment processing is handled through secure third-party providers.
             </Typography>
             
-            <Typography variant="h5" fontWeight={600} gutterBottom color="primary" sx={{ mt: 3 }}>
+            <Typography variant="h5" fontWeight={600} gutterBottom  sx={{ mt: 3 }}>
               6.1 Service Fee Structure
             </Typography>
             <Box component="ul" sx={{ pl: 3, mb: 2 }}>
@@ -158,7 +158,7 @@ export default function TermsAndConditions() {
               while the platform retains 10% to cover operational costs, payment processing, customer support, and platform development.
             </Typography>
             
-            <Typography variant="h5" fontWeight={600} gutterBottom color="primary" sx={{ mt: 3 }}>
+            <Typography variant="h5" fontWeight={600} gutterBottom  sx={{ mt: 3 }}>
               6.2 Payment Terms
             </Typography>
             <Box component="ul" sx={{ pl: 3, mb: 2 }}>
@@ -168,7 +168,7 @@ export default function TermsAndConditions() {
               <li>Payment disputes will be handled according to our dispute resolution process</li>
             </Box>
             
-            <Typography variant="h5" fontWeight={600} gutterBottom color="primary" sx={{ mt: 3 }}>
+            <Typography variant="h5" fontWeight={600} gutterBottom  sx={{ mt: 3 }}>
               6.3 Cancellation and Refunds
             </Typography>
             <Typography variant="body1" paragraph>
@@ -180,7 +180,7 @@ export default function TermsAndConditions() {
           <Divider sx={{ my: 4 }} />
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight={600} gutterBottom color="primary">
+            <Typography variant="h4" fontWeight={600} gutterBottom >
               7. Prohibited Uses
             </Typography>
             <Typography variant="body1" paragraph>
@@ -198,7 +198,7 @@ export default function TermsAndConditions() {
           <Divider sx={{ my: 4 }} />
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight={600} gutterBottom color="primary">
+            <Typography variant="h4" fontWeight={600} gutterBottom >
               8. Limitation of Liability
             </Typography>
             <Typography variant="body1" paragraph>
@@ -218,7 +218,7 @@ export default function TermsAndConditions() {
           <Divider sx={{ my: 4 }} />
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight={600} gutterBottom color="primary">
+            <Typography variant="h4" fontWeight={600} gutterBottom >
               9. Privacy and Data Protection
             </Typography>
             <Typography variant="body1" paragraph>
@@ -230,7 +230,7 @@ export default function TermsAndConditions() {
           <Divider sx={{ my: 4 }} />
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight={600} gutterBottom color="primary">
+            <Typography variant="h4" fontWeight={600} gutterBottom >
               10. Termination
             </Typography>
             <Typography variant="body1" paragraph>
@@ -243,7 +243,7 @@ export default function TermsAndConditions() {
           <Divider sx={{ my: 4 }} />
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight={600} gutterBottom color="primary">
+            <Typography variant="h4" fontWeight={600} gutterBottom >
               11. Changes to Terms
             </Typography>
             <Typography variant="body1" paragraph>
@@ -255,7 +255,7 @@ export default function TermsAndConditions() {
           <Divider sx={{ my: 4 }} />
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight={600} gutterBottom color="primary">
+            <Typography variant="h4" fontWeight={600} gutterBottom >
               12. Contact Information
             </Typography>
             <Typography variant="body1" paragraph>

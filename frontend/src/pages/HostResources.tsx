@@ -369,10 +369,10 @@ export default function HostResources() {
                         {resource.title}
                       </Typography>
                       {resource.featured && (
-                        <Chip label="Featured" color="primary" size="small" />
+                        <Chip label="Featured" size="small" />
                       )}
                     </Stack>
-                    <Typography variant="caption" color="primary.main" gutterBottom>
+                    <Typography variant="caption" gutterBottom>
                       {resource.type}
                     </Typography>
                     <Typography variant="body2" paragraph>

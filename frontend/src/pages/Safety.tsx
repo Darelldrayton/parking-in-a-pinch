@@ -129,7 +129,7 @@ export default function Safety() {
               <Grid item xs={12} sm={6} md={4} key={index}>
                 <Card sx={{ textAlign: 'center', borderRadius: 3, height: '100%' }}>
                   <CardContent sx={{ p: 4 }}>
-                    <Box sx={{ color: 'primary.main', mb: 2 }}>
+                    <Box sx={{ mb: 2 }}>
                       {feature.icon}
                     </Box>
                     <Typography variant="h6" fontWeight={600} gutterBottom>
@@ -153,7 +153,7 @@ export default function Safety() {
           <Grid container spacing={4}>
             <Grid item xs={12} md={6}>
               <Paper elevation={3} sx={{ p: 4, borderRadius: 3, height: '100%' }}>
-                <Typography variant="h4" fontWeight={600} gutterBottom color="primary.main">
+                <Typography variant="h4" fontWeight={600} gutterBottom>
                   For Renters
                 </Typography>
                 <List>
@@ -265,7 +265,7 @@ export default function Safety() {
             <Grid item xs={12} md={6}>
               <Card sx={{ borderRadius: 3, height: '100%' }}>
                 <CardContent sx={{ p: 4 }}>
-                  <Typography variant="h5" fontWeight={600} gutterBottom color="primary.main">
+                  <Typography variant="h5" fontWeight={600} gutterBottom>
                     What's Covered
                   </Typography>
                   <List>

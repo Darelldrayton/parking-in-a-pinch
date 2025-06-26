@@ -137,7 +137,7 @@ export default function AboutUs() {
             <Grid item xs={6} md={3} key={index}>
               <Card sx={{ textAlign: 'center', borderRadius: 3, height: '100%' }}>
                 <CardContent sx={{ p: 4 }}>
-                  <Typography variant="h3" fontWeight={700} color="primary.main" gutterBottom>
+                  <Typography variant="h3" fontWeight={700} gutterBottom>
                     {stat.number}
                   </Typography>
                   <Typography variant="h6" color="text.secondary">
@@ -259,7 +259,7 @@ export default function AboutUs() {
                     <Typography variant="h6" fontWeight={600} gutterBottom>
                       {member.name}
                     </Typography>
-                    <Typography variant="subtitle1" color="primary.main" gutterBottom>
+                    <Typography variant="subtitle1" gutterBottom>
                       {member.role}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">

@@ -241,10 +241,10 @@ export default function Press() {
               <Grid item xs={6} md={3} key={index}>
                 <Card sx={{ textAlign: 'center', borderRadius: 3 }}>
                   <CardContent sx={{ p: 3 }}>
-                    <Box sx={{ color: 'primary.main', mb: 1 }}>
+                    <Box sx={{ mb: 1 }}>
                       {stat.icon}
                     </Box>
-                    <Typography variant="h3" fontWeight={700} color="primary.main">
+                    <Typography variant="h3" fontWeight={700}>
                       {stat.value}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
@@ -291,7 +291,7 @@ export default function Press() {
                   <Card sx={{ borderRadius: 3, height: '100%' }}>
                     <CardContent sx={{ p: 4 }}>
                       <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-                        <Chip label={release.category} color="primary" size="small" />
+                        <Chip label={release.category} size="small" />
                         <Typography variant="caption" color="text.secondary">
                           {release.date}
                         </Typography>
