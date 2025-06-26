@@ -290,7 +290,7 @@ const MiniHostBookings: React.FC = () => {
           <Card sx={{ borderRadius: 3, height: '100%' }}>
             <CardContent sx={{ p: 3, textAlign: 'center' }}>
               <MoneyIcon sx={{ fontSize: 32, color: 'warning.main', mb: 1 }} />
-              <Typography variant="h5" fontWeight={600} sx={{  }}>
+              <Typography variant="h5" fontWeight={600} >
                 ${Number(bookings.filter(b => b.status === 'completed').reduce((sum, b) => sum + (parseFloat(b.total_amount) || 0), 0)).toFixed(0)}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -695,7 +695,7 @@ const MiniMyListings: React.FC = () => {
           <Card sx={{ borderRadius: 3, height: '100%' }}>
             <CardContent sx={{ p: 3, textAlign: 'center' }}>
               <LocationIcon sx={{ fontSize: 32, color: 'primary.main', mb: 1 }} />
-              <Typography variant="h5" fontWeight={600} sx={{  }}>
+              <Typography variant="h5" fontWeight={600} >
                 {listings.length}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -1277,7 +1277,7 @@ const MiniMyBookings: React.FC = () => {
           <Card sx={{ borderRadius: 3, height: '100%' }}>
             <CardContent sx={{ p: 3, textAlign: 'center' }}>
               <BookingIcon sx={{ fontSize: 32, color: 'info.main', mb: 1 }} />
-              <Typography variant="h5" fontWeight={600} sx={{  }}>
+              <Typography variant="h5" fontWeight={600} >
                 {bookings.length}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -1893,7 +1893,7 @@ const NewUserDashboard: React.FC = () => {
                       startIcon={<AddIcon />}
                       sx={{
                         bgcolor: 'white',
-                        ,
+                        color: 'primary.main',
                         fontWeight: 600,
                         px: 4,
                         py: 1.5,
@@ -2019,7 +2019,7 @@ const NewUserDashboard: React.FC = () => {
                       
                       <Stack spacing={2}>
                         {[
-                          { step: 1, text: 'Create your first parking listing', action: () => navigate('/create-listing'), , done: listingsCount > 0 },
+                          { step: 1, text: 'Create your first parking listing', action: () => navigate('/create-listing'), color: 'primary.main', done: listingsCount > 0 },
                           { step: 2, text: 'Browse available parking spots', action: () => navigate('/listings'), color: 'success.main', done: false },
                           { step: 3, text: 'Complete your profile', action: () => navigate('/profile'), color: 'info.main', done: false },
                           { step: 4, text: 'Start earning from bookings', action: () => navigate('/earnings'), color: 'warning.main', done: false },
@@ -2529,7 +2529,7 @@ const ExistingUserDashboard: React.FC = () => {
                       startIcon={<AddIcon />}
                       sx={{
                         bgcolor: 'white',
-                        ,
+                        color: 'primary.main',
                         fontWeight: 600,
                         px: 4,
                         py: 1.5,
