@@ -331,7 +331,7 @@ export default function HelpCenter() {
                         {faq.question}
                       </Typography>
                       {faq.category && (
-                        <Chip label={faq.category} size="small" color="primary" />
+                        <Chip label={faq.category} size="small" />
                       )}
                     </Stack>
                   </AccordionSummary>

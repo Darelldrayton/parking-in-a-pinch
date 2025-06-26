@@ -1000,7 +1000,7 @@ export default function BookingForm() {
                       <Typography variant="h6" fontWeight={700}>
                         Total
                       </Typography>
-                      <Typography variant="h6" fontWeight={700} color="primary">
+                      <Typography variant="h6" fontWeight={700}>
                         ${pricing.total.toFixed(2)}
                       </Typography>
                     </Box>
@@ -1016,7 +1016,7 @@ export default function BookingForm() {
                       Your Host
                     </Typography>
                     <Stack direction="row" spacing={2} alignItems="center">
-                      <Avatar sx={{ width: 48, height: 48, bgcolor: 'primary.main' }}>
+                      <Avatar sx={{ width: 48, height: 48 }}>
                         {listing.host.first_name?.[0] || listing.host.username[0]}
                       </Avatar>
                       <Box>

@@ -144,7 +144,7 @@ export default function AdminLogin() {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Email color="primary" />
+                        <Email />
                       </InputAdornment>
                     ),
                   }}
@@ -165,7 +165,7 @@ export default function AdminLogin() {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <Lock color="primary" />
+                        <Lock />
                       </InputAdornment>
                     ),
                     endAdornment: (
@@ -211,7 +211,6 @@ export default function AdminLogin() {
                     <Link 
                       to="/login" 
                       style={{ 
-                        color: theme.palette.primary.main,
                         textDecoration: 'none',
                         fontWeight: 600 
                       }}

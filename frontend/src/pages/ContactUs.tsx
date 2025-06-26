@@ -270,7 +270,7 @@ export default function ContactUs() {
               <Card sx={{ borderRadius: 3 }}>
                 <CardContent sx={{ p: 3 }}>
                   <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
-                    <Schedule color="primary" />
+                    <Schedule />
                     <Typography variant="h6" fontWeight={600}>
                       Business Hours
                     </Typography>
@@ -307,7 +307,7 @@ export default function ContactUs() {
                 <Card sx={{ borderRadius: 3, height: '100%' }}>
                   <CardContent sx={{ p: 4 }}>
                     <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
-                      <LocationOn color="primary" />
+                      <LocationOn />
                       <Typography variant="h6" fontWeight={600}>
                         {office.city}
                       </Typography>
@@ -318,7 +318,7 @@ export default function ContactUs() {
                     <Typography variant="body1" color="text.secondary" gutterBottom>
                       {office.zipCode}
                     </Typography>
-                    <Typography variant="body1" color="primary.main">
+                    <Typography variant="body1">
                       {office.phone}
                     </Typography>
                   </CardContent>

@@ -469,7 +469,7 @@ export default function Reviews() {
                   <Stack direction="row" spacing={3}>
                     <Avatar 
                       src={review.reviewer_avatar} 
-                      sx={{ width: 56, height: 56, bgcolor: 'primary.main' }}
+                      sx={{ width: 56, height: 56 }}
                     >
                       {review.reviewer_name.charAt(0)}
                     </Avatar>
@@ -557,7 +557,6 @@ export default function Reviews() {
               count={totalPages}
               page={page}
               onChange={(event, value) => setPage(value)}
-              color="primary"
               size="large"
             />
           </Box>

@@ -174,7 +174,7 @@ const PaymentFormInner: React.FC<PaymentFormProps> = ({
         <Stack spacing={3}>
           {/* Header */}
           <Box sx={{ textAlign: 'center' }}>
-            <CreditCardIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
+            <CreditCardIcon sx={{ fontSize: 48, mb: 2 }} />
             <Typography variant="h5" fontWeight={600} gutterBottom>
               Complete Payment
             </Typography>
@@ -187,7 +187,7 @@ const PaymentFormInner: React.FC<PaymentFormProps> = ({
 
           {/* Amount */}
           <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="h4" fontWeight={700} color="primary.main">
+            <Typography variant="h4" fontWeight={700}>
               ${amount.toFixed(2)}
             </Typography>
           </Box>
@@ -224,7 +224,7 @@ const PaymentFormInner: React.FC<PaymentFormProps> = ({
                         <Android />
                       </Stack>
                       <Typography>Express Checkout (Apple Pay / Google Pay)</Typography>
-                      <Chip label="Recommended" size="small" color="primary" />
+                      <Chip label="Recommended" size="small" />
                     </Stack>
                   }
                 />
