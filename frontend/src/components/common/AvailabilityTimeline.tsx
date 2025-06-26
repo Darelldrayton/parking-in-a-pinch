@@ -139,7 +139,6 @@ const AvailabilityTimeline: React.FC<AvailabilityTimelineProps> = ({
         return {
           bgcolor: alpha(theme.palette.primary.main, 0.05),
           borderColor: alpha(theme.palette.primary.main, 0.3),
-          color: theme.palette.primary.main,
           icon: <CheckCircle sx={{ fontSize: 16 }} />
         };
       case 'unavailable':
@@ -186,7 +185,7 @@ const AvailabilityTimeline: React.FC<AvailabilityTimelineProps> = ({
             })}
           </Typography>
           {formatSelectedRange() && (
-            <Typography variant="body2" fontWeight={600} color="primary" sx={{ mt: 1 }}>
+            <Typography variant="body2" fontWeight={600} sx={{ mt: 1 }}>
               Selected: {formatSelectedRange()}
             </Typography>
           )}
