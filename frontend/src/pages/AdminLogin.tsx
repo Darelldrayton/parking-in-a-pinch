@@ -65,9 +65,14 @@ export default function AdminLogin() {
     try {
       const response = await api.post('/auth/login/', data);
       
+      console.log('🔍 Admin login response:', response.data);
+      console.log('👤 User data:', response.data.user);
+      console.log('🛡️ is_staff:', response.data.user?.is_staff);
+      console.log('🔑 is_superuser:', response.data.user?.is_superuser);
+      
       // Check if user is admin/staff
       if (!response.data.user?.is_staff && !response.data.user?.is_superuser) {
-        toast.error('Access denied. Admin privileges required.');
+        toast.error(`Access denied. Admin privileges required. is_staff: ${response.data.user?.is_staff}, is_superuser: ${response.data.user?.is_superuser}`);
         return;
       }
 
@@ -77,7 +82,7 @@ export default function AdminLogin() {
       localStorage.setItem('admin_user', JSON.stringify(response.data.user));
 
       toast.success('Welcome to the admin panel!');
-      navigate('/admin/dashboard');
+      navigate('/ruler/dashboard');
     } catch (error: any) {
       console.error('Admin login error:', error);
       const errorMessage = error.response?.data?.detail || 
