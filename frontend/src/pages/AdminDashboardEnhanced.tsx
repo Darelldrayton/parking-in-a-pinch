@@ -1430,7 +1430,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                 value={stats.users.total_users}
                 subtitle={`${stats.users.recent_signups} new this week`}
                 icon={<Person />}
-                color="primary"
+                
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
@@ -1627,7 +1627,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                             <Tooltip title="View Details">
                               <IconButton
                                 size="small"
-                                color="primary"
+                                
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   console.log('🚀 View Details button clicked (verification)!', request.id);
@@ -1756,7 +1756,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                             <Tooltip title="View Details">
                               <IconButton
                                 size="small"
-                                color="primary"
+                                
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   console.log('🚀 View Details button clicked (refund)!', request.id);
@@ -1910,7 +1910,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                             <Tooltip title="View Details">
                               <IconButton
                                 size="small"
-                                color="primary"
+                                
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   console.log('🚀 View Details button clicked!', listing.id);
@@ -2492,7 +2492,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                                 <Tooltip title="Reply to Dispute">
                                   <IconButton 
                                     size="small" 
-                                    color="primary"
+                                    
                                     onClick={() => openReplyDialog(dispute)}
                                   >
                                     <Reply />

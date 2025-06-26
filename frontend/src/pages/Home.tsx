@@ -124,7 +124,7 @@ const ListingCard = memo(({ listing, theme, navigate }: {
           )}
 
           <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Typography variant="h5" color="primary" fontWeight="bold">
+            <Typography variant="h5"  fontWeight="bold">
               ${listing.price_per_hour}/hr
             </Typography>
             <Typography variant="caption" color="text.secondary">
@@ -418,7 +418,7 @@ function Home() {
                               ...params.InputProps,
                               startAdornment: (
                                 <InputAdornment position="start">
-                                  <LocationOn color="primary" />
+                                  <LocationOn  />
                                 </InputAdornment>
                               ),
                               sx: {
@@ -447,7 +447,7 @@ function Home() {
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
-                              <AccessTime color="primary" />
+                              <AccessTime  />
                             </InputAdornment>
                           ),
                           sx: {

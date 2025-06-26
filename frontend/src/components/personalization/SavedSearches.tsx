@@ -560,7 +560,7 @@ const SavedSearches: React.FC = () => {
                     <Chip key={amenity} label={amenity} size="small" variant="outlined" />
                   ))}
                   {search.criteria.instant_book && (
-                    <Chip label="Instant Book" size="small" color="primary" />
+                    <Chip label="Instant Book" size="small"  />
                   )}
                   {search.criteria.accessibility && (
                     <Chip label="Accessible" size="small" color="secondary" />

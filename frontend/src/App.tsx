@@ -80,7 +80,7 @@ const PageLoader = () => (
     bgcolor="#f5f5f5"
   >
     <CircularProgress size={60} sx={{ mb: 2 }} />
-    <Typography variant="h6" color="primary">
+    <Typography variant="h6" >
       Loading Parking in a Pinch...
     </Typography>
   </Box>

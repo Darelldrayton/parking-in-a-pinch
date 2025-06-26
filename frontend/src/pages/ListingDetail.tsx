@@ -753,7 +753,7 @@ export default function ListingDetail() {
                     {listing.instructions && (
                       <Box>
                         <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                          <Info color="primary" />
+                          <Info  />
                           <Typography variant="h6" fontWeight={600}>
                             Parking Instructions
                           </Typography>

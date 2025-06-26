@@ -369,7 +369,7 @@ export default function CommunityGuidelines() {
               <List>
                 <ListItem sx={{ px: 0 }}>
                   <ListItemIcon>
-                    <Report color="primary" />
+                    <Report  />
                   </ListItemIcon>
                   <ListItemText 
                     primary="Use the Report button in the app or website"
@@ -378,7 +378,7 @@ export default function CommunityGuidelines() {
                 </ListItem>
                 <ListItem sx={{ px: 0 }}>
                   <ListItemIcon>
-                    <Support color="primary" />
+                    <Support  />
                   </ListItemIcon>
                   <ListItemText 
                     primary="Contact our support team directly"
@@ -387,7 +387,7 @@ export default function CommunityGuidelines() {
                 </ListItem>
                 <ListItem sx={{ px: 0 }}>
                   <ListItemIcon>
-                    <Security color="primary" />
+                    <Security  />
                   </ListItemIcon>
                   <ListItemText 
                     primary="For emergencies, call 911 first"

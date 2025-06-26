@@ -392,7 +392,7 @@ export default function Careers() {
               <Chip 
                 label={`Showing ${filteredJobs.length} positions in ${selectedDepartment}`}
                 onDelete={() => setSelectedDepartment(null)}
-                color="primary"
+                
                 sx={{ mr: 2 }}
               />
               <Button 
@@ -416,7 +416,7 @@ export default function Careers() {
                           {job.title}
                         </Typography>
                         <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-                          <Chip label={job.department} size="small" color="primary" />
+                          <Chip label={job.department} size="small"  />
                           <Chip label={job.type} size="small" variant="outlined" />
                           <Chip label={job.experience} size="small" variant="outlined" />
                         </Stack>

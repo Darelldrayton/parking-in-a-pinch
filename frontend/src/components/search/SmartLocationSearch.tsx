@@ -303,7 +303,7 @@ export default function SmartLocationSearch({
             icon={<LocationOn sx={{ fontSize: 16 }} />}
             label={`${selectedLocation.type === 'borough' ? 'Borough' : 'Neighborhood'}: ${selectedLocation.type === 'borough' ? selectedLocation.label : selectedLocation.fullLabel}`}
             onDelete={handleClear}
-            color="primary"
+            
             variant="outlined"
             size="small"
           />

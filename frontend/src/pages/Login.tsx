@@ -213,7 +213,7 @@ const Login: React.FC = () => {
                       control={
                         <Checkbox
                           {...register('rememberMe')}
-                          color="primary"
+                          
                         />
                       }
                       label="Remember me"

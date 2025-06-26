@@ -543,7 +543,7 @@ export default function AdminDashboard() {
                               {booking.parking_space} | ${booking.total_amount}
                             </Typography>
                           </Box>
-                          <IconButton size="small" color="primary">
+                          <IconButton size="small" >
                             <OpenInNew />
                           </IconButton>
                         </Stack>
@@ -834,7 +834,7 @@ export default function AdminDashboard() {
                                         </Typography>
                                       )}
                                     </Box>
-                                    <IconButton size="large" color="primary">
+                                    <IconButton size="large" >
                                       <OpenInNew sx={{ fontSize: 28 }} />
                                     </IconButton>
                                   </Stack>
@@ -1114,7 +1114,7 @@ export default function AdminDashboard() {
                                       <Typography variant="h6" fontWeight={600} color="success.main">
                                         ${booking.total_amount}
                                       </Typography>
-                                      <IconButton size="small" color="primary">
+                                      <IconButton size="small" >
                                         <OpenInNew />
                                       </IconButton>
                                     </Stack>

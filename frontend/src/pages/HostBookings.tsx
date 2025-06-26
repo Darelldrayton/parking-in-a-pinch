@@ -572,7 +572,7 @@ We apologize for any inconvenience. Please feel free to browse other available p
                         <Typography variant="body2" color="text.secondary">
                           Total Amount:
                         </Typography>
-                        <Typography variant="h6" fontWeight={600} color="primary">
+                        <Typography variant="h6" fontWeight={600} >
                           ${typeof booking.total_amount === 'number' ? booking.total_amount.toFixed(2) : parseFloat(booking.total_amount || '0').toFixed(2)}
                         </Typography>
                       </Box>

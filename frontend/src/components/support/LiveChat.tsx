@@ -416,7 +416,7 @@ const LiveChat: React.FC = () => {
   if (!isOpen) {
     return (
       <Fab
-        color="primary"
+        
         onClick={() => setIsOpen(true)}
         sx={{
           position: 'fixed',
@@ -704,7 +704,7 @@ const LiveChat: React.FC = () => {
                       size="small"
                       onClick={sendMessage}
                       disabled={!newMessage.trim()}
-                      color="primary"
+                      
                     >
                       <Send />
                     </IconButton>

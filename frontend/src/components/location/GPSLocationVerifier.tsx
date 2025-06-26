@@ -347,7 +347,7 @@ const GPSLocationVerifier: React.FC<GPSLocationVerifierProps> = ({
           {/* Target Location */}
           <Box sx={{ mb: 3, p: 2, bgcolor: alpha(theme.palette.primary.main, 0.05), borderRadius: 2 }}>
             <Stack direction="row" alignItems="center" spacing={2}>
-              <Place color="primary" />
+              <Place  />
               <Box>
                 <Typography variant="subtitle2" fontWeight={600}>
                   Target Location

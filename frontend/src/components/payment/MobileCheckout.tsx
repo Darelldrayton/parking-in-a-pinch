@@ -308,7 +308,7 @@ const MobileCheckout: React.FC<MobileCheckoutProps> = ({
                         {format(formData.start_time, 'h:mm a')} - {format(formData.end_time, 'h:mm a')}
                       </Typography>
                     </Box>
-                    <Typography variant="caption" color="primary">
+                    <Typography variant="caption" >
                       {pricing.duration.toFixed(1)} hrs
                     </Typography>
                   </Box>
@@ -393,7 +393,7 @@ const MobileCheckout: React.FC<MobileCheckoutProps> = ({
                     <Typography variant="h6" fontWeight={700}>
                       Total
                     </Typography>
-                    <Typography variant="h6" fontWeight={700} color="primary">
+                    <Typography variant="h6" fontWeight={700} >
                       ${pricing.total.toFixed(2)}
                     </Typography>
                   </Box>

@@ -162,7 +162,7 @@ export default function RefundStatus({
       <CardContent sx={{ p: 3 }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
           <Stack direction="row" alignItems="center" spacing={1}>
-            <MoneyOff color="primary" />
+            <MoneyOff  />
             <Typography variant="h6" fontWeight={600}>
               Refund Information
             </Typography>

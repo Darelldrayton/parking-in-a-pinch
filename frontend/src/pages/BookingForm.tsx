@@ -622,7 +622,7 @@ export default function BookingForm() {
                                   label={`${day.charAt(0).toUpperCase() + day.slice(1)}: ${schedule.start} - ${schedule.end}`}
                                   size="small"
                                   variant="outlined"
-                                  color="primary"
+                                  
                                 />
                               ))}
                           </Stack>

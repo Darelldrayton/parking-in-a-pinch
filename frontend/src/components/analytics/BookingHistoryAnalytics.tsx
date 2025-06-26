@@ -372,7 +372,7 @@ const BookingHistoryAnalytics: React.FC = () => {
                     bgcolor: alpha(theme.palette.primary.main, 0.1),
                   }}
                 >
-                  <DirectionsCar color="primary" />
+                  <DirectionsCar  />
                 </Box>
                 <Box>
                   <Typography variant="h5" fontWeight={700}>
@@ -666,7 +666,7 @@ const BookingHistoryAnalytics: React.FC = () => {
                 </Stack>
 
                 <Stack direction="row" alignItems="center" spacing={2}>
-                  <DirectionsCar color="primary" />
+                  <DirectionsCar  />
                   <Box>
                     <Typography variant="h6" fontWeight={600}>
                       {analytics.environmental_impact.walking_distance.toFixed(1)} km
@@ -718,7 +718,7 @@ const BookingHistoryAnalytics: React.FC = () => {
                       <Chip
                         label={rec.type.replace('_', ' ')}
                         size="small"
-                        color="primary"
+                        
                         variant="outlined"
                       />
                     </Stack>

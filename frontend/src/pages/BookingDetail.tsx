@@ -571,7 +571,7 @@ export default function BookingDetail() {
                           <Typography variant="body2" color="text.secondary">
                             Total Cost
                           </Typography>
-                          <Typography variant="body1" fontWeight={600} color="primary">
+                          <Typography variant="body1" fontWeight={600} >
                             ${typeof booking.total_amount === 'number' ? booking.total_amount.toFixed(2) : parseFloat(booking.total_amount || '0').toFixed(2)}
                           </Typography>
                         </Box>
@@ -912,7 +912,7 @@ export default function BookingDetail() {
                           startIcon={<LocationOn />}
                           onClick={() => setShowLocationFeatures(true)}
                           fullWidth
-                          color="primary"
+                          
                         >
                           Verify Location
                         </Button>
@@ -1039,7 +1039,7 @@ export default function BookingDetail() {
                             startIcon={<Message />}
                             onClick={handleMessage}
                             size="small"
-                            color="primary"
+                            
                           >
                             Message {booking.parking_space.host.first_name || 'Host'}
                           </Button>
@@ -1142,7 +1142,7 @@ export default function BookingDetail() {
                         variant={existingReview ? "outlined" : "contained"}
                         startIcon={<RateReview />}
                         onClick={openReviewDialog}
-                        color="primary"
+                        
                       >
                         {existingReview ? 'Edit Review' : 'Write Review'}
                       </Button>

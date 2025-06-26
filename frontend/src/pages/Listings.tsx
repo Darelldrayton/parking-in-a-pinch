@@ -852,7 +852,7 @@ export default function Listings() {
                           pt: 1,
                         }}>
                           <Box>
-                            <Typography variant="h6" component="span" fontWeight={700} color="primary">
+                            <Typography variant="h6" component="span" fontWeight={700} >
                               ${listing.hourly_rate}
                             </Typography>
                             <Typography variant="body2" component="span" color="text.secondary">

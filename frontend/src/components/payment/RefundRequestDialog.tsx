@@ -159,7 +159,7 @@ export default function RefundRequestDialog({
     >
       <DialogTitle sx={{ pb: 1 }}>
         <Stack direction="row" alignItems="center" spacing={1}>
-          <MoneyOff color="primary" />
+          <MoneyOff  />
           <Typography variant="h6" fontWeight={600}>
             Request Refund
           </Typography>

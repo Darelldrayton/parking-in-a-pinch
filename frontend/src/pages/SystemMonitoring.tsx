@@ -168,7 +168,7 @@ export default function SystemMonitoring() {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Speed color="primary" />
+                  <Speed  />
                   Performance Metrics
                   <IconButton size="small" onClick={loadData}>
                     <Refresh />
@@ -254,7 +254,7 @@ export default function SystemMonitoring() {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Storage color="primary" />
+                  <Storage  />
                   Backup System
                 </Typography>
 

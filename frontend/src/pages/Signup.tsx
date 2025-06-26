@@ -469,7 +469,7 @@ const Signup: React.FC = () => {
                           control={
                             <Checkbox
                               {...register('agreeToTerms')}
-                              color="primary"
+                              
                             />
                           }
                           label={
@@ -500,7 +500,7 @@ const Signup: React.FC = () => {
                           control={
                             <Checkbox
                               {...register('subscribeToNewsletter')}
-                              color="primary"
+                              
                               defaultChecked
                             />
                           }

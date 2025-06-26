@@ -257,7 +257,7 @@ const Favorites: React.FC = () => {
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                     <Stack direction="row" alignItems="center" spacing={1}>
                       <AttachMoney sx={{ fontSize: 16 }} />
-                      <Typography variant="h6" fontWeight={700} color="primary">
+                      <Typography variant="h6" fontWeight={700} >
                         ${listing.hourly_rate}/hr
                       </Typography>
                     </Stack>

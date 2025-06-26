@@ -144,7 +144,7 @@ export default function RefundRequestStatus({
       <CardContent sx={{ p: 3 }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
           <Stack direction="row" alignItems="center" spacing={1}>
-            <RequestQuote color="primary" />
+            <RequestQuote  />
             <Typography variant="h6" fontWeight={600}>
               Refund Request Status
             </Typography>
@@ -221,7 +221,7 @@ export default function RefundRequestStatus({
               </Typography>
             </TimelineOppositeContent>
             <TimelineSeparator>
-              <TimelineDot color="primary">
+              <TimelineDot >
                 <RequestQuote fontSize="small" />
               </TimelineDot>
               <TimelineConnector />

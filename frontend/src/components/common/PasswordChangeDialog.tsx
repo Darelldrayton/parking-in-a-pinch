@@ -98,7 +98,7 @@ export default function PasswordChangeDialog({ open, onClose }: PasswordChangeDi
         pb: 1
       }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Lock color="primary" />
+          <Lock  />
           <Typography variant="h6" component="span" fontWeight="bold">
             Change Password
           </Typography>

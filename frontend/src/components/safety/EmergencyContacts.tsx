@@ -444,7 +444,7 @@ const EmergencyContacts: React.FC = () => {
                             {contact.name}
                           </Typography>
                           {contact.is_primary && (
-                            <Chip label="Primary" size="small" color="primary" />
+                            <Chip label="Primary" size="small"  />
                           )}
                         </Stack>
                       }
@@ -469,7 +469,7 @@ const EmergencyContacts: React.FC = () => {
                         <IconButton
                           size="small"
                           href={`tel:${contact.phone}`}
-                          color="primary"
+                          
                         >
                           <Phone />
                         </IconButton>

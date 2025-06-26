@@ -482,7 +482,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({
                       <Typography variant="h6" fontWeight={700}>
                         Total
                       </Typography>
-                      <Typography variant="h6" fontWeight={700} color="primary">
+                      <Typography variant="h6" fontWeight={700} >
                         ${pricing.total.toFixed(2)}
                       </Typography>
                     </Box>

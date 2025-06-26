@@ -815,7 +815,7 @@ const LoyaltyProgram: React.FC = () => {
                             <Chip
                               label={`${transaction.multiplier}x multiplier`}
                               size="small"
-                              color="primary"
+                              
                               variant="outlined"
                             />
                           )}
@@ -867,7 +867,7 @@ const LoyaltyProgram: React.FC = () => {
                         </Typography>
                       </Box>
                       {loyaltyData.tier.id === tier.id && (
-                        <Chip label="Current" color="primary" size="small" />
+                        <Chip label="Current"  size="small" />
                       )}
                     </Stack>
 

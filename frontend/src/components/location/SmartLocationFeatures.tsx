@@ -392,7 +392,7 @@ const SmartLocationFeatures: React.FC<SmartLocationFeaturesProps> = ({
                 <Chip
                   icon={<LocalParking />}
                   label="Parking Location Set"
-                  color="primary"
+                  
                   variant="outlined"
                 />
               )}

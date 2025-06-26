@@ -161,7 +161,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
           {getActiveFilterCount() > 0 && (
             <Chip 
               label={`${getActiveFilterCount()} active`} 
-              color="primary" 
+               
               size="small" 
               sx={{ mt: 1 }}
             />

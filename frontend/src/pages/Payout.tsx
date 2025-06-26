@@ -363,9 +363,9 @@ export default function Payout() {
                                 <Radio value="saved" />
                                 <Paper sx={{ p: 2, flex: 1, border: `1px solid ${theme.palette.divider}` }}>
                                   <Stack direction="row" alignItems="center" spacing={2}>
-                                    {method.type === 'cashapp' && <PhoneAndroid color="primary" />}
-                                    {method.type === 'paypal' && <Payment color="primary" />}
-                                    {method.type === 'venmo' && <PhoneAndroid color="primary" />}
+                                    {method.type === 'cashapp' && <PhoneAndroid  />}
+                                    {method.type === 'paypal' && <Payment  />}
+                                    {method.type === 'venmo' && <PhoneAndroid  />}
                                     <Box flex={1}>
                                       <Typography variant="body2" fontWeight={500}>
                                         {method.platform_name}: {method.username}
@@ -375,7 +375,7 @@ export default function Payout() {
                                       </Typography>
                                     </Box>
                                     {method.is_default && (
-                                      <Chip label="Default" size="small" color="primary" />
+                                      <Chip label="Default" size="small"  />
                                     )}
                                   </Stack>
                                 </Paper>
@@ -541,7 +541,7 @@ export default function Payout() {
                       <Typography variant="h6" fontWeight={700}>
                         You'll Receive
                       </Typography>
-                      <Typography variant="h6" fontWeight={700} color="primary">
+                      <Typography variant="h6" fontWeight={700} >
                         ${(netAmount && typeof netAmount === 'number' ? netAmount.toFixed(2) : '0.00')}
                       </Typography>
                     </Box>

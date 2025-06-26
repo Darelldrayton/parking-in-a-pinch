@@ -665,7 +665,7 @@ const PhotoVerification: React.FC<PhotoVerificationProps> = ({
         
         <DialogActions sx={{ p: 2, justifyContent: 'center' }}>
           <Stack direction="row" spacing={2} alignItems="center">
-            <IconButton onClick={switchCamera} color="primary">
+            <IconButton onClick={switchCamera} >
               <FlipCameraAndroid />
             </IconButton>
             <Button

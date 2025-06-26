@@ -312,7 +312,7 @@ const MyBookings: React.FC = () => {
                           Total:
                         </Typography>
                       </Stack>
-                      <Typography variant="h6" fontWeight={600} color="primary">
+                      <Typography variant="h6" fontWeight={600} >
                         ${typeof booking.total_amount === 'number' ? booking.total_amount.toFixed(2) : parseFloat(booking.total_amount || '0').toFixed(2)}
                       </Typography>
                     </Box>
@@ -353,7 +353,7 @@ const MyBookings: React.FC = () => {
                         {action === 'checkin' && (
                           <Button
                             variant="contained"
-                            color="primary"
+                            
                             size="small"
                             startIcon={<Login />}
                             onClick={(e) => {
