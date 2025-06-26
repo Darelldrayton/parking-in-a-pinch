@@ -233,7 +233,7 @@ export default function Profile() {
                 <Stack direction="row" spacing={1}>
                   <Chip 
                     label={user?.user_type?.charAt(0).toUpperCase() + user?.user_type?.slice(1) || 'Renter'} 
-                    color="primary" 
+ 
                     size="small" 
                   />
                   <Chip 

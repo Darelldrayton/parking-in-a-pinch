@@ -229,7 +229,7 @@ const Signup: React.FC = () => {
                     boxShadow: theme.shadows[4],
                   }}
                 >
-                  <LocalParking sx={{ fontSize: 40, color: 'primary.main' }} />
+                  <LocalParking sx={{ fontSize: 40 }} />
                 </Box>
                 <Typography component="h1" variant="h4" fontWeight="bold" gutterBottom>
                   Create Your Account
@@ -477,14 +477,12 @@ const Signup: React.FC = () => {
                               I agree to the{' '}
                               <Link
                                 to="/terms"
-                                style={{ color: theme.palette.primary.main }}
                               >
                                 Terms and Conditions
                               </Link>{' '}
                               and{' '}
                               <Link
                                 to="/privacy"
-                                style={{ color: theme.palette.primary.main }}
                               >
                                 Privacy Policy
                               </Link>
@@ -558,7 +556,6 @@ const Signup: React.FC = () => {
                       to="/login"
                       style={{
                         textDecoration: 'none',
-                        color: theme.palette.primary.main,
                         fontWeight: 500,
                       }}
                     >

@@ -92,7 +92,7 @@ export default function Footer() {
                 >
                   <LocalParking sx={{ color: 'white', fontSize: 24 }} />
                 </Box>
-                <Typography variant="h6" fontWeight={700} color="primary">
+                <Typography variant="h6" fontWeight={700}>
                   Parking in a Pinch
                 </Typography>
               </Box>
@@ -164,7 +164,6 @@ export default function Footer() {
                       sx={{
                         textDecoration: 'none',
                         '&:hover': {
-                          color: 'primary.main',
                           textDecoration: 'underline',
                         },
                       }}
@@ -191,7 +190,6 @@ export default function Footer() {
                       sx={{
                         textDecoration: 'none',
                         '&:hover': {
-                          color: 'primary.main',
                           textDecoration: 'underline',
                         },
                       }}
@@ -218,7 +216,6 @@ export default function Footer() {
                       sx={{
                         textDecoration: 'none',
                         '&:hover': {
-                          color: 'primary.main',
                           textDecoration: 'underline',
                         },
                       }}
@@ -245,7 +242,6 @@ export default function Footer() {
                       sx={{
                         textDecoration: 'none',
                         '&:hover': {
-                          color: 'primary.main',
                           textDecoration: 'underline',
                         },
                       }}
@@ -284,7 +280,6 @@ export default function Footer() {
               sx={{
                 textDecoration: 'none',
                 '&:hover': {
-                  color: 'primary.main',
                   textDecoration: 'underline',
                 },
               }}
@@ -299,7 +294,6 @@ export default function Footer() {
               sx={{
                 textDecoration: 'none',
                 '&:hover': {
-                  color: 'primary.main',
                   textDecoration: 'underline',
                 },
               }}

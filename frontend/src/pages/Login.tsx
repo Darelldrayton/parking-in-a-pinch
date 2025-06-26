@@ -149,7 +149,7 @@ const Login: React.FC = () => {
                     boxShadow: theme.shadows[4],
                   }}
                 >
-                  <LocalParking sx={{ fontSize: 40, color: 'primary.main' }} />
+                  <LocalParking sx={{ fontSize: 40 }} />
                 </Box>
                 <Typography component="h1" variant="h4" fontWeight="bold" gutterBottom>
                   Welcome Back
@@ -221,7 +221,7 @@ const Login: React.FC = () => {
                   </Grid>
                   <Grid size="auto">
                     <Link to="/forgot-password" style={{ textDecoration: 'none' }}>
-                      <Typography variant="body2" color="primary" sx={{ '&:hover': { textDecoration: 'underline' } }}>
+                      <Typography variant="body2" sx={{ '&:hover': { textDecoration: 'underline' } }}>
                         Forgot password?
                       </Typography>
                     </Link>
@@ -247,7 +247,6 @@ const Login: React.FC = () => {
                         to="/signup"
                         style={{
                           textDecoration: 'none',
-                          color: theme.palette.primary.main,
                           fontWeight: 500,
                         }}
                       >

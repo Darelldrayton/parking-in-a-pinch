@@ -207,7 +207,7 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
       case NotificationType.BOOKING_CONFIRMED:
       case NotificationType.BOOKING_CANCELLED:
       case NotificationType.BOOKING_REMINDER:
-        return <CalendarMonth sx={{ fontSize: 20, color: 'primary.main' }} />;
+        return <CalendarMonth sx={{ fontSize: 20 }} />;
       case NotificationType.PAYMENT_RECEIVED:
       case NotificationType.PAYMENT_FAILED:
         return <AttachMoney sx={{ fontSize: 20, color: 'success.main' }} />;
@@ -266,7 +266,7 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
   const drawer = (
     <Box sx={{ width: 250 }}>
       <Box sx={{ p: 2, textAlign: 'center' }}>
-        <Typography variant="h6" color="primary" fontWeight="bold">
+        <Typography variant="h6" fontWeight="bold">
           Parking in a Pinch
         </Typography>
       </Box>
@@ -291,7 +291,7 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
                 },
               }}
             >
-              <ListItemIcon sx={{ color: location.pathname === item.path ? 'primary.main' : 'inherit' }}>
+              <ListItemIcon sx={{ color: location.pathname === item.path ? 'inherit' : 'inherit' }}>
                 {item.icon}
               </ListItemIcon>
               <ListItemText primary={item.text} />
@@ -330,7 +330,7 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
               </IconButton>
             )}
 
-            <LocalParking sx={{ display: { xs: 'none', md: 'flex' }, mr: 1, color: 'primary.main' }} />
+            <LocalParking sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
             <Typography
               variant="h6"
               noWrap
@@ -340,7 +340,6 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
                 mr: 2,
                 display: { xs: 'none', md: 'flex' },
                 fontWeight: 700,
-                color: 'primary.main',
                 textDecoration: 'none',
               }}
             >
@@ -361,7 +360,7 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
                   startIcon={item.icon}
                   sx={{
                     my: 2,
-                    color: location.pathname === item.path ? 'primary.main' : 'text.primary',
+                    color: location.pathname === item.path ? 'inherit' : 'text.primary',
                     display: 'flex',
                     fontWeight: location.pathname === item.path ? 600 : 400,
                     '&:hover': {
@@ -378,7 +377,6 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
             <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' }, justifyContent: 'center' }}>
               <Typography
                 variant="h6"
-                color="primary"
                 fontWeight="bold"
                 component="a"
                 href="/dashboard"
@@ -422,8 +420,7 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
                     <Chip
                       label="Host"
                       size="small"
-                      color="primary"
-                      sx={{ display: { xs: 'none', sm: 'flex' } }}
+                            sx={{ display: { xs: 'none', sm: 'flex' } }}
                     />
                   )}
                 </>
@@ -437,7 +434,7 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
                 <Box sx={{ flexGrow: 0 }}>
                   <Tooltip title="Open settings">
                     <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                      <Avatar alt={user?.name} src={user?.avatar} sx={{ bgcolor: 'primary.main' }}>
+                      <Avatar alt={user?.name} src={user?.avatar} sx={{}}>
                         {user?.name?.charAt(0).toUpperCase()}
                       </Avatar>
                     </IconButton>
@@ -598,7 +595,7 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
                       {notification.title}
                     </Typography>
                     {!notification.is_read && (
-                      <Circle sx={{ fontSize: 8, color: 'primary.main', mt: 0.5, flexShrink: 0 }} />
+                      <Circle sx={{ fontSize: 8, mt: 0.5, flexShrink: 0 }} />
                     )}
                   </Box>
                   <Typography 

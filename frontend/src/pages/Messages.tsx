@@ -895,7 +895,7 @@ const Messages: React.FC = React.memo(() => {
                     >
                       <Avatar
                         src={typeof getConversationAvatar(conversation) === 'string' && getConversationAvatar(conversation).startsWith('http') ? getConversationAvatar(conversation) as string : undefined}
-                        sx={{ bgcolor: 'primary.main' }}
+                        sx={{}}
                       >
                         {typeof getConversationAvatar(conversation) === 'string' && !getConversationAvatar(conversation).startsWith('http') ? getConversationAvatar(conversation) : ''}
                       </Avatar>
@@ -974,7 +974,7 @@ const Messages: React.FC = React.memo(() => {
             
             <Avatar
               src={selectedConversation.other_participant?.profile_picture}
-              sx={{ mr: 2, bgcolor: 'primary.main' }}
+              sx={{ mr: 2 }}
             >
               {getConversationAvatar(selectedConversation)}
             </Avatar>

@@ -767,7 +767,7 @@ export default function Earnings() {
                     <Typography variant="body2" color="text.secondary" fontWeight={500}>
                       This Month
                     </Typography>
-                    <Typography variant="h4" fontWeight={700} sx={{ color: 'primary.main', mt: 1 }}>
+                    <Typography variant="h4" fontWeight={700} sx={{ mt: 1 }}>
                       ${earnings.this_month.toLocaleString()}
                     </Typography>
                     <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 1 }}>
@@ -777,7 +777,7 @@ export default function Earnings() {
                       </Typography>
                     </Stack>
                   </Box>
-                  <CalendarIcon sx={{ fontSize: 40, color: 'primary.main', opacity: 0.8 }} />
+                  <CalendarIcon sx={{ fontSize: 40, opacity: 0.8 }} />
                 </Stack>
               </CardContent>
             </Card>
@@ -971,7 +971,7 @@ export default function Earnings() {
                         />
                       </TableCell>
                       <TableCell>
-                        <IconButton size="small" color="primary">
+                        <IconButton size="small">
                           <ViewIcon />
                         </IconButton>
                       </TableCell>
