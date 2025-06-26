@@ -63,7 +63,7 @@ interface HostBooking {
   vehicle_make_model: string;
   special_instructions: string;
   status: string;
-  total_amount: number;
+  total_amount: number | string;
   created_at: string;
   confirmed_at?: string;
 }
@@ -198,7 +198,14 @@ const HostBookings: React.FC = () => {
       }
       
       console.log('Filtered host bookings:', hostBookings);
-      setBookings(hostBookings);
+      
+      // Ensure all total_amounts are properly formatted
+      const sanitizedBookings = hostBookings.map(booking => ({
+        ...booking,
+        total_amount: parseFloat(booking.total_amount?.toString() || '0') || 0
+      }));
+      
+      setBookings(sanitizedBookings);
       setDataLoaded(true);
     } catch (error: any) {
       console.error('Error loading host bookings:', error);
@@ -431,7 +438,21 @@ We apologize for any inconvenience. Please feel free to browse other available p
               <CardContent sx={{ p: 3, textAlign: 'center' }}>
                 <AttachMoney sx={{ fontSize: 40, color: 'warning.main', mb: 1 }} />
                 <Typography variant="h4" fontWeight={700} sx={{ color: 'warning.main' }}>
-                  ${bookings.filter(b => b.status === 'completed').reduce((sum, b) => sum + (b.total_amount || 0), 0).toFixed(0)}
+                  ${(() => {
+                    try {
+                      if (!bookings || !Array.isArray(bookings)) {
+                        return '0';
+                      }
+                      const total = bookings.filter(b => b && b.status === 'completed').reduce((sum, b) => {
+                        const amount = parseFloat(b.total_amount?.toString() || '0') || 0;
+                        return sum + amount;
+                      }, 0);
+                      return total.toFixed(0);
+                    } catch (error) {
+                      console.error('Error calculating total earnings:', error);
+                      return '0';
+                    }
+                  })()}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   Total Earned
