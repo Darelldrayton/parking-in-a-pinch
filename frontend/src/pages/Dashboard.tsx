@@ -2156,7 +2156,7 @@ const NewUserDashboard: React.FC = () => {
               border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
             }}>
               <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                <Typography variant="h5" fontWeight={600} gutterBottom>
+                <Typography variant="h5" fontWeight={600} gutterBottom color="white">
                   Welcome to the Community!
                 </Typography>
                 <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
