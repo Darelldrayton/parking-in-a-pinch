@@ -327,7 +327,7 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
         {/* Header */}
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
           <Stack direction="row" alignItems="center" spacing={2}>
-            <Event color="primary" />
+            <Event />
             <Typography variant="h6" fontWeight={600}>
               Availability Calendar
             </Typography>

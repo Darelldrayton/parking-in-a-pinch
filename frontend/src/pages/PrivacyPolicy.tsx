@@ -50,7 +50,7 @@ export default function PrivacyPolicy() {
           </Typography>
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight={600} gutterBottom color="primary">
+            <Typography variant="h4" fontWeight={600} gutterBottom >
               1. Introduction
             </Typography>
             <Typography variant="body1" paragraph>
@@ -67,7 +67,7 @@ export default function PrivacyPolicy() {
           <Divider sx={{ my: 4 }} />
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight={600} gutterBottom color="primary">
+            <Typography variant="h4" fontWeight={600} gutterBottom >
               2. Information We Collect
             </Typography>
             
@@ -106,7 +106,7 @@ export default function PrivacyPolicy() {
           <Divider sx={{ my: 4 }} />
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight={600} gutterBottom color="primary">
+            <Typography variant="h4" fontWeight={600} gutterBottom >
               3. How We Use Your Information
             </Typography>
             <Typography variant="body1" paragraph>
@@ -126,7 +126,7 @@ export default function PrivacyPolicy() {
           <Divider sx={{ my: 4 }} />
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight={600} gutterBottom color="primary">
+            <Typography variant="h4" fontWeight={600} gutterBottom >
               4. Information Sharing and Disclosure
             </Typography>
             <Typography variant="body1" paragraph>
@@ -160,7 +160,7 @@ export default function PrivacyPolicy() {
           <Divider sx={{ my: 4 }} />
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight={600} gutterBottom color="primary">
+            <Typography variant="h4" fontWeight={600} gutterBottom >
               5. Data Security
             </Typography>
             <Typography variant="body1" paragraph>
@@ -182,7 +182,7 @@ export default function PrivacyPolicy() {
           <Divider sx={{ my: 4 }} />
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight={600} gutterBottom color="primary">
+            <Typography variant="h4" fontWeight={600} gutterBottom >
               6. Your Privacy Rights
             </Typography>
             <Typography variant="body1" paragraph>
@@ -203,7 +203,7 @@ export default function PrivacyPolicy() {
           <Divider sx={{ my: 4 }} />
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight={600} gutterBottom color="primary">
+            <Typography variant="h4" fontWeight={600} gutterBottom >
               7. Cookies and Tracking Technologies
             </Typography>
             <Typography variant="body1" paragraph>
@@ -224,7 +224,7 @@ export default function PrivacyPolicy() {
           <Divider sx={{ my: 4 }} />
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight={600} gutterBottom color="primary">
+            <Typography variant="h4" fontWeight={600} gutterBottom >
               8. Data Retention
             </Typography>
             <Typography variant="body1" paragraph>
@@ -237,7 +237,7 @@ export default function PrivacyPolicy() {
           <Divider sx={{ my: 4 }} />
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight={600} gutterBottom color="primary">
+            <Typography variant="h4" fontWeight={600} gutterBottom >
               9. Children's Privacy
             </Typography>
             <Typography variant="body1" paragraph>
@@ -250,7 +250,7 @@ export default function PrivacyPolicy() {
           <Divider sx={{ my: 4 }} />
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight={600} gutterBottom color="primary">
+            <Typography variant="h4" fontWeight={600} gutterBottom >
               10. International Data Transfers
             </Typography>
             <Typography variant="body1" paragraph>
@@ -263,7 +263,7 @@ export default function PrivacyPolicy() {
           <Divider sx={{ my: 4 }} />
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight={600} gutterBottom color="primary">
+            <Typography variant="h4" fontWeight={600} gutterBottom >
               11. Changes to This Privacy Policy
             </Typography>
             <Typography variant="body1" paragraph>
@@ -276,7 +276,7 @@ export default function PrivacyPolicy() {
           <Divider sx={{ my: 4 }} />
 
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight={600} gutterBottom color="primary">
+            <Typography variant="h4" fontWeight={600} gutterBottom >
               12. Contact Us
             </Typography>
             <Typography variant="body1" paragraph>

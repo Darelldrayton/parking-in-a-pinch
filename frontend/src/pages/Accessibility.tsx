@@ -188,7 +188,7 @@ export default function Accessibility() {
                 <Card sx={{ borderRadius: 3, height: '100%' }}>
                   <CardContent sx={{ p: 4 }}>
                     <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
-                      <Box sx={{ color: 'primary.main' }}>
+                      <Box sx={{}}>
                         {feature.icon}
                       </Box>
                       <Typography variant="h5" fontWeight={600}>

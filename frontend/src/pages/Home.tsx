@@ -116,7 +116,7 @@ const ListingCard = memo(({ listing, theme, navigate }: {
 
           {listing.rating && (
             <Stack direction="row" spacing={0.5} alignItems="center" mb={2}>
-              <Star fontSize="small" sx={{ color: 'warning.main' }} />
+              <Star fontSize="small" />
               <Typography variant="body2">
                 {listing.rating} ({listing.reviews_count} reviews)
               </Typography>
@@ -243,7 +243,7 @@ function Home() {
                         mb: 3,
                       }}
                     >
-                      <EmojiTransportation sx={{ fontSize: 40, color: 'white' }} />
+                      <EmojiTransportation sx={{ fontSize: 40 }} />
                     </Box>
                     <Typography variant="h5" fontWeight={700} gutterBottom>
                       Find Parking
@@ -309,7 +309,7 @@ function Home() {
                         mb: 3,
                       }}
                     >
-                      <AttachMoney sx={{ fontSize: 40, color: 'white' }} />
+                      <AttachMoney sx={{ fontSize: 40 }} />
                     </Box>
                     <Typography variant="h5" fontWeight={700} gutterBottom>
                       Earn Money
@@ -682,7 +682,7 @@ function Home() {
                     {item.description}
                   </Typography>
                   <Box sx={{ mt: 2 }}>
-                    <Box sx={{ color: `${item.color}.main` }}>
+                    <Box sx={{}}>
                       {item.icon}
                     </Box>
                   </Box>

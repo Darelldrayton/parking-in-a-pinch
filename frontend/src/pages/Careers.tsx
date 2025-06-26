@@ -231,7 +231,6 @@ export default function Careers() {
                   size="large"
                   sx={{
                     bgcolor: 'white',
-                    color: 'primary.main',
                     px: 4,
                     py: 1.5,
                     '&:hover': {
@@ -288,7 +287,7 @@ export default function Careers() {
             <Grid item xs={6} md={3}>
               <Card sx={{ textAlign: 'center', borderRadius: 3 }}>
                 <CardContent sx={{ p: 3 }}>
-                  <Typography variant="h3" fontWeight={700} color="primary.main">
+                  <Typography variant="h3" fontWeight={700}>
                     150+
                   </Typography>
                   <Typography variant="body1" color="text.secondary">

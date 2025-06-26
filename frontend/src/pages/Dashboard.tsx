@@ -289,8 +289,8 @@ const MiniHostBookings: React.FC = () => {
         <Grid size={{ xs: 12, sm: 4 }}>
           <Card sx={{ borderRadius: 3, height: '100%' }}>
             <CardContent sx={{ p: 3, textAlign: 'center' }}>
-              <MoneyIcon sx={{ fontSize: 32, color: 'primary.main', mb: 1 }} />
-              <Typography variant="h5" fontWeight={600} sx={{ color: 'primary.main' }}>
+              <MoneyIcon sx={{ fontSize: 32, , mb: 1 }} />
+              <Typography variant="h5" fontWeight={600} sx={{  }}>
                 ${Number(bookings.filter(b => b.status === 'completed').reduce((sum, b) => sum + (parseFloat(b.total_amount) || 0), 0)).toFixed(0)}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -435,7 +435,7 @@ const MiniHostBookings: React.FC = () => {
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>
+                    <Avatar sx={{ bg, width: 32, height: 32 }}>
                       {booking.user_name?.charAt(0) || 'U'}
                     </Avatar>
                     <Box>
@@ -474,7 +474,7 @@ const MiniHostBookings: React.FC = () => {
           p: 6,
           textAlign: 'center',
         }}>
-          <ScheduleIcon sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
+          <ScheduleIcon sx={{ fontSize: 64, , mb: 2 }} />
           <Typography variant="h6" fontWeight={600} gutterBottom>
             No Booking Requests Yet
           </Typography>
@@ -694,8 +694,8 @@ const MiniMyListings: React.FC = () => {
         <Grid size={{ xs: 12, sm: 3 }}>
           <Card sx={{ borderRadius: 3, height: '100%' }}>
             <CardContent sx={{ p: 3, textAlign: 'center' }}>
-              <LocationIcon sx={{ fontSize: 32, color: 'primary.main', mb: 1 }} />
-              <Typography variant="h5" fontWeight={600} sx={{ color: 'primary.main' }}>
+              <LocationIcon sx={{ fontSize: 32, , mb: 1 }} />
+              <Typography variant="h5" fontWeight={600} sx={{  }}>
                 {listings.length}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -958,7 +958,7 @@ const MiniMyListings: React.FC = () => {
       {listings.some(listing => getUpcomingBookings(listing.id).length > 0) && (
         <Card sx={{ borderRadius: 3, mb: 3 }}>
           <CardContent sx={{ p: 3 }}>
-            <Typography variant="h6" fontWeight={600} sx={{ mb: 3, color: 'primary.main' }}>
+            <Typography variant="h6" fontWeight={600} sx={{ mb: 3,  }}>
               📅 Upcoming Bookings
             </Typography>
             
@@ -1095,7 +1095,7 @@ const MiniMyListings: React.FC = () => {
           p: 6,
           textAlign: 'center',
         }}>
-          <LocationIcon sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
+          <LocationIcon sx={{ fontSize: 64, , mb: 2 }} />
           <Typography variant="h6" fontWeight={600} gutterBottom>
             No Listings Yet
           </Typography>
@@ -1276,8 +1276,8 @@ const MiniMyBookings: React.FC = () => {
         <Grid size={{ xs: 12, sm: 3 }}>
           <Card sx={{ borderRadius: 3, height: '100%' }}>
             <CardContent sx={{ p: 3, textAlign: 'center' }}>
-              <BookingIcon sx={{ fontSize: 32, color: 'primary.main', mb: 1 }} />
-              <Typography variant="h5" fontWeight={600} sx={{ color: 'primary.main' }}>
+              <BookingIcon sx={{ fontSize: 32, , mb: 1 }} />
+              <Typography variant="h5" fontWeight={600} sx={{  }}>
                 {bookings.length}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -1610,7 +1610,7 @@ const MiniMyBookings: React.FC = () => {
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>
+                    <Avatar sx={{ bg, width: 32, height: 32 }}>
                       <LocationIcon sx={{ fontSize: 18 }} />
                     </Avatar>
                     <Box>
@@ -1893,7 +1893,7 @@ const NewUserDashboard: React.FC = () => {
                       startIcon={<AddIcon />}
                       sx={{
                         bgcolor: 'white',
-                        color: 'primary.main',
+                        ,
                         fontWeight: 600,
                         px: 4,
                         py: 1.5,
@@ -2019,7 +2019,7 @@ const NewUserDashboard: React.FC = () => {
                       
                       <Stack spacing={2}>
                         {[
-                          { step: 1, text: 'Create your first parking listing', action: () => navigate('/create-listing'), color: 'primary.main', done: listingsCount > 0 },
+                          { step: 1, text: 'Create your first parking listing', action: () => navigate('/create-listing'), , done: listingsCount > 0 },
                           { step: 2, text: 'Browse available parking spots', action: () => navigate('/listings'), color: 'success.main', done: false },
                           { step: 3, text: 'Complete your profile', action: () => navigate('/profile'), color: 'info.main', done: false },
                           { step: 4, text: 'Start earning from bookings', action: () => navigate('/earnings'), color: 'warning.main', done: false },
@@ -2109,7 +2109,7 @@ const NewUserDashboard: React.FC = () => {
                               }}
                             >
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>
+                                <Avatar sx={{ bg, width: 32, height: 32 }}>
                                   <ScheduleIcon sx={{ fontSize: 18 }} />
                                 </Avatar>
                                 <Box>
@@ -2529,7 +2529,7 @@ const ExistingUserDashboard: React.FC = () => {
                       startIcon={<AddIcon />}
                       sx={{
                         bgcolor: 'white',
-                        color: 'primary.main',
+                        ,
                         fontWeight: 600,
                         px: 4,
                         py: 1.5,
@@ -3198,7 +3198,7 @@ const EnhancedRecentActivity: React.FC = () => {
                     width: 6,
                     height: 6,
                     borderRadius: '50%',
-                    bgcolor: 'primary.main',
+                    bg,
                   }}
                 />
               )}
@@ -3295,7 +3295,7 @@ const EnhancedRecentBookings: React.FC = () => {
         border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
       }}>
         <CardContent sx={{ p: 4, textAlign: 'center' }}>
-          <BookingIcon sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
+          <BookingIcon sx={{ fontSize: 64, , mb: 2 }} />
           <Typography variant="h6" fontWeight={600} gutterBottom>
             No Recent Bookings
           </Typography>
@@ -3352,7 +3352,7 @@ const EnhancedRecentBookings: React.FC = () => {
                 >
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
+                      <Avatar sx={{ width: 32, height: 32, bg }}>
                         {(booking.user_name || 'U').charAt(0)}
                       </Avatar>
                       <Typography variant="body2" fontWeight={500}>

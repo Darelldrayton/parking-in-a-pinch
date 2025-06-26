@@ -40,7 +40,7 @@ const themeOptions = {
       paper: '#FFFFFF',
     },
     text: {
-      primary: '#FFFFFF',
+      primary: '#111827',
       secondary: '#6B7280',
     },
   },

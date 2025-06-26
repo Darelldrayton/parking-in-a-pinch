@@ -185,7 +185,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
                 <CircularProgress size={40} />
               ) : (
                 <>
-                  <UploadIcon sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
+                  <UploadIcon sx={{ fontSize: 40, mb: 1 }} />
                   <Typography variant="body2" color="primary.main" fontWeight={500}>
                     Add Photos
                   </Typography>
