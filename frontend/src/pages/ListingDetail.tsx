@@ -918,7 +918,7 @@ export default function ListingDetail() {
                         <Typography variant="body1" color="text.secondary">
                           Hourly Rate
                         </Typography>
-                        <Typography variant="h6" fontWeight={600} color="primary">
+                        <Typography variant="h6" fontWeight={600}>
                           ${listing.hourly_rate}/hr
                         </Typography>
                       </Box>
@@ -973,7 +973,7 @@ export default function ListingDetail() {
 
                   {/* Availability Schedule */}
                   <Box>
-                    <Typography variant="h6" fontWeight={600} gutterBottom sx={{ color: 'primary.main' }}>
+                    <Typography variant="h6" fontWeight={600} gutterBottom>
                       📅 Availability Schedule
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>

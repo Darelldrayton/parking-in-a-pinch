@@ -344,7 +344,7 @@ export default function HowItWorks() {
               <Grid item xs={12} sm={6} md={3} key={index}>
                 <Card sx={{ textAlign: 'center', borderRadius: 3, height: '100%' }}>
                   <CardContent sx={{ p: 4 }}>
-                    <Box sx={{ color: 'primary.main', mb: 2 }}>
+                    <Box sx={{ mb: 2 }}>
                       {feature.icon}
                     </Box>
                     <Typography variant="h6" fontWeight={600} gutterBottom>
