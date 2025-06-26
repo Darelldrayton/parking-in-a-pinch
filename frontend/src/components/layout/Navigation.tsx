@@ -363,7 +363,7 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
                     fontWeight: location.pathname === item.path ? 600 : 400,
                     '&:hover': {
                       backgroundColor: 'primary.main',
-                      color: 'primary.contrastText',
+                      color: 'white',
                     },
                   }}
                 >

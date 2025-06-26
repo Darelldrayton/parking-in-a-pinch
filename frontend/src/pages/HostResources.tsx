@@ -229,7 +229,7 @@ const communityFeatures = [
   {
     title: 'Success Stories Blog',
     description: 'Learn from successful hosts and their strategies',
-    icon: <Star sx={{ fontSize: 32, color: 'warning.main' }} />,
+    icon: <Star sx={{ fontSize: 32 }} />,
     action: 'Read Stories',
   },
 ];
