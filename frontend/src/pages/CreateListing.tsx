@@ -1205,7 +1205,7 @@ export default function CreateListing() {
       <Fade in timeout={300}>
         <Grid container spacing={3}>
           <Grid size={12}>
-            <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ color: 'primary.main' }}>
+            <Typography variant="h5" fontWeight="bold" gutterBottom>
               When is your space available?
             </Typography>
             <Typography color="text.secondary" sx={{ mb: 3 }}>

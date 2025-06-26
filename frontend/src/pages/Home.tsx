@@ -245,7 +245,7 @@ function Home() {
                     >
                       <EmojiTransportation sx={{ fontSize: 40, color: 'white' }} />
                     </Box>
-                    <Typography variant="h5" fontWeight={700} gutterBottom color="primary">
+                    <Typography variant="h5" fontWeight={700} gutterBottom>
                       Find Parking
                     </Typography>
                     <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
@@ -311,7 +311,7 @@ function Home() {
                     >
                       <AttachMoney sx={{ fontSize: 40, color: 'white' }} />
                     </Box>
-                    <Typography variant="h5" fontWeight={700} gutterBottom color="secondary">
+                    <Typography variant="h5" fontWeight={700} gutterBottom>
                       Earn Money
                     </Typography>
                     <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
