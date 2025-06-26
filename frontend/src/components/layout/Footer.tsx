@@ -150,7 +150,7 @@ export default function Footer() {
             <Grid container spacing={3}>
               {/* Company Links */}
               <Grid size={{ xs: 6, sm: 3 }}>
-                <Typography variant="subtitle1" fontWeight={600} gutterBottom color="white">
+                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
                   Company
                 </Typography>
                 <Stack spacing={1}>
@@ -177,7 +177,7 @@ export default function Footer() {
 
               {/* Support Links */}
               <Grid size={{ xs: 6, sm: 3 }}>
-                <Typography variant="subtitle1" fontWeight={600} gutterBottom color="white">
+                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
                   Support
                 </Typography>
                 <Stack spacing={1}>
@@ -204,7 +204,7 @@ export default function Footer() {
 
               {/* Legal Links */}
               <Grid size={{ xs: 6, sm: 3 }}>
-                <Typography variant="subtitle1" fontWeight={600} gutterBottom color="white">
+                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
                   Legal
                 </Typography>
                 <Stack spacing={1}>
@@ -231,7 +231,7 @@ export default function Footer() {
 
               {/* Host Links */}
               <Grid size={{ xs: 6, sm: 3 }}>
-                <Typography variant="subtitle1" fontWeight={600} gutterBottom color="white">
+                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
                   For Hosts
                 </Typography>
                 <Stack spacing={1}>
