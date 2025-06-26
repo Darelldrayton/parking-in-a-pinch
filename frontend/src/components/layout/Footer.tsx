@@ -90,7 +90,7 @@ export default function Footer() {
                     justifyContent: 'center',
                   }}
                 >
-                  <LocalParking sx={{ color: 'white', fontSize: 24 }} />
+                  <LocalParking sx={{ color: 'primary.contrastText', fontSize: 24 }} />
                 </Box>
                 <Typography variant="h6" fontWeight={700}>
                   Parking in a Pinch
@@ -132,7 +132,7 @@ export default function Footer() {
                       border: `1px solid ${theme.palette.divider}`,
                       '&:hover': {
                         bgcolor: 'primary.main',
-                        color: 'white',
+                        color: 'primary.contrastText',
                         borderColor: 'primary.main',
                       },
                     }}

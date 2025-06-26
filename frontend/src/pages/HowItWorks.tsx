@@ -89,7 +89,7 @@ const renterSteps = [
     ],
   },
   {
-    icon: <Star sx={{ fontSize: 40 }} />,
+    icon: <Star sx={{ fontSize: 40, color: 'warning.main' }} />,
     title: 'Rate Your Experience',
     description: 'Help our community by rating your parking experience.',
     details: [

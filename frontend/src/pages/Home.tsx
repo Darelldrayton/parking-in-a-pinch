@@ -189,7 +189,7 @@ function Home() {
         sx={{
           position: 'relative',
           background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
-          color: 'white',
+          color: 'primary.contrastText',
           overflow: 'hidden',
           py: 12,
         }}
@@ -447,7 +447,7 @@ function Home() {
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
-                              <AccessTime  />
+                              <AccessTime color="action" />
                             </InputAdornment>
                           ),
                           sx: {
@@ -501,10 +501,10 @@ function Home() {
                     size="large"
                     onClick={() => navigate('/listings')}
                     sx={{
-                      borderColor: 'white',
-                      color: 'white',
+                      borderColor: 'primary.contrastText',
+                      color: 'primary.contrastText',
                       '&:hover': {
-                        borderColor: 'white',
+                        borderColor: 'primary.contrastText',
                         bgcolor: 'rgba(255, 255, 255, 0.1)',
                       },
                     }}
@@ -715,7 +715,7 @@ function Home() {
       <Box
         sx={{
           bgcolor: 'primary.main',
-          color: 'white',
+          color: 'primary.contrastText',
           py: 8,
           textAlign: 'center',
         }}
@@ -751,10 +751,10 @@ function Home() {
               size="large"
               onClick={() => navigate('/signup?type=host')}
               sx={{
-                borderColor: 'white',
-                color: 'white',
+                borderColor: 'primary.contrastText',
+                color: 'primary.contrastText',
                 '&:hover': {
-                  borderColor: 'white',
+                  borderColor: 'primary.contrastText',
                   bgcolor: 'rgba(255, 255, 255, 0.1)',
                 },
               }}
