@@ -435,7 +435,7 @@ export default function ListingDetail() {
       return {
         label: 'Inactive',
         color: 'error' as const,
-        icon: <Block sx={{ fontSize: 16 }} />,
+        icon: <Block sx={{ fontSize: 16, color: 'error.main' }} />,
       };
     }
 
@@ -451,7 +451,7 @@ export default function ListingDetail() {
       return {
         label: 'Available Now',
         color: 'success' as const,
-        icon: <CheckCircle sx={{ fontSize: 16 }} />,
+        icon: <CheckCircle sx={{ fontSize: 16, color: 'success.main' }} />,
       };
     }
 

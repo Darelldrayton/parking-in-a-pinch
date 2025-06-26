@@ -289,7 +289,7 @@ const MiniHostBookings: React.FC = () => {
         <Grid size={{ xs: 12, sm: 4 }}>
           <Card sx={{ borderRadius: 3, height: '100%' }}>
             <CardContent sx={{ p: 3, textAlign: 'center' }}>
-              <MoneyIcon sx={{ fontSize: 32, , mb: 1 }} />
+              <MoneyIcon sx={{ fontSize: 32, color: 'warning.main', mb: 1 }} />
               <Typography variant="h5" fontWeight={600} sx={{  }}>
                 ${Number(bookings.filter(b => b.status === 'completed').reduce((sum, b) => sum + (parseFloat(b.total_amount) || 0), 0)).toFixed(0)}
               </Typography>
@@ -474,7 +474,7 @@ const MiniHostBookings: React.FC = () => {
           p: 6,
           textAlign: 'center',
         }}>
-          <ScheduleIcon sx={{ fontSize: 64, , mb: 2 }} />
+          <ScheduleIcon sx={{ fontSize: 64, color: 'action', mb: 2 }} />
           <Typography variant="h6" fontWeight={600} gutterBottom>
             No Booking Requests Yet
           </Typography>
@@ -694,7 +694,7 @@ const MiniMyListings: React.FC = () => {
         <Grid size={{ xs: 12, sm: 3 }}>
           <Card sx={{ borderRadius: 3, height: '100%' }}>
             <CardContent sx={{ p: 3, textAlign: 'center' }}>
-              <LocationIcon sx={{ fontSize: 32, , mb: 1 }} />
+              <LocationIcon sx={{ fontSize: 32, color: 'primary.main', mb: 1 }} />
               <Typography variant="h5" fontWeight={600} sx={{  }}>
                 {listings.length}
               </Typography>
@@ -794,7 +794,7 @@ const MiniMyListings: React.FC = () => {
                       position: 'relative',
                     }}>
                       {!listing.images?.length && (
-                        <LocationIcon sx={{ fontSize: 32 }} />
+                        <LocationIcon sx={{ fontSize: 32, color: 'text.secondary' }} />
                       )}
                       <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
                         <Chip
@@ -1095,7 +1095,7 @@ const MiniMyListings: React.FC = () => {
           p: 6,
           textAlign: 'center',
         }}>
-          <LocationIcon sx={{ fontSize: 64, , mb: 2 }} />
+          <LocationIcon sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
           <Typography variant="h6" fontWeight={600} gutterBottom>
             No Listings Yet
           </Typography>
@@ -1276,7 +1276,7 @@ const MiniMyBookings: React.FC = () => {
         <Grid size={{ xs: 12, sm: 3 }}>
           <Card sx={{ borderRadius: 3, height: '100%' }}>
             <CardContent sx={{ p: 3, textAlign: 'center' }}>
-              <BookingIcon sx={{ fontSize: 32, , mb: 1 }} />
+              <BookingIcon sx={{ fontSize: 32, color: 'info.main', mb: 1 }} />
               <Typography variant="h5" fontWeight={600} sx={{  }}>
                 {bookings.length}
               </Typography>
@@ -1611,7 +1611,7 @@ const MiniMyBookings: React.FC = () => {
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Avatar sx={{ bg, width: 32, height: 32 }}>
-                      <LocationIcon sx={{ fontSize: 18 }} />
+                      <LocationIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
                     </Avatar>
                     <Box>
                       <Typography variant="body2" fontWeight={500}>
@@ -2110,7 +2110,7 @@ const NewUserDashboard: React.FC = () => {
                             >
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                 <Avatar sx={{ bg, width: 32, height: 32 }}>
-                                  <ScheduleIcon sx={{ fontSize: 18 }} />
+                                  <ScheduleIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
                                 </Avatar>
                                 <Box>
                                   <Typography variant="body2" fontWeight={500}>
@@ -3295,7 +3295,7 @@ const EnhancedRecentBookings: React.FC = () => {
         border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
       }}>
         <CardContent sx={{ p: 4, textAlign: 'center' }}>
-          <BookingIcon sx={{ fontSize: 64, , mb: 2 }} />
+          <BookingIcon sx={{ fontSize: 64, color: 'info.main', mb: 2 }} />
           <Typography variant="h6" fontWeight={600} gutterBottom>
             No Recent Bookings
           </Typography>
