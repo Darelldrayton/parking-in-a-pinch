@@ -289,7 +289,7 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
                 },
               }}
             >
-              <ListItemIcon sx={{ color: location.pathname === item.path ? 'inherit' : 'inherit' }}>
+              <ListItemIcon sx={{ color: 'text.primary' }}>
                 {item.icon}
               </ListItemIcon>
               <ListItemText primary={item.text} />
@@ -358,7 +358,7 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
                   startIcon={item.icon}
                   sx={{
                     my: 2,
-                    color: location.pathname === item.path ? 'inherit' : 'text.primary',
+                    color: 'text.primary',
                     display: 'flex',
                     fontWeight: location.pathname === item.path ? 600 : 400,
                     '&:hover': {

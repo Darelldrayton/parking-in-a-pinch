@@ -1853,10 +1853,10 @@ const NewUserDashboard: React.FC = () => {
             <Box>
               <Grid container alignItems="center" justifyContent="space-between">
                 <Grid size={{ xs: 12, md: 8 }}>
-                  <Typography variant="h3" component="h1" fontWeight={700} gutterBottom sx={{ color: 'white' }}>
+                  <Typography variant="h3" component="h1" fontWeight={700} gutterBottom>
                     Welcome to Parking in a Pinch, {user?.first_name}! 🎉
                   </Typography>
-                  <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 300, color: 'white' }}>
+                  <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 300 }}>
                     Your parking journey starts here. Let's get you set up!
                   </Typography>
                 </Grid>
