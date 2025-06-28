@@ -255,11 +255,16 @@ export function formatAddressForDisplay(
   }
   
   // Extract approximate area from full address for privacy
-  const parts = fullAddress.split(',');
-  const streetPart = parts[0]?.trim();
+  const parts = fullAddress.split(',').filter(part => part); // Remove empty parts
+  const streetPart = parts.length > 0 && parts[0] ? parts[0].trim() : null;
+  
+  // If no valid street part found, show general area
+  if (!streetPart) {
+    return `${borough} • General Area`;
+  }
   
   // If street contains numbers, show general area instead
-  if (streetPart && /\d/.test(streetPart)) {
+  if (/\d/.test(streetPart)) {
     return `${borough} • General Area`;
   }
   
