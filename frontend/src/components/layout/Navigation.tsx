@@ -328,7 +328,7 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
               </IconButton>
             )}
 
-            <LocalParking sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
+            <LocalParking sx={{ display: { xs: 'none', md: 'flex' }, mr: 1, color: 'primary.main' }} />
             <Typography
               variant="h6"
               noWrap
@@ -339,6 +339,7 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
                 display: { xs: 'none', md: 'flex' },
                 fontWeight: 700,
                 textDecoration: 'none',
+                color: 'primary.main',
               }}
             >
               Parking in a Pinch
@@ -381,6 +382,7 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
                 sx={{
                   textDecoration: 'none',
                   cursor: 'pointer',
+                  color: 'primary.main',
                   '&:hover': {
                     opacity: 0.8,
                   },
