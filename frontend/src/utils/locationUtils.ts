@@ -241,12 +241,17 @@ export function formatAddressForDisplay(
 ): string {
   // Only show full address to hosts or users who have checked in
   if (isHost || hasCheckedIn) {
-    return fullAddress;
+    return fullAddress || `${borough} • General Area`;
   }
   
   // If neighborhood is available, show it instead of general area
   if (neighborhood) {
     return `${neighborhood}, ${borough}`;
+  }
+  
+  // Handle case where fullAddress is undefined or empty
+  if (!fullAddress) {
+    return `${borough} • General Area`;
   }
   
   // Extract approximate area from full address for privacy
@@ -297,6 +302,11 @@ export function getListingDisplayLocation(
   isHost: boolean = false,
   hasCheckedIn: boolean = false
 ): string {
+  // Handle missing address or borough
+  if (!address || !borough) {
+    return borough || 'NYC • General Area';
+  }
+  
   // If we have an explicit neighborhood, use it
   if (neighborhood) {
     return isHost || hasCheckedIn ? address : `${neighborhood}, ${borough}`;
