@@ -188,6 +188,7 @@ const Login: React.FC = () => {
                   autoComplete="current-password"
                   error={!!errors.password}
                   helperText={errors.password?.message}
+                  sx={{ '& .MuiInputLabel-root': { color: 'text.primary' } }}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -217,11 +218,12 @@ const Login: React.FC = () => {
                         />
                       }
                       label="Remember me"
+                      sx={{ '& .MuiFormControlLabel-label': { color: 'text.primary' } }}
                     />
                   </Grid>
                   <Grid size="auto">
                     <Link to="/forgot-password" style={{ textDecoration: 'none' }}>
-                      <Typography variant="body2" sx={{ '&:hover': { textDecoration: 'underline' } }}>
+                      <Typography variant="body2" sx={{ color: 'text.primary', '&:hover': { textDecoration: 'underline' } }}>
                         Forgot password?
                       </Typography>
                     </Link>

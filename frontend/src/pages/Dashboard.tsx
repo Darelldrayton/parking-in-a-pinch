@@ -1830,7 +1830,6 @@ const NewUserDashboard: React.FC = () => {
       {/* Hero Header */}
       <Box sx={{
         background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
-        color: 'white',
         py: 6,
         position: 'relative',
         overflow: 'hidden',
@@ -2224,7 +2223,6 @@ const NewUserDashboard: React.FC = () => {
               <Card sx={{
                 borderRadius: 3,
                 background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                color: 'white',
                 mb: 3,
               }}>
                 <CardContent sx={{ p: 4 }}>
@@ -2466,7 +2464,6 @@ const ExistingUserDashboard: React.FC = () => {
       {/* Hero Header */}
       <Box sx={{
         background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
-        color: 'white',
         py: 6,
         position: 'relative',
         overflow: 'hidden',
@@ -2489,10 +2486,10 @@ const ExistingUserDashboard: React.FC = () => {
             <Box>
               <Grid container alignItems="center" justifyContent="space-between">
                 <Grid size={{ xs: 12, md: 8 }}>
-                  <Typography variant="h3" component="h1" fontWeight={700} gutterBottom sx={{ color: 'white' }}>
+                  <Typography variant="h3" component="h1" fontWeight={700} gutterBottom>
                     Welcome back, {user?.first_name}! 👋
                   </Typography>
-                  <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 300, color: 'white' }}>
+                  <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 300 }}>
                     Manage your parking spaces and track your earnings
                   </Typography>
                 </Grid>
@@ -2699,7 +2696,6 @@ const ExistingUserDashboard: React.FC = () => {
               <Card sx={{
                 borderRadius: 3,
                 background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                color: 'white',
                 mb: 3,
               }}>
                 <CardContent sx={{ p: 4 }}>
