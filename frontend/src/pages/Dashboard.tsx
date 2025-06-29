@@ -435,7 +435,7 @@ const MiniHostBookings: React.FC = () => {
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Avatar sx={{ bg, width: 32, height: 32 }}>
+                    <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>
                       {booking.user_name?.charAt(0) || 'U'}
                     </Avatar>
                     <Box>
@@ -1610,7 +1610,7 @@ const MiniMyBookings: React.FC = () => {
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Avatar sx={{ bg, width: 32, height: 32 }}>
+                    <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>
                       <LocationIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
                     </Avatar>
                     <Box>
@@ -2108,7 +2108,7 @@ const NewUserDashboard: React.FC = () => {
                               }}
                             >
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <Avatar sx={{ bg, width: 32, height: 32 }}>
+                                <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>
                                   <ScheduleIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
                                 </Avatar>
                                 <Box>
@@ -3194,7 +3194,7 @@ const EnhancedRecentActivity: React.FC = () => {
                     width: 6,
                     height: 6,
                     borderRadius: '50%',
-                    bg,
+                    bgcolor: 'success.main',
                   }}
                 />
               )}
@@ -3348,7 +3348,7 @@ const EnhancedRecentBookings: React.FC = () => {
                 >
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Avatar sx={{ width: 32, height: 32, bg }}>
+                      <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
                         {(booking.user_name || 'U').charAt(0)}
                       </Avatar>
                       <Typography variant="body2" fontWeight={500}>
