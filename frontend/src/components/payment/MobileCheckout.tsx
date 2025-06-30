@@ -195,7 +195,7 @@ const MobileCheckout: React.FC<MobileCheckoutProps> = ({
               <ArrowBack />
             </IconButton>
             <Box sx={{ flex: 1 }}>
-              <Typography variant="h6" fontWeight={600} noWrap>
+              <Typography variant="h6" fontWeight={600} noWrap color="text.primary">
                 Secure Checkout
               </Typography>
               <Typography variant="caption" sx={{ opacity: 0.9 }}>
@@ -262,7 +262,7 @@ const MobileCheckout: React.FC<MobileCheckoutProps> = ({
                   p: 2,
                 }}
               >
-                <Typography variant="h6" fontWeight={600} noWrap>
+                <Typography variant="h6" fontWeight={600} noWrap color="white">
                   {listing.title}
                 </Typography>
                 <Stack direction="row" alignItems="center" spacing={1}>
@@ -405,7 +405,7 @@ const MobileCheckout: React.FC<MobileCheckoutProps> = ({
           {/* Host Contact */}
           <Card sx={{ borderRadius: 3, bgcolor: alpha(theme.palette.primary.main, 0.02) }}>
             <CardContent sx={{ p: 2 }}>
-              <Typography variant="h6" fontWeight={600} gutterBottom>
+              <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
                 Your Host
               </Typography>
               <Stack direction="row" alignItems="center" spacing={2}>

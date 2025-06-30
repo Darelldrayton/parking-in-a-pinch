@@ -409,7 +409,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({
                   }}
                 />
                 <CardContent sx={{ p: 3 }}>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                  <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
                     {listing.title}
                   </Typography>
                   <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
@@ -435,7 +435,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({
               {/* Pricing Summary */}
               <Card sx={{ borderRadius: 3 }}>
                 <CardContent sx={{ p: 3 }}>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                  <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
                     Pricing Summary
                   </Typography>
                   
@@ -479,10 +479,10 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({
                     <Divider />
                     
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Typography variant="h6" fontWeight={700}>
+                      <Typography variant="h6" fontWeight={700} color="text.primary">
                         Total
                       </Typography>
-                      <Typography variant="h6" fontWeight={700} >
+                      <Typography variant="h6" fontWeight={700} color="text.primary">
                         ${pricing.total.toFixed(2)}
                       </Typography>
                     </Box>
@@ -510,7 +510,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({
               {listing.host && (
                 <Card sx={{ borderRadius: 3 }}>
                   <CardContent sx={{ p: 3 }}>
-                    <Typography variant="h6" fontWeight={600} gutterBottom>
+                    <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
                       Your Host
                     </Typography>
                     <Stack direction="row" spacing={2} alignItems="center">
