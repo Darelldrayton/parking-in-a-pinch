@@ -19,6 +19,7 @@ import {
   alpha,
   InputAdornment,
   IconButton,
+  CircularProgress,
 } from '@mui/material';
 import {
   AdminPanelSettings,
@@ -53,6 +54,7 @@ export default function AdminLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   // Disable WebSocket on admin login page to prevent connection loops
   React.useEffect(() => {
@@ -73,13 +75,19 @@ export default function AdminLogin() {
     if (hasCheckedAuth) return; // Prevent multiple checks
     
     console.log('🔍 Checking existing authentication...');
+    console.log('🔍 Current path:', window.location.pathname);
+    
     const token = localStorage.getItem('access_token');
     const user = localStorage.getItem('user');
+    
+    console.log('🔍 Token exists:', !!token);
+    console.log('🔍 User data exists:', !!user);
     
     if (token && user) {
       try {
         const userData = JSON.parse(user);
         console.log('🔍 Found existing login:', userData);
+        console.log('🔍 User email:', userData.email);
         
         if (userData.email === 'darelldrayton93@gmail.com') {
           console.log('✅ Owner account detected, granting admin access');
@@ -89,22 +97,28 @@ export default function AdminLogin() {
           localStorage.setItem('admin_refresh_token', localStorage.getItem('refresh_token') || '');
           localStorage.setItem('admin_user', JSON.stringify(userData));
           
-          // Set flag to prevent re-checking
-          setHasCheckedAuth(true);
+          console.log('📝 Admin tokens stored successfully');
           
-          // Use setTimeout to prevent immediate redirect issues
-          setTimeout(() => {
-            window.location.href = '/ruler/dashboard';
-          }, 100);
+          // Set flags to prevent re-checking and show loading state
+          setHasCheckedAuth(true);
+          setIsRedirecting(true);
+          
+          // Force redirect to ruler dashboard
+          console.log('🔄 Redirecting to /ruler/dashboard...');
+          window.location.replace('/ruler/dashboard');
           return;
+        } else {
+          console.log('❌ Not owner account, email:', userData.email);
         }
       } catch (e) {
-        console.error('Error parsing user data:', e);
+        console.error('❌ Error parsing user data:', e);
       }
+    } else {
+      console.log('❌ No existing authentication found');
     }
     
     setHasCheckedAuth(true);
-    console.log('🔍 Authentication check complete');
+    console.log('🔍 Authentication check complete - showing login form');
   }, []); // Empty dependency array to run only once
 
   const {
@@ -158,6 +172,42 @@ export default function AdminLogin() {
       setIsLoading(false);
     }
   };
+
+  // Show loading screen while redirecting
+  if (isRedirecting) {
+    return (
+      <Box
+        sx={{
+          minHeight: '100vh',
+          background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.dark} 100%)`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          py: 4,
+        }}
+      >
+        <Container maxWidth="sm">
+          <Paper
+            elevation={12}
+            sx={{
+              borderRadius: 4,
+              p: 6,
+              textAlign: 'center',
+              boxShadow: `0 20px 40px ${alpha(theme.palette.common.black, 0.3)}`,
+            }}
+          >
+            <CircularProgress size={60} sx={{ mb: 3 }} />
+            <Typography variant="h5" gutterBottom>
+              Granting Admin Access...
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Redirecting to admin dashboard
+            </Typography>
+          </Paper>
+        </Container>
+      </Box>
+    );
+  }
 
   return (
     <Box
