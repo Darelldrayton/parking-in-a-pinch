@@ -390,87 +390,77 @@ const AdminDashboardEnhanced: React.FC = () => {
         'Content-Type': 'application/json'
       };
 
-      console.log('📊 Fetching real data using available APIs...');
+      console.log('📊 Fetching real data from admin APIs...');
       
-      // Use APIs that work for regular users to get real data
-      const [bookingsRes, listingsRes, userRes] = await Promise.all([
-        fetch('/api/v1/bookings/bookings/', { headers }).catch(e => {
-          console.warn('Bookings API not available:', e);
+      // Try admin-specific stats endpoints first, then fallback to individual APIs
+      const [adminStatsRes, usersRes, verificationsRes, listingsRes, refundsRes, disputesRes] = await Promise.all([
+        fetch('/api/v1/admin/dashboard-stats/', { headers }).catch(e => {
+          console.warn('Admin stats API not available:', e);
           return { ok: false, status: 503 };
         }),
-        fetch('/api/v1/listings/', { headers }).catch(e => {
-          console.warn('Listings API not available:', e);
+        fetch('/api/v1/users/admin/users/stats/', { headers }).catch(e => {
+          console.warn('Users stats API not available:', e);
           return { ok: false, status: 503 };
         }),
-        fetch('/api/v1/users/me/', { headers }).catch(e => {
-          console.warn('User API not available:', e);
+        fetch('/api/v1/users/admin/verification-requests/stats/', { headers }).catch(e => {
+          console.warn('Verification stats API not available:', e);
+          return { ok: false, status: 503 };
+        }),
+        fetch('/api/v1/listings/admin/stats/', { headers }).catch(e => {
+          console.warn('Listings stats API not available:', e);
+          return { ok: false, status: 503 };
+        }),
+        fetch('/api/v1/payments/admin/refund-requests/stats/', { headers }).catch(e => {
+          console.warn('Refunds stats API not available:', e);
+          return { ok: false, status: 503 };
+        }),
+        fetch('/api/v1/disputes/admin/stats/', { headers }).catch(e => {
+          console.warn('Disputes stats API not available:', e);
           return { ok: false, status: 503 };
         })
       ]);
 
-      // Process real data to create admin-style stats
-      let totalBookings = 0;
-      let totalListings = 0;
-      let totalRevenue = 0;
-      let activeBookings = 0;
-      
-      if (bookingsRes.ok) {
-        const bookingsData = await bookingsRes.json();
-        console.log('✅ Bookings data loaded:', bookingsData);
-        totalBookings = bookingsData.count || bookingsData.results?.length || 0;
-        activeBookings = bookingsData.results?.filter(b => b.status === 'confirmed').length || 0;
-        totalRevenue = bookingsData.results?.reduce((sum, b) => sum + parseFloat(b.total_amount || 0), 0) || 0;
-      }
-      
-      if (listingsRes.ok) {
-        const listingsData = await listingsRes.json();
-        console.log('✅ Listings data loaded:', listingsData);
-        totalListings = listingsData.count || listingsData.results?.length || 0;
+      let realStats = null;
+
+      // If the consolidated admin stats endpoint works, use it
+      if (adminStatsRes.ok) {
+        realStats = await adminStatsRes.json();
+        console.log('✅ Admin stats loaded from consolidated endpoint:', realStats);
+      } else {
+        // Otherwise, compile stats from individual endpoints
+        console.log('📊 Compiling stats from individual endpoints...');
+        
+        const users = usersRes.ok ? await usersRes.json() : { total_users: 0, verified_users: 0, recent_signups: 0 };
+        const verifications = verificationsRes.ok ? await verificationsRes.json() : { pending_requests: 0, total_requests: 0 };
+        const listings = listingsRes.ok ? await listingsRes.json() : { pending_listings: 0, total_listings: 0, approved_listings: 0 };
+        const refunds = refundsRes.ok ? await refundsRes.json() : { pending_requests: 0, total_requests: 0, total_requested_amount: 0 };
+        const disputes = disputesRes.ok ? await disputesRes.json() : { open_disputes: 0, total_disputes: 0, unassigned_disputes: 0 };
+
+        realStats = {
+          users,
+          verifications,
+          listings,
+          refunds,
+          disputes
+        };
+        
+        console.log('✅ Stats compiled from individual endpoints:', realStats);
       }
 
-      // Create real stats from actual data
-      const realStats = {
-        users: { 
-          total_users: Math.max(totalBookings, 50), // Estimate based on bookings
-          verified_users: Math.floor(totalBookings * 0.7), 
-          recent_signups: Math.floor(totalBookings * 0.1) 
-        },
-        verifications: { 
-          pending_requests: Math.floor(totalBookings * 0.05), 
-          total_requests: Math.floor(totalBookings * 0.3) 
-        },
-        listings: { 
-          pending_listings: Math.floor(totalListings * 0.1), 
-          total_listings: totalListings, 
-          approved_listings: Math.floor(totalListings * 0.9) 
-        },
-        refunds: { 
-          pending_requests: Math.floor(totalBookings * 0.02), 
-          total_requests: Math.floor(totalBookings * 0.05), 
-          total_requested_amount: totalRevenue * 0.03 
-        },
-        disputes: { 
-          open_disputes: Math.floor(totalBookings * 0.01), 
-          total_disputes: Math.floor(totalBookings * 0.03), 
-          unassigned_disputes: 0 
-        }
-      };
-
-      console.log('📊 Generated real admin stats:', realStats);
       setStats(realStats);
 
     } catch (err: any) {
       console.error('Stats fetch error:', err);
-      // Fallback to basic stats if APIs fail
-      const fallbackStats = {
-        users: { total_users: 45, verified_users: 32, recent_signups: 8 },
-        verifications: { pending_requests: 3, total_requests: 12 },
-        listings: { pending_listings: 2, total_listings: 28, approved_listings: 25 },
-        refunds: { pending_requests: 1, total_requests: 4, total_requested_amount: 150.00 },
-        disputes: { open_disputes: 0, total_disputes: 2, unassigned_disputes: 0 }
+      // No fallback stats - show zeros if APIs fail
+      const emptyStats = {
+        users: { total_users: 0, verified_users: 0, recent_signups: 0 },
+        verifications: { pending_requests: 0, total_requests: 0 },
+        listings: { pending_listings: 0, total_listings: 0, approved_listings: 0 },
+        refunds: { pending_requests: 0, total_requests: 0, total_requested_amount: 0 },
+        disputes: { open_disputes: 0, total_disputes: 0, unassigned_disputes: 0 }
       };
-      console.log('📊 Using fallback stats due to API errors');
-      setStats(fallbackStats);
+      console.log('📊 Using empty stats due to API errors - no demo data');
+      setStats(emptyStats);
     }
   };
 
@@ -1262,88 +1252,6 @@ const AdminDashboardEnhanced: React.FC = () => {
     );
   }
 
-  // Show dashboard with mock data if APIs failed
-  if (error && !stats) {
-    // Create mock stats to show the proper interface
-    const mockStats = {
-      users: { total_users: 127, verified_users: 89, recent_signups: 12 },
-      verifications: { pending_requests: 3, total_requests: 45 },
-      listings: { pending_listings: 5, total_listings: 78, approved_listings: 73 },
-      refunds: { pending_requests: 2, total_requests: 18, total_requested_amount: 450.75 },
-      disputes: { open_disputes: 1, total_disputes: 7, unassigned_disputes: 0 }
-    };
-    
-    setStats(mockStats);
-    setError(null); // Clear error to show main interface
-    
-    // Set mock data for tables
-    setVerificationRequests([
-      {
-        id: 1,
-        user_display_name: 'John Smith',
-        user_email: 'john@example.com',
-        verification_type: 'identity',
-        verification_type_display: 'Identity Verification',
-        status: 'pending',
-        status_display: 'Pending Review',
-        created_at: new Date().toISOString(),
-        can_be_reviewed: true
-      },
-      {
-        id: 2,
-        user_display_name: 'Sarah Johnson',
-        user_email: 'sarah@example.com',
-        verification_type: 'identity',
-        verification_type_display: 'Identity Verification',
-        status: 'pending',
-        status_display: 'Pending Review',
-        created_at: new Date().toISOString(),
-        can_be_reviewed: true
-      }
-    ]);
-    
-    setRefundRequests([
-      {
-        id: 1,
-        request_id: 'REF-001',
-        requested_amount: 125.50,
-        reason: 'cancellation',
-        reason_display: 'Booking Cancellation',
-        status: 'pending',
-        status_display: 'Pending Review',
-        requested_by_name: 'Mike Wilson',
-        booking_details: {
-          booking_id: 'BK-789',
-          start_time: new Date().toISOString(),
-          parking_space: {
-            title: 'Downtown Parking Spot',
-            address: '123 Main St, New York, NY'
-          }
-        },
-        created_at: new Date().toISOString(),
-        final_amount: 125.50,
-        can_be_approved: true
-      }
-    ]);
-    
-    setListings([
-      {
-        id: 1,
-        title: 'Premium Parking Space',
-        address: '456 Park Ave, New York, NY',
-        host_name: 'Alex Brown',
-        host_email: 'alex@example.com',
-        approval_status: 'pending',
-        approval_status_display: 'Pending Approval',
-        borough: 'Manhattan',
-        space_type: 'Garage',
-        hourly_rate: '15.00',
-        images_count: 3,
-        created_at: new Date().toISOString(),
-        can_be_reviewed: true
-      }
-    ]);
-  }
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
