@@ -53,6 +53,37 @@ export default function AdminLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Check if user is already logged in as owner
+  React.useEffect(() => {
+    const checkExistingAuth = () => {
+      const token = localStorage.getItem('access_token');
+      const user = localStorage.getItem('user');
+      
+      if (token && user) {
+        try {
+          const userData = JSON.parse(user);
+          console.log('🔍 Found existing login:', userData);
+          
+          if (userData.email === 'darelldrayton93@gmail.com') {
+            console.log('✅ Owner account detected, granting admin access');
+            
+            // Copy tokens to admin storage
+            localStorage.setItem('admin_access_token', token);
+            localStorage.setItem('admin_refresh_token', localStorage.getItem('refresh_token') || '');
+            localStorage.setItem('admin_user', JSON.stringify(userData));
+            
+            navigate('/ruler/dashboard');
+            return;
+          }
+        } catch (e) {
+          console.error('Error parsing user data:', e);
+        }
+      }
+    };
+    
+    checkExistingAuth();
+  }, [navigate]);
+
   const {
     register,
     handleSubmit,
