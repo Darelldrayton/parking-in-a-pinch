@@ -1332,7 +1332,7 @@ const MiniMyBookings: React.FC = () => {
         <Card sx={{ borderRadius: 3, mb: 3, border: '2px solid', borderColor: 'info.main' }}>
           <CardContent sx={{ p: 3 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h6" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="h6" fontWeight={600} sx={{ display: 'flex', alignItems: 'center', gap: 1 }} color="text.primary">
                 <CheckCircle sx={{ color: 'info.main' }} />
                 Active Bookings ({activeBookings.length})
               </Typography>
@@ -2195,7 +2195,7 @@ const NewUserDashboard: React.FC = () => {
 
         {/* Bookings Tab */}
         <CustomTabPanel value={activeTab} index={2}>
-          <Typography variant="h5" fontWeight={600} sx={{ mb: 3 }}>
+          <Typography variant="h5" fontWeight={600} sx={{ mb: 3 }} color="text.primary">
             My Bookings
           </Typography>
           
@@ -2677,7 +2677,7 @@ const ExistingUserDashboard: React.FC = () => {
 
         {/* Bookings Tab */}
         <CustomTabPanel value={activeTab} index={2}>
-          <Typography variant="h5" fontWeight={600} sx={{ mb: 3 }}>
+          <Typography variant="h5" fontWeight={600} sx={{ mb: 3 }} color="text.primary">
             My Bookings
           </Typography>
           
