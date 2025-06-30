@@ -155,7 +155,7 @@ const HostAnalytics: React.FC<HostAnalyticsProps> = ({
       {/* Header */}
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
         <Box>
-          <Typography variant="h4" fontWeight={700} gutterBottom>
+          <Typography variant="h4" fontWeight={700} gutterBottom color="text.primary">
             Analytics Dashboard
           </Typography>
           <Typography variant="body1" color="text.secondary">
@@ -200,7 +200,7 @@ const HostAnalytics: React.FC<HostAnalyticsProps> = ({
                     <Typography variant="body2" color="text.secondary" fontWeight={500}>
                       {metric.title}
                     </Typography>
-                    <Typography variant="h4" fontWeight={700} sx={{ my: 1 }}>
+                    <Typography variant="h4" fontWeight={700} sx={{ my: 1 }} color="text.primary">
                       {metric.value}
                     </Typography>
                     <Stack direction="row" alignItems="center" spacing={1}>
@@ -244,7 +244,7 @@ const HostAnalytics: React.FC<HostAnalyticsProps> = ({
         <Grid size={{ xs: 12, lg: 12 }}>
           <Card sx={{ borderRadius: 3, height: '100%' }}>
             <CardContent sx={{ p: 3 }}>
-              <Typography variant="h6" fontWeight={600} gutterBottom>
+              <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
                 Quick Insights
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
@@ -256,11 +256,11 @@ const HostAnalytics: React.FC<HostAnalyticsProps> = ({
                   <Box>
                     <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
                       <People sx={{ fontSize: 20, color: 'primary.main' }} />
-                      <Typography variant="subtitle2" fontWeight={600}>
+                      <Typography variant="subtitle2" fontWeight={600} color="text.primary">
                         Unique Renters
                       </Typography>
                     </Stack>
-                    <Typography variant="h5" fontWeight={700}>
+                    <Typography variant="h5" fontWeight={700} color="text.primary">
                       {analyticsData.totalBookings > 0 ? Math.max(1, Math.floor(analyticsData.totalBookings * 0.8)) : 0}
                     </Typography>
                     <Typography variant="caption" color={analyticsData.totalBookings > 0 ? "success.main" : "text.secondary"}>
@@ -273,11 +273,11 @@ const HostAnalytics: React.FC<HostAnalyticsProps> = ({
                   <Box>
                     <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
                       <CalendarToday sx={{ fontSize: 20, color: 'warning.main' }} />
-                      <Typography variant="subtitle2" fontWeight={600}>
+                      <Typography variant="subtitle2" fontWeight={600} color="text.primary">
                         Active Listings
                       </Typography>
                     </Stack>
-                    <Typography variant="h5" fontWeight={700}>
+                    <Typography variant="h5" fontWeight={700} color="text.primary">
                       {topListings.filter(l => l.earnings > 0).length}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
@@ -290,11 +290,11 @@ const HostAnalytics: React.FC<HostAnalyticsProps> = ({
                   <Box>
                     <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
                       <PieChart sx={{ fontSize: 20, color: 'info.main' }} />
-                      <Typography variant="subtitle2" fontWeight={600}>
+                      <Typography variant="subtitle2" fontWeight={600} color="text.primary">
                         This Month
                       </Typography>
                     </Stack>
-                    <Typography variant="h5" fontWeight={700}>
+                    <Typography variant="h5" fontWeight={700} color="text.primary">
                       {analyticsData.monthlyBookings}
                     </Typography>
                     <Typography variant="caption" color={analyticsData.monthlyBookings > 0 ? "success.main" : "text.secondary"}>
@@ -312,7 +312,7 @@ const HostAnalytics: React.FC<HostAnalyticsProps> = ({
       <Card sx={{ borderRadius: 3 }}>
         <CardContent sx={{ p: 0 }}>
           <Box sx={{ p: 3, pb: 2 }}>
-            <Typography variant="h6" fontWeight={600}>
+            <Typography variant="h6" fontWeight={600} color="text.primary">
               Recent Bookings
             </Typography>
             <Typography variant="body2" color="text.secondary">

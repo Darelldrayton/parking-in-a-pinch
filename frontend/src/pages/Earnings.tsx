@@ -712,11 +712,11 @@ export default function Earnings() {
                 >
                   <ArrowBack />
                 </IconButton>
-                <Typography variant="h3" component="h1" fontWeight={700}>
+                <Typography variant="h3" component="h1" fontWeight={700} color="white">
                   Your Earnings
                 </Typography>
               </Stack>
-              <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 300 }}>
+              <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 300 }} color="white">
                 Track your parking space income and manage payouts
               </Typography>
             </Box>
@@ -749,7 +749,7 @@ export default function Earnings() {
                     <Typography variant="body2" color="text.secondary" fontWeight={500}>
                       Total Earnings
                     </Typography>
-                    <Typography variant="h4" fontWeight={700} sx={{ color: 'success.main', mt: 1 }}>
+                    <Typography variant="h4" fontWeight={700} sx={{ mt: 1 }} color="text.primary">
                       ${earnings.total_earnings.toLocaleString()}
                     </Typography>
                   </Box>
@@ -767,7 +767,7 @@ export default function Earnings() {
                     <Typography variant="body2" color="text.secondary" fontWeight={500}>
                       This Month
                     </Typography>
-                    <Typography variant="h4" fontWeight={700} sx={{ mt: 1 }}>
+                    <Typography variant="h4" fontWeight={700} sx={{ mt: 1 }} color="text.primary">
                       ${earnings.this_month.toLocaleString()}
                     </Typography>
                     <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 1 }}>
@@ -791,7 +791,7 @@ export default function Earnings() {
                     <Typography variant="body2" color="text.secondary" fontWeight={500}>
                       Available Balance
                     </Typography>
-                    <Typography variant="h4" fontWeight={700} sx={{ color: 'info.main', mt: 1 }}>
+                    <Typography variant="h4" fontWeight={700} sx={{ mt: 1 }} color="text.primary">
                       ${earnings.available_balance.toLocaleString()}
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
@@ -812,7 +812,7 @@ export default function Earnings() {
                     <Typography variant="body2" color="text.secondary" fontWeight={500}>
                       Avg. per Booking
                     </Typography>
-                    <Typography variant="h4" fontWeight={700} sx={{ color: 'warning.main', mt: 1 }}>
+                    <Typography variant="h4" fontWeight={700} sx={{ mt: 1 }} color="text.primary">
                       ${earnings.average_per_booking.toFixed(2)}
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
@@ -830,7 +830,7 @@ export default function Earnings() {
         <Paper elevation={2} sx={{ p: 3, mb: 4, borderRadius: 3 }}>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" justifyContent="space-between">
             <Box>
-              <Typography variant="h6" fontWeight={600}>
+              <Typography variant="h6" fontWeight={600} color="text.primary">
                 Earnings Management
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -887,7 +887,7 @@ export default function Earnings() {
             <Box sx={{ p: 3, pb: 2 }}>
               <Stack direction="row" alignItems="center" justifyContent="space-between">
                 <Box>
-                  <Typography variant="h6" fontWeight={600}>
+                  <Typography variant="h6" fontWeight={600} color="text.primary">
                     Transaction History
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -987,7 +987,7 @@ export default function Earnings() {
         <Card sx={{ borderRadius: 3, boxShadow: theme.shadows[4], mt: 4 }}>
           <CardContent sx={{ p: 0 }}>
             <Box sx={{ p: 3, pb: 2 }}>
-              <Typography variant="h6" fontWeight={600}>
+              <Typography variant="h6" fontWeight={600} color="text.primary">
                 Recent Payouts
               </Typography>
               <Typography variant="body2" color="text.secondary">
