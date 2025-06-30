@@ -48,7 +48,7 @@ interface FormData {
 }
 
 export default function AdminLogin() {
-  console.log('🚨 ADMIN LOGIN COMPONENT RENDERING!');
+  console.log('🚨 ADMIN LOGIN COMPONENT RENDERING!', Date.now());
   const navigate = useNavigate();
   const theme = useTheme();
   const [isLoading, setIsLoading] = useState(false);
@@ -56,6 +56,37 @@ export default function AdminLogin() {
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [isOwnerLoggedIn, setIsOwnerLoggedIn] = useState(false);
+
+  // 🚨 EMERGENCY REDIRECT CHECK - FIRST PRIORITY
+  React.useEffect(() => {
+    console.log('🚨 EMERGENCY REDIRECT CHECK RUNNING');
+    const token = localStorage.getItem('access_token');
+    const user = localStorage.getItem('user');
+    
+    if (token && user) {
+      try {
+        const userData = JSON.parse(user);
+        console.log('🚨 EMERGENCY CHECK - User email:', userData.email);
+        
+        if (userData.email === 'darelldrayton93@gmail.com') {
+          console.log('🚨 EMERGENCY REDIRECT - Owner detected, redirecting immediately');
+          
+          // Store admin tokens immediately
+          localStorage.setItem('admin_access_token', token);
+          localStorage.setItem('admin_refresh_token', localStorage.getItem('refresh_token') || '');
+          localStorage.setItem('admin_user', user);
+          
+          // IMMEDIATE REDIRECT - STOP ALL EXECUTION
+          window.location.replace('/ruler/dashboard');
+          return; // Stop execution
+        }
+      } catch (e) {
+        console.error('🚨 EMERGENCY CHECK ERROR:', e);
+      }
+    }
+    
+    console.log('🚨 EMERGENCY CHECK COMPLETE - No redirect needed');
+  }, []); // ONLY RUN ONCE
 
   // Disable WebSocket on admin login page to prevent connection loops
   React.useEffect(() => {
@@ -71,33 +102,28 @@ export default function AdminLogin() {
     };
   }, []);
 
-  // Simplified auth check - no automatic redirects to prevent loops
+  // Secondary auth check for UI state (only if emergency redirect didn't trigger)
   React.useEffect(() => {
     if (hasCheckedAuth) return;
     
-    console.log('🔍 Checking existing authentication...');
+    console.log('🔍 Secondary auth check for UI state...');
     const token = localStorage.getItem('access_token');
     const user = localStorage.getItem('user');
-    
-    console.log('🔍 Token exists:', !!token);
-    console.log('🔍 User data exists:', !!user);
     
     if (token && user) {
       try {
         const userData = JSON.parse(user);
-        console.log('🔍 User email:', userData.email);
-        
         if (userData.email === 'darelldrayton93@gmail.com') {
-          console.log('✅ Owner account detected - ready for admin access');
+          console.log('✅ Owner detected for UI state');
           setIsOwnerLoggedIn(true);
         }
       } catch (e) {
-        console.error('❌ Error parsing user data:', e);
+        console.error('❌ Error in secondary check:', e);
       }
     }
     
     setHasCheckedAuth(true);
-  }, []);
+  }, [hasCheckedAuth]);
 
   const {
     register,
@@ -152,6 +178,8 @@ export default function AdminLogin() {
   };
 
   const handleQuickAdminAccess = () => {
+    if (isRedirecting) return; // Prevent double-clicks
+    
     console.log('🚀 Quick admin access requested');
     setIsRedirecting(true);
     
@@ -163,10 +191,10 @@ export default function AdminLogin() {
     localStorage.setItem('admin_refresh_token', localStorage.getItem('refresh_token') || '');
     localStorage.setItem('admin_user', user || '');
     
-    console.log('📝 Admin tokens copied, redirecting...');
-    setTimeout(() => {
-      window.location.href = '/ruler/dashboard';
-    }, 500);
+    console.log('📝 Admin tokens copied, redirecting with replace...');
+    
+    // Use replace instead of href to prevent back button issues
+    window.location.replace('/ruler/dashboard');
   };
 
   // Show loading screen while redirecting
