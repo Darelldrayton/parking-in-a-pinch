@@ -1370,7 +1370,7 @@ const MiniMyBookings: React.FC = () => {
                     </Box>
 
                     <Box sx={{ mb: 2 }}>
-                      <Typography variant="subtitle1" fontWeight={600}>
+                      <Typography variant="subtitle1" fontWeight={600} color="text.primary">
                         {booking.parking_space?.title || 'Parking Space'}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
@@ -1531,7 +1531,7 @@ const MiniMyBookings: React.FC = () => {
                     </Box>
 
                     <Box sx={{ mb: 2 }}>
-                      <Typography variant="subtitle1" fontWeight={600}>
+                      <Typography variant="subtitle1" fontWeight={600} color="text.primary">
                         {booking.parking_space?.title || 'Parking Space'}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
@@ -1614,7 +1614,7 @@ const MiniMyBookings: React.FC = () => {
                       <LocationIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
                     </Avatar>
                     <Box>
-                      <Typography variant="body2" fontWeight={500}>
+                      <Typography variant="body2" fontWeight={500} color="text.primary">
                         {booking.parking_space?.title || 'Parking Space'}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
