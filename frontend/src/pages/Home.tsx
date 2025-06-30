@@ -631,19 +631,7 @@ function Home() {
                   </Box>
                 </Button>
 
-                <Typography variant="body1" color="text.secondary">
-                  •
-                </Typography>
-
-                <Typography variant="body1" color="text.secondary" fontWeight={500}>
-                  Ready to book instantly
-                </Typography>
               </Stack>
-
-              <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto' }}>
-                These parking spaces are verified as available and can be booked immediately. 
-                Click above to see all available spots and secure your parking in seconds.
-              </Typography>
             </Box>
           </Fade>
         </Container>
