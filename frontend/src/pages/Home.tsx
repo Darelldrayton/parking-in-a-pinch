@@ -375,6 +375,7 @@ function Home() {
                   sx={{
                     fontWeight: 800,
                     mb: 3,
+                    color: 'white',
                   }}
                 >
                   Find Parking in a Pinch
@@ -385,6 +386,7 @@ function Home() {
                     mb: 4,
                     opacity: 0.9,
                     fontWeight: 300,
+                    color: 'white',
                   }}
                 >
                   Discover convenient parking spots near you or monetize your unused space
@@ -826,10 +828,10 @@ function Home() {
         }}
       >
         <Container maxWidth="md">
-          <Typography variant="h3" gutterBottom fontWeight="bold">
+          <Typography variant="h3" gutterBottom fontWeight="bold" color="white">
             Ready to Get Started?
           </Typography>
-          <Typography variant="h6" sx={{ mb: 4 }}>
+          <Typography variant="h6" sx={{ mb: 4, color: 'white' }}>
             Join thousands of users finding and sharing parking spaces
           </Typography>
           <Stack
