@@ -695,7 +695,7 @@ const MiniMyListings: React.FC = () => {
           <Card sx={{ borderRadius: 3, height: '100%' }}>
             <CardContent sx={{ p: 3, textAlign: 'center' }}>
               <LocationIcon sx={{ fontSize: 32, color: 'primary.main', mb: 1 }} />
-              <Typography variant="h5" fontWeight={600} >
+              <Typography variant="h5" fontWeight={600} color="text.primary">
                 {listings.length}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -1277,7 +1277,7 @@ const MiniMyBookings: React.FC = () => {
           <Card sx={{ borderRadius: 3, height: '100%' }}>
             <CardContent sx={{ p: 3, textAlign: 'center' }}>
               <BookingIcon sx={{ fontSize: 32, color: 'info.main', mb: 1 }} />
-              <Typography variant="h5" fontWeight={600} >
+              <Typography variant="h5" fontWeight={600} color="text.primary">
                 {bookings.length}
               </Typography>
               <Typography variant="body2" color="text.secondary">
