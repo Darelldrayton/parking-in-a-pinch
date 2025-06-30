@@ -72,7 +72,8 @@ export default function AdminLogin() {
             localStorage.setItem('admin_refresh_token', localStorage.getItem('refresh_token') || '');
             localStorage.setItem('admin_user', JSON.stringify(userData));
             
-            navigate('/ruler/dashboard');
+            // Use replace instead of navigate to prevent back navigation issues
+            window.location.replace('/ruler/dashboard');
             return;
           }
         } catch (e) {
@@ -81,8 +82,9 @@ export default function AdminLogin() {
       }
     };
     
+    // Only run once on mount
     checkExistingAuth();
-  }, [navigate]);
+  }, []); // Empty dependency array to run only once
 
   const {
     register,
