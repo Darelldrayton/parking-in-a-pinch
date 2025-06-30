@@ -580,6 +580,96 @@ function Home() {
         </Box>
       </Box>
 
+      {/* Available Now Section */}
+      <Box sx={{ bgcolor: alpha(theme.palette.success.main, 0.02), py: 6 }}>
+        <Container maxWidth="lg">
+          <Fade in timeout={800}>
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="h4" fontWeight={700} gutterBottom color="text.primary">
+                Available Right Now
+              </Typography>
+              <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
+                Parking spots ready for immediate booking
+              </Typography>
+              
+              <Stack direction="row" spacing={3} alignItems="center" justifyContent="center" sx={{ mb: 4 }}>
+                {/* Available Now Button */}
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={() => navigate('/listings?filter=available')}
+                  sx={{
+                    bgcolor: 'success.main',
+                    color: 'white',
+                    fontWeight: 600,
+                    fontSize: '1.1rem',
+                    px: 4,
+                    py: 1.5,
+                    borderRadius: 3,
+                    boxShadow: theme.shadows[8],
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      bgcolor: 'success.dark',
+                      transform: 'translateY(-2px)',
+                      boxShadow: theme.shadows[12],
+                      '&:before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        borderRadius: 3,
+                        background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.2) 50%, transparent 70%)',
+                        transform: 'translateX(-100%)',
+                        animation: 'shimmer 1.5s ease-out',
+                      },
+                    },
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '@keyframes shimmer': {
+                      '0%': { transform: 'translateX(-100%)' },
+                      '100%': { transform: 'translateX(100%)' }
+                    }
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box
+                      sx={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: '50%',
+                        bgcolor: 'white',
+                        animation: 'pulse 2s infinite',
+                        '@keyframes pulse': {
+                          '0%': { opacity: 1 },
+                          '50%': { opacity: 0.5 },
+                          '100%': { opacity: 1 }
+                        }
+                      }}
+                    />
+                    6 Available Now
+                  </Box>
+                </Button>
+
+                <Typography variant="body1" color="text.secondary">
+                  •
+                </Typography>
+
+                <Typography variant="body1" color="text.secondary" fontWeight={500}>
+                  Ready to book instantly
+                </Typography>
+              </Stack>
+
+              <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto' }}>
+                These parking spaces are verified as available and can be booked immediately. 
+                Click above to see all available spots and secure your parking in seconds.
+              </Typography>
+            </Box>
+          </Fade>
+        </Container>
+      </Box>
+
       {/* Features Section */}
       <Container maxWidth="lg" sx={{ py: 8 }}>
         <Typography variant="h3" align="center" gutterBottom fontWeight="bold">

@@ -124,8 +124,16 @@ export default function Listings() {
   // Get search parameters from URL
   useEffect(() => {
     const location = searchParams.get('location');
+    const filter = searchParams.get('filter');
+    const available = searchParams.get('available');
+    
     if (location) {
       setSearchQuery(location);
+    }
+    
+    // Check for availability filter in URL
+    if (filter === 'available' || available === 'true') {
+      setShowOnlyAvailable(true);
     }
   }, [searchParams]);
 
@@ -410,12 +418,43 @@ export default function Listings() {
   };
 
   const handleAvailableNowClick = () => {
-    setShowOnlyAvailable(!showOnlyAvailable);
+    const newShowOnlyAvailable = !showOnlyAvailable;
+    setShowOnlyAvailable(newShowOnlyAvailable);
+    
+    // Update URL parameters
+    const newParams = new URLSearchParams(searchParams);
+    if (newShowOnlyAvailable) {
+      newParams.set('filter', 'available');
+    } else {
+      newParams.delete('filter');
+      newParams.delete('available');
+    }
+    
+    // Navigate with new parameters
+    navigate(`/listings?${newParams.toString()}`, { replace: true });
+    
     toast.success(
-      showOnlyAvailable 
-        ? 'Showing all parking spaces' 
-        : 'Showing only available parking'
+      newShowOnlyAvailable 
+        ? 'Showing only available parking' 
+        : 'Showing all parking spaces'
     );
+  };
+
+  const handleShowAll = () => {
+    setShowOnlyAvailable(false);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('filter');
+    newParams.delete('available');
+    navigate(`/listings?${newParams.toString()}`, { replace: true });
+    toast.success('Showing all parking spaces');
+  };
+
+  const handleShowAvailableOnly = () => {
+    setShowOnlyAvailable(true);
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('filter', 'available');
+    navigate(`/listings?${newParams.toString()}`, { replace: true });
+    toast.success('Showing only available parking');
   };
 
   const handleCardClick = (listingId: number) => {
@@ -653,6 +692,41 @@ export default function Listings() {
             </Grid>
           </Grid>
         </Paper>
+
+        {/* Filter Toggle Buttons */}
+        {showOnlyAvailable && (
+          <Paper 
+            elevation={0} 
+            sx={{ 
+              p: 2, 
+              mb: 3, 
+              borderRadius: 3,
+              border: `1px solid ${alpha(theme.palette.success.main, 0.3)}`,
+              bgcolor: alpha(theme.palette.success.main, 0.05),
+            }}
+          >
+            <Stack direction="row" spacing={2} alignItems="center" justifyContent="center">
+              <Typography variant="body2" color="success.main" fontWeight={600}>
+                Showing only available parking spaces
+              </Typography>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={handleShowAll}
+                sx={{
+                  borderColor: 'success.main',
+                  color: 'success.main',
+                  '&:hover': {
+                    borderColor: 'success.dark',
+                    backgroundColor: alpha(theme.palette.success.main, 0.1),
+                  },
+                }}
+              >
+                Show All
+              </Button>
+            </Stack>
+          </Paper>
+        )}
 
         {/* Listings Grid */}
         <Grid container spacing={3}>
