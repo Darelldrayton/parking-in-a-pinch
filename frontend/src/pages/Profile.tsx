@@ -201,7 +201,7 @@ export default function Profile() {
       <Container maxWidth="lg">
         {/* Header */}
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h3" component="h1" fontWeight="bold" gutterBottom>
+          <Typography variant="h3" component="h1" fontWeight="bold" gutterBottom color="text.primary">
             Profile Settings
           </Typography>
           <Typography variant="h6" color="text.secondary">
@@ -224,7 +224,7 @@ export default function Profile() {
                 {user?.first_name?.charAt(0) || 'U'}
               </Avatar>
               <Box sx={{ flex: 1 }}>
-                <Typography variant="h5" fontWeight="bold" gutterBottom>
+                <Typography variant="h5" fontWeight="bold" gutterBottom color="text.primary">
                   {user?.first_name} {user?.last_name}
                 </Typography>
                 <Typography variant="body1" color="text.secondary" gutterBottom>
@@ -264,7 +264,7 @@ export default function Profile() {
           <TabPanel value={activeTab} index={0}>
             <CardContent sx={{ p: 4 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h5" fontWeight="bold">
+                <Typography variant="h5" fontWeight="bold" color="text.primary">
                   Personal Information
                 </Typography>
                 {!isEditing && (
@@ -414,7 +414,7 @@ export default function Profile() {
           <TabPanel value={activeTab} index={1}>
             <CardContent sx={{ p: 4 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h5" fontWeight="bold">
+                <Typography variant="h5" fontWeight="bold" color="text.primary">
                   Vehicle Information
                 </Typography>
                 {!isEditing && (
@@ -620,7 +620,7 @@ export default function Profile() {
           {/* Security Tab */}
           <TabPanel value={activeTab} index={4}>
             <CardContent sx={{ p: 4 }}>
-              <Typography variant="h5" fontWeight="bold" gutterBottom>
+              <Typography variant="h5" fontWeight="bold" gutterBottom color="text.primary">
                 Security Settings
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
@@ -631,7 +631,7 @@ export default function Profile() {
                 <Paper elevation={1} sx={{ p: 3, borderRadius: 2 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Box>
-                      <Typography variant="subtitle1" fontWeight="bold">
+                      <Typography variant="subtitle1" fontWeight="bold" color="text.primary">
                         Change Password
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
@@ -651,7 +651,7 @@ export default function Profile() {
                 <Paper elevation={1} sx={{ p: 3, borderRadius: 2, bgcolor: alpha(theme.palette.warning.main, 0.02) }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Box>
-                      <Typography variant="subtitle1" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography variant="subtitle1" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 1 }} color="text.primary">
                         <Gavel sx={{ fontSize: 20, color: 'warning.main' }} />
                         File a Dispute
                       </Typography>
