@@ -217,7 +217,7 @@ const MyBookings: React.FC = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h4" gutterBottom>
+      <Typography variant="h4" gutterBottom color="text.primary">
         My Bookings
       </Typography>
       <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
@@ -264,7 +264,7 @@ const MyBookings: React.FC = () => {
 
                     {/* Location */}
                     <Box>
-                      <Typography variant="h6" fontWeight={600} gutterBottom>
+                      <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
                         {booking.parking_space?.title || 'Parking Space'}
                       </Typography>
                       <Stack direction="row" alignItems="center" spacing={1}>
@@ -312,7 +312,7 @@ const MyBookings: React.FC = () => {
                           Total:
                         </Typography>
                       </Stack>
-                      <Typography variant="h6" fontWeight={600} >
+                      <Typography variant="h6" fontWeight={600} color="text.primary">
                         ${typeof booking.total_amount === 'number' ? booking.total_amount.toFixed(2) : parseFloat(booking.total_amount || '0').toFixed(2)}
                       </Typography>
                     </Box>
