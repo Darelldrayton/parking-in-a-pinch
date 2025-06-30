@@ -52,38 +52,59 @@ export default function AdminLogin() {
   const theme = useTheme();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
 
-  // Check if user is already logged in as owner
+  // Disable WebSocket on admin login page to prevent connection loops
   React.useEffect(() => {
-    const checkExistingAuth = () => {
-      const token = localStorage.getItem('access_token');
-      const user = localStorage.getItem('user');
-      
-      if (token && user) {
-        try {
-          const userData = JSON.parse(user);
-          console.log('🔍 Found existing login:', userData);
-          
-          if (userData.email === 'darelldrayton93@gmail.com') {
-            console.log('✅ Owner account detected, granting admin access');
-            
-            // Copy tokens to admin storage
-            localStorage.setItem('admin_access_token', token);
-            localStorage.setItem('admin_refresh_token', localStorage.getItem('refresh_token') || '');
-            localStorage.setItem('admin_user', JSON.stringify(userData));
-            
-            // Use replace instead of navigate to prevent back navigation issues
-            window.location.replace('/ruler/dashboard');
-            return;
-          }
-        } catch (e) {
-          console.error('Error parsing user data:', e);
-        }
+    if (typeof window !== 'undefined') {
+      window.disableWebSocket = true;
+      console.log('🔒 WebSocket disabled for admin login page');
+    }
+    
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.disableWebSocket = false;
       }
     };
+  }, []);
+
+  // Check if user is already logged in as owner - run only once
+  React.useEffect(() => {
+    if (hasCheckedAuth) return; // Prevent multiple checks
     
-    // Only run once on mount
-    checkExistingAuth();
+    console.log('🔍 Checking existing authentication...');
+    const token = localStorage.getItem('access_token');
+    const user = localStorage.getItem('user');
+    
+    if (token && user) {
+      try {
+        const userData = JSON.parse(user);
+        console.log('🔍 Found existing login:', userData);
+        
+        if (userData.email === 'darelldrayton93@gmail.com') {
+          console.log('✅ Owner account detected, granting admin access');
+          
+          // Copy tokens to admin storage
+          localStorage.setItem('admin_access_token', token);
+          localStorage.setItem('admin_refresh_token', localStorage.getItem('refresh_token') || '');
+          localStorage.setItem('admin_user', JSON.stringify(userData));
+          
+          // Set flag to prevent re-checking
+          setHasCheckedAuth(true);
+          
+          // Use setTimeout to prevent immediate redirect issues
+          setTimeout(() => {
+            window.location.href = '/ruler/dashboard';
+          }, 100);
+          return;
+        }
+      } catch (e) {
+        console.error('Error parsing user data:', e);
+      }
+    }
+    
+    setHasCheckedAuth(true);
+    console.log('🔍 Authentication check complete');
   }, []); // Empty dependency array to run only once
 
   const {

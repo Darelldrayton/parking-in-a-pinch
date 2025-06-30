@@ -28,6 +28,13 @@ class WebSocketService {
    * Connect to WebSocket server
    */
   connect(token: string) {
+    // Check if WebSocket is disabled (e.g., on admin login page)
+    if (typeof window !== 'undefined' && (window as any).disableWebSocket) {
+      console.log('🔒 WebSocket connection disabled');
+      this.onConnectionStatusChange?.('disconnected');
+      return;
+    }
+
     if (this.ws?.readyState === WebSocket.OPEN) {
       console.log('WebSocket already connected');
       return;
@@ -238,6 +245,13 @@ class WebSocketService {
    * Schedule reconnection attempt
    */
   private scheduleReconnect() {
+    // Check if WebSocket is disabled (e.g., on admin login page)
+    if (typeof window !== 'undefined' && (window as any).disableWebSocket) {
+      console.log('🔒 WebSocket reconnection disabled');
+      this.onConnectionStatusChange?.('disconnected');
+      return;
+    }
+
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
       console.warn(`⚠️ Max reconnection attempts (${this.maxReconnectAttempts}) reached. WebSocket will remain disconnected.`);
       this.onConnectionStatusChange?.('disconnected');
