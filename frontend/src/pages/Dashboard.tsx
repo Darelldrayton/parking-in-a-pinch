@@ -2079,7 +2079,7 @@ const NewUserDashboard: React.FC = () => {
                   }}>
                     <CardContent sx={{ p: 3 }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                        <Typography variant="h6" fontWeight={600}>
+                        <Typography variant="h6" fontWeight={600} color="text.primary">
                           Recent Activity
                         </Typography>
                         <Button
@@ -3125,7 +3125,7 @@ const EnhancedRecentActivity: React.FC = () => {
         height: 'fit-content',
       }}>
         <CardContent sx={{ p: 3, textAlign: 'center' }}>
-          <Typography variant="h6" fontWeight={600} gutterBottom>
+          <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
             Recent Activity
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
