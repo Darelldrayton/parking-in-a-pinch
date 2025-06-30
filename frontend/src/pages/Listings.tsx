@@ -119,6 +119,7 @@ export default function Listings() {
   });
   const [selectedBorough, setSelectedBorough] = useState<string>('');
   const [selectedNeighborhood, setSelectedNeighborhood] = useState<string>('');
+  const [showOnlyAvailable, setShowOnlyAvailable] = useState(false);
 
   // Get search parameters from URL
   useEffect(() => {
@@ -368,16 +369,24 @@ export default function Listings() {
     };
   };
 
-  // Only client-side filtering for search query (instant search)
-  // All other filters are now handled server-side
+  // Client-side filtering for search query and availability filter
   const filteredListings = listings.filter(listing => {
-    if (!searchQuery) return true;
+    // Search query filter
+    if (searchQuery) {
+      const matchesSearch = listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        listing.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (listing.borough || '').toLowerCase().includes(searchQuery.toLowerCase());
+      
+      if (!matchesSearch) return false;
+    }
     
-    const matchesSearch = listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      listing.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (listing.borough || '').toLowerCase().includes(searchQuery.toLowerCase());
+    // Availability filter
+    if (showOnlyAvailable) {
+      const availabilityStatus = availabilityStatuses[listing.id];
+      return availabilityStatus?.isAvailable === true;
+    }
     
-    return matchesSearch;
+    return true;
   });
 
   const handleHeartClick = (id: number) => {
@@ -398,6 +407,15 @@ export default function Listings() {
     
     // Navigate to favorites page
     navigate('/favorites');
+  };
+
+  const handleAvailableNowClick = () => {
+    setShowOnlyAvailable(!showOnlyAvailable);
+    toast.success(
+      showOnlyAvailable 
+        ? 'Showing all parking spaces' 
+        : 'Showing only available parking'
+    );
   };
 
   const handleCardClick = (listingId: number) => {
@@ -427,6 +445,11 @@ export default function Listings() {
           <Stack direction="row" spacing={2} alignItems="center">
             <Typography variant="h6" color="text.secondary">
               {filteredListings.length} parking spaces in New York City
+              {showOnlyAvailable && (
+                <Typography component="span" sx={{ ml: 1, fontWeight: 600, color: 'success.main' }}>
+                  (Available only)
+                </Typography>
+              )}
             </Typography>
             {(() => {
               const availableCount = Object.values(availabilityStatuses).filter(status => status.isAvailable === true).length;
@@ -441,11 +464,26 @@ export default function Listings() {
                       icon={<CheckCircle sx={{ fontSize: 16 }} />}
                       label={`${availableCount} Available Now`}
                       size="small"
+                      clickable
+                      onClick={handleAvailableNowClick}
                       sx={{
-                        bgcolor: alpha(theme.palette.success.main, 0.1),
-                        color: 'success.main',
+                        bgcolor: showOnlyAvailable 
+                          ? 'success.main' 
+                          : alpha(theme.palette.success.main, 0.1),
+                        color: showOnlyAvailable ? 'white' : 'success.main',
                         fontWeight: 600,
-                        '& .MuiChip-icon': { color: 'success.main' }
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          bgcolor: showOnlyAvailable 
+                            ? 'success.dark' 
+                            : alpha(theme.palette.success.main, 0.2),
+                          transform: 'translateY(-1px)',
+                          boxShadow: theme.shadows[4],
+                        },
+                        '& .MuiChip-icon': { 
+                          color: showOnlyAvailable ? 'white' : 'success.main'
+                        }
                       }}
                     />
                     {bookedCount > 0 && (
