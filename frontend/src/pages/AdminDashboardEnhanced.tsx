@@ -353,6 +353,28 @@ const AdminDashboardEnhanced: React.FC = () => {
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
+    
+    // Fetch data for the selected tab if needed
+    switch(newValue) {
+      case 0: // Identity Verification
+        if (verificationRequests.length === 0) fetchVerificationRequests();
+        break;
+      case 1: // Refund Requests
+        if (refundRequests.length === 0) fetchRefundRequests();
+        break;
+      case 2: // Listing Approvals
+        if (listings.length === 0) fetchListings();
+        break;
+      case 3: // Booking Search
+        // Booking search is handled by the search input
+        break;
+      case 4: // User Management
+        if (users.length === 0) fetchUsers();
+        break;
+      case 5: // Disputes
+        if (disputes.length === 0) fetchDisputes();
+        break;
+    }
   };
 
   const fetchStats = async () => {
@@ -474,32 +496,8 @@ const AdminDashboardEnhanced: React.FC = () => {
 
       if (!response.ok) {
         console.warn(`⚠️ Admin verification API not available (${response.status})`);
-        // Generate mock verification requests based on real user data
-        const mockRequests = [
-          {
-            id: 1,
-            user_display_name: 'John Doe',
-            user_email: 'john.doe@example.com',
-            verification_type: 'IDENTITY',
-            verification_type_display: 'Identity Verification',
-            status: 'PENDING',
-            status_display: 'Pending Review',
-            created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-            can_be_reviewed: true
-          },
-          {
-            id: 2,
-            user_display_name: 'Jane Smith',
-            user_email: 'jane.smith@example.com',
-            verification_type: 'DRIVER_LICENSE',
-            verification_type_display: "Driver's License",
-            status: 'PENDING',
-            status_display: 'Pending Review',
-            created_at: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
-            can_be_reviewed: true
-          }
-        ];
-        setVerificationRequests(mockRequests);
+        // If admin API is not available, return empty array
+        setVerificationRequests([]);
         return;
       }
 
@@ -533,31 +531,8 @@ const AdminDashboardEnhanced: React.FC = () => {
 
       if (!response.ok) {
         console.warn(`⚠️ Admin refund API not available (${response.status})`);
-        // Generate mock refund requests based on potential booking issues
-        const mockRefunds = [
-          {
-            id: 1,
-            request_id: 'REF-2024-001',
-            requested_amount: 45.00,
-            reason: 'SPACE_UNAVAILABLE',
-            reason_display: 'Parking Space Unavailable',
-            status: 'PENDING',
-            status_display: 'Pending Review',
-            requested_by_name: 'Mike Johnson',
-            booking_details: {
-              booking_id: 'BK-2024-128',
-              start_time: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-              parking_space: {
-                title: 'Downtown Parking Spot',
-                address: '123 Main St, New York, NY'
-              }
-            },
-            created_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-            final_amount: 45.00,
-            can_be_approved: true
-          }
-        ];
-        setRefundRequests(mockRefunds);
+        // If admin API is not available, return empty array
+        setRefundRequests([]);
         return;
       }
 
@@ -597,40 +572,8 @@ const AdminDashboardEnhanced: React.FC = () => {
 
       if (!response.ok) {
         console.warn(`⚠️ Regular listings API also failed (${response.status})`);
-        // Generate mock listings data
-        const mockListings = [
-          {
-            id: 1,
-            title: 'Secure Downtown Parking',
-            address: '456 Broadway, New York, NY',
-            host_name: 'Sarah Wilson',
-            host_email: 'sarah.wilson@example.com',
-            approval_status: 'PENDING',
-            approval_status_display: 'Pending Approval',
-            borough: 'Manhattan',
-            space_type: 'Covered',
-            hourly_rate: '25.00',
-            images_count: 3,
-            created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-            can_be_reviewed: true
-          },
-          {
-            id: 2,
-            title: 'Airport Nearby Parking',
-            address: '789 Queens Blvd, Queens, NY',
-            host_name: 'Robert Chen',
-            host_email: 'robert.chen@example.com',
-            approval_status: 'PENDING',
-            approval_status_display: 'Pending Approval',
-            borough: 'Queens',
-            space_type: 'Open Air',
-            hourly_rate: '15.00',
-            images_count: 2,
-            created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-            can_be_reviewed: true
-          }
-        ];
-        setListings(mockListings);
+        // If admin API is not available, return empty array
+        setListings([]);
         return;
       }
       
@@ -729,37 +672,8 @@ const AdminDashboardEnhanced: React.FC = () => {
 
       if (!response.ok) {
         console.warn(`⚠️ Disputes API not available (${response.status})`);
-        // Generate mock dispute data based on potential issues
-        const mockDisputes = [
-          {
-            id: 1,
-            dispute_id: 'DISP-2024-001',
-            complainant_name: 'Alex Rodriguez',
-            complainant_email: 'alex.rodriguez@example.com',
-            respondent_name: 'Parking Host',
-            respondent_email: 'host@example.com',
-            dispute_type: 'BILLING',
-            dispute_type_display: 'Billing Dispute',
-            subject: 'Incorrect charge for parking session',
-            description: 'I was charged for a longer parking duration than I actually used.',
-            status: 'OPEN',
-            status_display: 'Open',
-            priority: 'MEDIUM',
-            priority_display: 'Medium Priority',
-            disputed_amount: 25.00,
-            refund_requested: true,
-            refund_amount: 10.00,
-            booking_id: 'BK-2024-456',
-            assigned_to_name: null,
-            admin_notes: '',
-            resolution: '',
-            created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-            updated_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-            messages: [],
-            can_be_resolved: true
-          }
-        ];
-        setDisputes(mockDisputes);
+        // If admin API is not available, return empty array
+        setDisputes([]);
         setDisputesLoading(false);
         return;
       }
@@ -889,7 +803,7 @@ const AdminDashboardEnhanced: React.FC = () => {
 
       if (selectedItem.verification_type) {
         // Identity verification
-        url = `http://localhost:8000/api/v1/users/admin/verification-requests/${selectedItem.id}/${actionType}/`;
+        url = `/api/v1/users/admin/verification-requests/${selectedItem.id}/${actionType}/`;
         payload = {
           admin_notes: actionNotes,
           ...(actionType === 'reject' && { rejection_reason: actionReason }),
@@ -897,14 +811,14 @@ const AdminDashboardEnhanced: React.FC = () => {
         };
       } else if (selectedItem.request_id) {
         // Refund request
-        url = `http://localhost:8000/api/v1/payments/admin/refund-requests/${selectedItem.id}/${actionType}/`;
+        url = `/api/v1/payments/admin/refund-requests/${selectedItem.id}/${actionType}/`;
         payload = {
           admin_notes: actionNotes,
           ...(actionType === 'reject' && { rejection_reason: actionReason })
         };
       } else {
         // Listing
-        url = `http://localhost:8000/api/v1/listings/admin/${selectedItem.id}/${actionType === 'revision' ? 'request_revision' : actionType}/`;
+        url = `/api/v1/listings/admin/${selectedItem.id}/${actionType === 'revision' ? 'request_revision' : actionType}/`;
         payload = {
           admin_notes: actionNotes,
           ...(actionType === 'reject' && { rejection_reason: actionReason }),
@@ -1013,7 +927,7 @@ const AdminDashboardEnhanced: React.FC = () => {
         return;
       }
 
-      const response = await fetch(`http://localhost:8000/api/v1/disputes/admin/${replyDialog.dispute.id}/add_admin_message/`, {
+      const response = await fetch(`/api/v1/disputes/admin/${replyDialog.dispute.id}/add_admin_message/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1045,7 +959,7 @@ const AdminDashboardEnhanced: React.FC = () => {
         return;
       }
 
-      const response = await fetch(`http://localhost:8000/api/v1/disputes/admin/${dispute.id}/update_status/`, {
+      const response = await fetch(`/api/v1/disputes/admin/${dispute.id}/update_status/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1078,7 +992,7 @@ const AdminDashboardEnhanced: React.FC = () => {
         changes: editedListing
       });
       
-      const response = await fetch(`http://localhost:8000/api/v1/listings/admin/${editedListing.id}/`, {
+      const response = await fetch(`/api/v1/listings/admin/${editedListing.id}/`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -1134,6 +1048,42 @@ const AdminDashboardEnhanced: React.FC = () => {
       toast.error(err.message || 'Failed to update listing');
     } finally {
       setProcessing(false);
+    }
+  };
+
+  // User management functions
+  const handleUserAction = async (userId: number, action: 'suspend' | 'activate') => {
+    try {
+      const token = localStorage.getItem('admin_access_token');
+      if (!token) {
+        toast.error('No admin token found. Please log in again.');
+        return;
+      }
+
+      const response = await fetch(`/api/v1/users/admin/${userId}/${action}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        toast.success(`User ${action === 'suspend' ? 'suspended' : 'activated'} successfully`);
+        // Update the user in the local state
+        setUsers(prevUsers => 
+          prevUsers.map(user => 
+            user.id === userId 
+              ? { ...user, is_active: action === 'activate' }
+              : user
+          )
+        );
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Failed to ${action} user`);
+      }
+    } catch (err: any) {
+      toast.error(err.message || `Failed to ${action} user`);
     }
   };
 
@@ -1422,12 +1372,21 @@ const AdminDashboardEnhanced: React.FC = () => {
             <Button
               variant="outlined"
               startIcon={<Refresh />}
-              onClick={() => {
-                fetchStats();
-                fetchVerificationRequests();
-                fetchRefundRequests();
-                fetchListings();
+              onClick={async () => {
+                setLoading(true);
+                toast.info('Refreshing dashboard data...');
+                await Promise.all([
+                  fetchStats(),
+                  fetchVerificationRequests(),
+                  fetchRefundRequests(),
+                  fetchListings(),
+                  fetchDisputes(),
+                  fetchUsers()
+                ]);
+                setLoading(false);
+                toast.success('Dashboard refreshed successfully!');
               }}
+              disabled={loading}
               sx={{
                 color: 'white',
                 borderColor: 'rgba(255, 255, 255, 0.5)',
@@ -1437,7 +1396,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                 },
               }}
             >
-              Refresh
+              {loading ? 'Refreshing...' : 'Refresh'}
             </Button>
           </Stack>
         </Container>
@@ -1452,13 +1411,6 @@ const AdminDashboardEnhanced: React.FC = () => {
         
         {!error && stats && Object.keys(stats).length > 0 && (
           <>
-            <Alert severity="info" sx={{ mb: 3 }}>
-              🛡️ Admin Dashboard Loaded | Displaying demo data for interface preview
-              <br />
-              <Typography variant="body2" sx={{ mt: 1, opacity: 0.8 }}>
-                This shows the full admin interface. Live data will be available when backend admin APIs are configured.
-              </Typography>
-            </Alert>
             
             {/* Large Booking Search Section */}
             <Card 
@@ -1641,7 +1593,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                                     startIcon={<OpenInNew />}
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      window.open(`http://localhost:8000${booking.admin_url}`, '_blank');
+                                      window.open(booking.admin_url, '_blank');
                                     }}
                                   >
                                     Django Admin
@@ -2427,7 +2379,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                                       startIcon={<OpenInNew />}
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        window.open(`http://localhost:8000${booking.admin_url}`, '_blank');
+                                        window.open(booking.admin_url, '_blank');
                                       }}
                                     >
                                       Django Admin
@@ -2595,6 +2547,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                           <TableCell>Verified</TableCell>
                           <TableCell>Joined</TableCell>
                           <TableCell>Status</TableCell>
+                          <TableCell align="center">Actions</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
@@ -2643,6 +2596,40 @@ const AdminDashboardEnhanced: React.FC = () => {
                                 size="small"
                                 color={user.is_active ? 'success' : 'error'}
                               />
+                            </TableCell>
+                            <TableCell align="center">
+                              <Stack direction="row" spacing={1} justifyContent="center">
+                                {user.is_active ? (
+                                  <Tooltip title="Suspend User">
+                                    <IconButton
+                                      size="small"
+                                      color="error"
+                                      onClick={() => handleUserAction(user.id, 'suspend')}
+                                    >
+                                      <Cancel />
+                                    </IconButton>
+                                  </Tooltip>
+                                ) : (
+                                  <Tooltip title="Activate User">
+                                    <IconButton
+                                      size="small"
+                                      color="success"
+                                      onClick={() => handleUserAction(user.id, 'activate')}
+                                    >
+                                      <CheckCircle />
+                                    </IconButton>
+                                  </Tooltip>
+                                )}
+                                <Tooltip title="View Details">
+                                  <IconButton
+                                    size="small"
+                                    color="primary"
+                                    onClick={() => window.open(`/profile?userId=${user.id}`, '_blank')}
+                                  >
+                                    <Visibility />
+                                  </IconButton>
+                                </Tooltip>
+                              </Stack>
                             </TableCell>
                           </TableRow>
                         ))}
