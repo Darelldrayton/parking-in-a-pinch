@@ -669,7 +669,7 @@ export default function ListingDetail() {
                   <Stack spacing={2}>
                     <Box>
                       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
-                        <Typography variant="h4" fontWeight={700}>
+                        <Typography variant="h4" fontWeight={700} color="text.primary">
                           {listing.title}
                         </Typography>
                         {(() => {
@@ -723,7 +723,7 @@ export default function ListingDetail() {
 
                     {/* Description */}
                     <Box>
-                      <Typography variant="h6" fontWeight={600} gutterBottom>
+                      <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
                         About this space
                       </Typography>
                       <Typography variant="body1" color="text.secondary">
@@ -733,7 +733,7 @@ export default function ListingDetail() {
 
                     {/* Vehicle Types */}
                     <Box>
-                      <Typography variant="h6" fontWeight={600} gutterBottom>
+                      <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
                         Accepted Vehicles
                       </Typography>
                       <Stack direction="row" spacing={1} flexWrap="wrap">
@@ -754,7 +754,7 @@ export default function ListingDetail() {
                       <Box>
                         <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
                           <Info  />
-                          <Typography variant="h6" fontWeight={600}>
+                          <Typography variant="h6" fontWeight={600} color="text.primary">
                             Parking Instructions
                           </Typography>
                         </Stack>
@@ -772,7 +772,7 @@ export default function ListingDetail() {
               {/* Amenities */}
               <Card sx={{ borderRadius: 3 }}>
                 <CardContent sx={{ p: 3 }}>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                  <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
                     Amenities & Features
                   </Typography>
                   <Grid container spacing={2}>
@@ -910,7 +910,7 @@ export default function ListingDetail() {
                 <Stack spacing={3}>
                   {/* Pricing */}
                   <Box>
-                    <Typography variant="h5" fontWeight={700} gutterBottom>
+                    <Typography variant="h5" fontWeight={700} gutterBottom color="text.primary">
                       Pricing
                     </Typography>
                     <Stack spacing={2}>
@@ -918,7 +918,7 @@ export default function ListingDetail() {
                         <Typography variant="body1" color="text.secondary">
                           Hourly Rate
                         </Typography>
-                        <Typography variant="h6" fontWeight={600}>
+                        <Typography variant="h6" fontWeight={600} color="text.primary">
                           ${listing.hourly_rate}/hr
                         </Typography>
                       </Box>
@@ -927,7 +927,7 @@ export default function ListingDetail() {
                           <Typography variant="body1" color="text.secondary">
                             Daily Rate
                           </Typography>
-                          <Typography variant="h6" fontWeight={600}>
+                          <Typography variant="h6" fontWeight={600} color="text.primary">
                             ${listing.daily_rate}/day
                           </Typography>
                         </Box>
@@ -937,7 +937,7 @@ export default function ListingDetail() {
                           <Typography variant="body1" color="text.secondary">
                             Weekly Rate
                           </Typography>
-                          <Typography variant="h6" fontWeight={600}>
+                          <Typography variant="h6" fontWeight={600} color="text.primary">
                             ${listing.weekly_rate}/week
                           </Typography>
                         </Box>
@@ -950,7 +950,7 @@ export default function ListingDetail() {
                   {/* Host Info */}
                   {listing.host && (
                     <Box>
-                      <Typography variant="h6" fontWeight={600} gutterBottom>
+                      <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
                         Host
                       </Typography>
                       <Stack direction="row" spacing={2} alignItems="center">
@@ -973,7 +973,7 @@ export default function ListingDetail() {
 
                   {/* Availability Schedule */}
                   <Box>
-                    <Typography variant="h6" fontWeight={600} gutterBottom>
+                    <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
                       📅 Availability Schedule
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -1171,7 +1171,7 @@ export default function ListingDetail() {
           <Card sx={{ borderRadius: 3 }}>
             <CardContent sx={{ p: 4 }}>
               <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
-                <Typography variant="h5" fontWeight={600}>
+                <Typography variant="h5" fontWeight={600} color="text.primary">
                   Reviews & Ratings
                 </Typography>
                 {listing?.rating_average && Number(listing.rating_average) > 0 && (

@@ -573,11 +573,11 @@ export default function BookingForm() {
                 >
                   <ArrowBack />
                 </IconButton>
-                <Typography variant="h4" component="h1" fontWeight={700}>
+                <Typography variant="h4" component="h1" fontWeight={700} sx={{ color: 'white' }}>
                   Book Parking Space
                 </Typography>
               </Stack>
-              <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 300 }}>
+              <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 300, color: 'white' }}>
                 Complete your reservation for {listing.title}
               </Typography>
             </Box>
@@ -591,7 +591,7 @@ export default function BookingForm() {
           <Grid item xs={12} md={8}>
             <Card sx={{ borderRadius: 3 }}>
               <CardContent sx={{ p: 4 }}>
-                <Typography variant="h5" fontWeight={600} gutterBottom>
+                <Typography variant="h5" fontWeight={600} gutterBottom color="text.primary">
                   Booking Details
                 </Typography>
                 
@@ -605,7 +605,7 @@ export default function BookingForm() {
                   <Grid container spacing={3}>
                     {/* Date and Time Selection */}
                     <Grid item xs={12}>
-                      <Typography variant="h6" fontWeight={600} gutterBottom>
+                      <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
                         When do you need parking?
                       </Typography>
                       {listing.availability_schedule && (
@@ -702,7 +702,7 @@ export default function BookingForm() {
 
                     {/* Vehicle Information */}
                     <Grid item xs={12}>
-                      <Typography variant="h6" fontWeight={600} gutterBottom>
+                      <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
                         Vehicle Information
                       </Typography>
                     </Grid>
@@ -927,7 +927,7 @@ export default function BookingForm() {
                   }}
                 />
                 <CardContent sx={{ p: 3 }}>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                  <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
                     {listing.title}
                   </Typography>
                   <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
@@ -953,7 +953,7 @@ export default function BookingForm() {
               {/* Pricing Summary */}
               <Card sx={{ borderRadius: 3 }}>
                 <CardContent sx={{ p: 3 }}>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                  <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
                     Pricing Summary
                   </Typography>
                   
@@ -997,10 +997,10 @@ export default function BookingForm() {
                     <Divider />
                     
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Typography variant="h6" fontWeight={700}>
+                      <Typography variant="h6" fontWeight={700} color="text.primary">
                         Total
                       </Typography>
-                      <Typography variant="h6" fontWeight={700}>
+                      <Typography variant="h6" fontWeight={700} color="text.primary">
                         ${pricing.total.toFixed(2)}
                       </Typography>
                     </Box>
@@ -1012,7 +1012,7 @@ export default function BookingForm() {
               {listing.host && (
                 <Card sx={{ borderRadius: 3 }}>
                   <CardContent sx={{ p: 3 }}>
-                    <Typography variant="h6" fontWeight={600} gutterBottom>
+                    <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
                       Your Host
                     </Typography>
                     <Stack direction="row" spacing={2} alignItems="center">
