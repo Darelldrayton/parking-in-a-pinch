@@ -323,7 +323,7 @@ We apologize for any inconvenience. Please feel free to browse other available p
   if (!user) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Typography variant="h4" gutterBottom>
+        <Typography variant="h4" gutterBottom color="text.primary">
           Host Booking Management
         </Typography>
         <Paper sx={{ p: 4, textAlign: 'center' }}>
@@ -338,7 +338,7 @@ We apologize for any inconvenience. Please feel free to browse other available p
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Typography variant="h4" gutterBottom>
+        <Typography variant="h4" gutterBottom color="text.primary">
           Host Booking Management
         </Typography>
         <LinearProgress sx={{ mt: 2 }} />
@@ -369,10 +369,10 @@ We apologize for any inconvenience. Please feel free to browse other available p
               Back to Dashboard
             </Button>
           </Stack>
-          <Typography variant="h3" component="h1" fontWeight={700}>
+          <Typography variant="h3" component="h1" fontWeight={700} color="white">
             Host Booking Management
           </Typography>
-          <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 300 }}>
+          <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 300 }} color="white">
             Manage parking requests for your listings
           </Typography>
         </Container>
@@ -480,7 +480,7 @@ We apologize for any inconvenience. Please feel free to browse other available p
         {/* Bookings List */}
         {filteredBookings().length === 0 ? (
           <Paper sx={{ p: 4, textAlign: 'center' }}>
-            <Typography variant="h6" gutterBottom>
+            <Typography variant="h6" gutterBottom color="text.primary">
               No bookings in this category
             </Typography>
             <Typography variant="body2" color="text.secondary">
