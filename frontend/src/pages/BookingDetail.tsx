@@ -506,17 +506,13 @@ export default function BookingDetail() {
                   )}
 
                   {/* Refund Policy Information */}
-                  {booking.status === 'confirmed' && (
+                  {booking.status === 'confirmed' && canCancelWithAutomaticRefund() && (
                     <Alert severity="info" sx={{ mb: 3 }}>
                       <Typography variant="body2" fontWeight={500} gutterBottom>
                         💰 Refund Policy
                       </Typography>
                       <Typography variant="body2">
-                        {canCancelWithAutomaticRefund() ? (
-                          <>Get 100% automatic refund by cancelling more than 16 minutes before your booking starts. After check-in, refunds require admin review.</>
-                        ) : (
-                          <>Automatic 100% refunds are no longer available. You may still request a refund after check-in, subject to admin review.</>
-                        )}
+                        Get 100% automatic refund by cancelling more than 16 minutes before your booking starts. After check-in, refunds require admin review.
                       </Typography>
                     </Alert>
                   )}
