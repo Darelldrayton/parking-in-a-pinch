@@ -463,11 +463,11 @@ export default function BookingDetail() {
             >
               <ArrowBack />
             </IconButton>
-            <Typography variant="h4" component="h1" fontWeight={700}>
+            <Typography variant="h4" component="h1" fontWeight={700} color="white">
               Booking Details
             </Typography>
           </Stack>
-          <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 300 }}>
+          <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 300 }} color="white">
             Reservation #{booking.booking_id || booking.id}
           </Typography>
         </Container>
@@ -482,7 +482,7 @@ export default function BookingDetail() {
               <Card sx={{ borderRadius: 3 }}>
                 <CardContent sx={{ p: 4 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                    <Typography variant="h5" fontWeight={600}>
+                    <Typography variant="h5" fontWeight={600} color="text.primary">
                       Booking Status
                     </Typography>
                     <Chip
@@ -632,13 +632,13 @@ export default function BookingDetail() {
               {/* Parking Space Info */}
               <Card sx={{ borderRadius: 3 }}>
                 <CardContent sx={{ p: 4 }}>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                  <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
                     Parking Space
                   </Typography>
                   
                   <Stack spacing={3}>
                     <Box>
-                      <Typography variant="h6" fontWeight={600}>
+                      <Typography variant="h6" fontWeight={600} color="text.primary">
                         {booking.parking_space.title}
                       </Typography>
                       <Stack direction="row" alignItems="center" spacing={1}>
@@ -664,7 +664,7 @@ export default function BookingDetail() {
                       <>
                         <Divider />
                         <Box>
-                          <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                          <Typography variant="subtitle1" fontWeight={600} gutterBottom color="text.primary">
                             Parking Space Photos
                           </Typography>
                           <PrivateImageGallery
@@ -691,7 +691,7 @@ export default function BookingDetail() {
               {/* Vehicle Info */}
               <Card sx={{ borderRadius: 3 }}>
                 <CardContent sx={{ p: 4 }}>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                  <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
                     Vehicle Information
                   </Typography>
                   
@@ -728,7 +728,7 @@ export default function BookingDetail() {
               {/* Location & Map */}
               <Card sx={{ borderRadius: 3 }}>
                 <CardContent sx={{ p: 4 }}>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                  <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
                     Location & Directions
                   </Typography>
                   
@@ -872,7 +872,7 @@ export default function BookingDetail() {
               {/* Actions */}
               <Card sx={{ borderRadius: 3 }}>
                 <CardContent sx={{ p: 3 }}>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                  <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
                     Actions
                   </Typography>
                   
@@ -1002,7 +1002,7 @@ export default function BookingDetail() {
               {/* Host Info */}
               <Card sx={{ borderRadius: 3 }}>
                 <CardContent sx={{ p: 3 }}>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                  <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
                     Host Information
                   </Typography>
                   
@@ -1057,7 +1057,7 @@ export default function BookingDetail() {
               {/* Booking Timeline */}
               <Card sx={{ borderRadius: 3 }}>
                 <CardContent sx={{ p: 3 }}>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                  <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
                     Booking Timeline
                   </Typography>
                   
