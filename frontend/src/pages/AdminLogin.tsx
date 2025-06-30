@@ -326,7 +326,7 @@ export default function AdminLogin() {
                 </Button>
 
                 <Box sx={{ textAlign: 'center', pt: 2 }}>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                     Not an admin?{' '}
                     <Link 
                       to="/login" 
@@ -338,6 +338,16 @@ export default function AdminLogin() {
                       Return to user login
                     </Link>
                   </Typography>
+                  
+                  <Alert severity="info" sx={{ mt: 2, textAlign: 'left' }}>
+                    <Typography variant="body2" fontWeight={600} gutterBottom>
+                      To access admin panel:
+                    </Typography>
+                    <Typography variant="body2">
+                      1. First <Link to="/login" style={{ textDecoration: 'none', fontWeight: 600 }}>login to your regular account</Link><br/>
+                      2. Then return to this page for automatic admin access
+                    </Typography>
+                  </Alert>
                 </Box>
               </Stack>
             </Box>
