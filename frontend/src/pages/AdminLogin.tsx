@@ -55,6 +55,7 @@ export default function AdminLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isOwnerLoggedIn, setIsOwnerLoggedIn] = useState(false);
 
   // Disable WebSocket on admin login page to prevent connection loops
   React.useEffect(() => {
@@ -70,13 +71,11 @@ export default function AdminLogin() {
     };
   }, []);
 
-  // Check if user is already logged in as owner - run only once
+  // Simplified auth check - no automatic redirects to prevent loops
   React.useEffect(() => {
-    if (hasCheckedAuth) return; // Prevent multiple checks
+    if (hasCheckedAuth) return;
     
     console.log('🔍 Checking existing authentication...');
-    console.log('🔍 Current path:', window.location.pathname);
-    
     const token = localStorage.getItem('access_token');
     const user = localStorage.getItem('user');
     
@@ -86,40 +85,19 @@ export default function AdminLogin() {
     if (token && user) {
       try {
         const userData = JSON.parse(user);
-        console.log('🔍 Found existing login:', userData);
         console.log('🔍 User email:', userData.email);
         
         if (userData.email === 'darelldrayton93@gmail.com') {
-          console.log('✅ Owner account detected, granting admin access');
-          
-          // Copy tokens to admin storage
-          localStorage.setItem('admin_access_token', token);
-          localStorage.setItem('admin_refresh_token', localStorage.getItem('refresh_token') || '');
-          localStorage.setItem('admin_user', JSON.stringify(userData));
-          
-          console.log('📝 Admin tokens stored successfully');
-          
-          // Set flags to prevent re-checking and show loading state
-          setHasCheckedAuth(true);
-          setIsRedirecting(true);
-          
-          // Force redirect to ruler dashboard
-          console.log('🔄 Redirecting to /ruler/dashboard...');
-          window.location.replace('/ruler/dashboard');
-          return;
-        } else {
-          console.log('❌ Not owner account, email:', userData.email);
+          console.log('✅ Owner account detected - ready for admin access');
+          setIsOwnerLoggedIn(true);
         }
       } catch (e) {
         console.error('❌ Error parsing user data:', e);
       }
-    } else {
-      console.log('❌ No existing authentication found');
     }
     
     setHasCheckedAuth(true);
-    console.log('🔍 Authentication check complete - showing login form');
-  }, []); // Empty dependency array to run only once
+  }, []);
 
   const {
     register,
@@ -171,6 +149,24 @@ export default function AdminLogin() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleQuickAdminAccess = () => {
+    console.log('🚀 Quick admin access requested');
+    setIsRedirecting(true);
+    
+    const token = localStorage.getItem('access_token');
+    const user = localStorage.getItem('user');
+    
+    // Copy tokens to admin storage
+    localStorage.setItem('admin_access_token', token || '');
+    localStorage.setItem('admin_refresh_token', localStorage.getItem('refresh_token') || '');
+    localStorage.setItem('admin_user', user || '');
+    
+    console.log('📝 Admin tokens copied, redirecting...');
+    setTimeout(() => {
+      window.location.href = '/ruler/dashboard';
+    }, 500);
   };
 
   // Show loading screen while redirecting
@@ -250,9 +246,20 @@ export default function AdminLogin() {
           <CardContent sx={{ p: 4 }}>
             <Box component="form" onSubmit={handleSubmit(onSubmit)}>
               <Stack spacing={3}>
-                <Alert severity="info" icon={<Security />}>
-                  This portal is restricted to authorized staff members only.
-                </Alert>
+                {isOwnerLoggedIn ? (
+                  <Alert severity="success" icon={<Security />}>
+                    <Typography variant="body2" fontWeight={600}>
+                      Owner Account Detected!
+                    </Typography>
+                    <Typography variant="body2">
+                      You're logged in as the owner. Click "Quick Admin Access" below to enter the admin panel.
+                    </Typography>
+                  </Alert>
+                ) : (
+                  <Alert severity="info" icon={<Security />}>
+                    This portal is restricted to authorized staff members only.
+                  </Alert>
+                )}
 
                 <TextField
                   {...register('email')}
@@ -306,24 +313,45 @@ export default function AdminLogin() {
                   }}
                 />
 
-                <Button
-                  type="submit"
-                  variant="contained"
-                  size="large"
-                  disabled={isLoading}
-                  sx={{
-                    py: 1.5,
-                    borderRadius: 2,
-                    fontSize: '1.1rem',
-                    fontWeight: 600,
-                    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                    '&:hover': {
-                      background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.main} 100%)`,
-                    },
-                  }}
-                >
-                  {isLoading ? 'Signing In...' : 'Access Admin Panel'}
-                </Button>
+                {isOwnerLoggedIn ? (
+                  <Button
+                    onClick={handleQuickAdminAccess}
+                    variant="contained"
+                    size="large"
+                    disabled={isLoading || isRedirecting}
+                    sx={{
+                      py: 1.5,
+                      borderRadius: 2,
+                      fontSize: '1.1rem',
+                      fontWeight: 600,
+                      background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
+                      '&:hover': {
+                        background: `linear-gradient(135deg, ${theme.palette.success.dark} 0%, ${theme.palette.success.main} 100%)`,
+                      },
+                    }}
+                  >
+                    {isRedirecting ? 'Accessing Admin Panel...' : '🚀 Quick Admin Access'}
+                  </Button>
+                ) : (
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    size="large"
+                    disabled={isLoading}
+                    sx={{
+                      py: 1.5,
+                      borderRadius: 2,
+                      fontSize: '1.1rem',
+                      fontWeight: 600,
+                      background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                      '&:hover': {
+                        background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.main} 100%)`,
+                      },
+                    }}
+                  >
+                    {isLoading ? 'Signing In...' : 'Access Admin Panel'}
+                  </Button>
+                )}
 
                 <Box sx={{ textAlign: 'center', pt: 2 }}>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
