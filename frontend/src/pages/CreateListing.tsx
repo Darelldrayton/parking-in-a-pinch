@@ -1438,10 +1438,10 @@ export default function CreateListing() {
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
           <Fade in timeout={800}>
             <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="h2" component="h1" fontWeight={700} gutterBottom>
+              <Typography variant="h2" component="h1" fontWeight={700} gutterBottom color="white">
                 {isEditMode ? 'Edit Your Parking Space' : 'List Your Parking Space'}
               </Typography>
-              <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 300, maxWidth: 600, mx: 'auto' }}>
+              <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 300, maxWidth: 600, mx: 'auto' }} color="white">
                 {isEditMode 
                   ? 'Update your listing details to keep your parking space information current.'
                   : 'Join thousands of hosts earning money from their unused parking spaces. Create your listing in just a few simple steps.'
