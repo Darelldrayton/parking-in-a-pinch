@@ -59,7 +59,7 @@ const HostResources = lazy(() => import('./pages/HostResources'));
 
 // Admin Pages
 const AdminLogin = lazy(() => import('./pages/AdminLogin'));
-const AdminDashboard = lazy(() => import('./pages/AdminDashboardSimple'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboardEnhanced'));
 
 // Test Pages
 const TestDeploy = lazy(() => import('./pages/TestDeploy'));
