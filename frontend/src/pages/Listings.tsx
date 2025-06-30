@@ -421,7 +421,7 @@ export default function Listings() {
       <Container maxWidth="xl">
         {/* Header */}
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h3" component="h1" fontWeight={700} gutterBottom>
+          <Typography variant="h3" component="h1" fontWeight={700} gutterBottom color="text.primary">
             Find Your Perfect Parking Spot
           </Typography>
           <Stack direction="row" spacing={2} alignItems="center">
@@ -719,6 +719,7 @@ export default function Listings() {
                           <Typography 
                             variant="h6" 
                             fontWeight={600} 
+                            color="text.primary"
                             sx={{ 
                               fontSize: '1.1rem',
                               overflow: 'hidden',
