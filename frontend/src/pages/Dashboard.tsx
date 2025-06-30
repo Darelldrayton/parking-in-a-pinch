@@ -3151,7 +3151,7 @@ const EnhancedRecentActivity: React.FC = () => {
       height: 'fit-content',
     }}>
       <CardContent sx={{ p: 3 }}>
-        <Typography variant="h6" fontWeight={600} gutterBottom>
+        <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
           Recent Activity
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
