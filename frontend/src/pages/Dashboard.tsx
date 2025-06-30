@@ -1033,7 +1033,7 @@ const MiniMyListings: React.FC = () => {
       {/* Quick Actions */}
       <Card sx={{ borderRadius: 3, mb: 3 }}>
         <CardContent sx={{ p: 3 }}>
-          <Typography variant="h6" fontWeight={600} sx={{ mb: 3 }}>
+          <Typography variant="h6" fontWeight={600} sx={{ mb: 3 }} color="text.primary">
             Quick Actions
           </Typography>
           
