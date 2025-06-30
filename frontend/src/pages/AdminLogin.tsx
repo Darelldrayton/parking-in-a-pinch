@@ -72,12 +72,16 @@ export default function AdminLogin() {
       console.log('🛡️ is_staff:', response.data.user?.is_staff);
       console.log('🔑 is_superuser:', response.data.user?.is_superuser);
       
-      // Check if user is admin/staff
-      console.log('🔒 Skipping admin check for debugging...');
-      // if (!response.data.user?.is_staff && !response.data.user?.is_superuser) {
-      //   toast.error(`Access denied. Admin privileges required. is_staff: ${response.data.user?.is_staff}, is_superuser: ${response.data.user?.is_superuser}`);
-      //   return;
-      // }
+      // Check if user is admin/staff or is the specific owner account
+      const isOwnerAccount = response.data.user?.email === 'darelldrayton93@gmail.com';
+      const isAdmin = response.data.user?.is_staff || response.data.user?.is_superuser;
+      
+      console.log('🔒 Admin access check:', { isOwnerAccount, isAdmin });
+      
+      if (!isAdmin && !isOwnerAccount) {
+        toast.error(`Access denied. Admin privileges required. is_staff: ${response.data.user?.is_staff}, is_superuser: ${response.data.user?.is_superuser}`);
+        return;
+      }
 
       // Store admin tokens
       localStorage.setItem('admin_access_token', response.data.access || response.data.tokens?.access);
