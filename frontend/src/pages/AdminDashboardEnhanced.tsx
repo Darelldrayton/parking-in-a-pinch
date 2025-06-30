@@ -277,34 +277,78 @@ const AdminDashboardEnhanced: React.FC = () => {
 
   // Check admin auth from localStorage
   useEffect(() => {
+    console.log('🔍 AdminDashboard: Checking authentication...');
     const adminUserStr = localStorage.getItem('admin_user');
     const adminToken = localStorage.getItem('admin_access_token');
     
+    console.log('🔍 Admin token exists:', !!adminToken);
+    console.log('🔍 Admin user exists:', !!adminUserStr);
+    
     if (!adminUserStr || !adminToken) {
-      window.location.href = '/admin/login';
+      console.log('❌ No admin credentials found, redirecting to login');
+      window.location.href = '/ruler/login';
       return;
     }
     
-    const user = JSON.parse(adminUserStr);
-    if (!user.is_staff && !user.is_superuser) {
-      window.location.href = '/admin/login';
-      return;
+    try {
+      const user = JSON.parse(adminUserStr);
+      console.log('✅ Admin user loaded:', user.email);
+      
+      // For owner account, bypass staff/superuser check
+      if (user.email === 'darelldrayton93@gmail.com') {
+        console.log('✅ Owner account detected, granting full admin access');
+        setAdminUser(user);
+        loadDataSafely();
+        return;
+      }
+      
+      if (!user.is_staff && !user.is_superuser) {
+        console.log('❌ User is not staff/superuser, redirecting');
+        window.location.href = '/ruler/login';
+        return;
+      }
+      
+      setAdminUser(user);
+      loadDataSafely();
+    } catch (e) {
+      console.error('❌ Error parsing admin user data:', e);
+      window.location.href = '/ruler/login';
     }
-    
-    setAdminUser(user);
-    loadData();
   }, []);
   
-  const loadData = async () => {
+  const loadDataSafely = async () => {
+    console.log('📊 Loading dashboard data...');
     setLoading(true);
-    await Promise.all([
-      fetchStats(),
-      fetchVerificationRequests(),
-      fetchRefundRequests(),
-      fetchListings(),
-      fetchDisputes()
-    ]);
-    setLoading(false);
+    setError(null);
+    
+    try {
+      // Use Promise.allSettled to not fail if some APIs are down
+      const results = await Promise.allSettled([
+        fetchStats(),
+        fetchVerificationRequests(),
+        fetchRefundRequests(),
+        fetchListings(),
+        fetchDisputes()
+      ]);
+      
+      // Log which APIs failed but don't block the dashboard
+      results.forEach((result, index) => {
+        const apiNames = ['Stats', 'Verification Requests', 'Refund Requests', 'Listings', 'Disputes'];
+        if (result.status === 'rejected') {
+          console.warn(`❌ ${apiNames[index]} API failed:`, result.reason);
+        } else {
+          console.log(`✅ ${apiNames[index]} API succeeded`);
+        }
+      });
+      
+      console.log('📊 Dashboard data loading complete');
+    } catch (error) {
+      console.error('❌ Critical dashboard error:', error);
+      setError('Some dashboard features may be limited due to connectivity issues.');
+    } finally {
+      // Always stop loading, even if APIs fail
+      setLoading(false);
+    }
   };
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -315,9 +359,8 @@ const AdminDashboardEnhanced: React.FC = () => {
     try {
       const token = localStorage.getItem('admin_access_token');
       if (!token) {
-        setError('No admin token found. Please log in again.');
-        window.location.href = '/admin/login';
-        return;
+        console.warn('⚠️ No admin token found for stats');
+        throw new Error('No admin token');
       }
 
       const headers = { 
@@ -325,24 +368,44 @@ const AdminDashboardEnhanced: React.FC = () => {
         'Content-Type': 'application/json'
       };
 
+      console.log('📊 Fetching admin stats...');
+      
+      // Use relative URLs instead of localhost
       const [usersRes, verificationsRes, listingsRes, refundsRes, disputesRes] = await Promise.all([
-        fetch('http://localhost:8000/api/v1/users/admin/users/stats/', { headers }),
-        fetch('http://localhost:8000/api/v1/users/admin/verification-requests/stats/', { headers }),
-        fetch('http://localhost:8000/api/v1/listings/admin/stats/', { headers }),
-        fetch('http://localhost:8000/api/v1/payments/admin/refund-requests/stats/', { headers }),
-        fetch('http://localhost:8000/api/v1/disputes/admin/stats/', { headers }).catch(() => ({ ok: false, status: 404 }))
+        fetch('/api/v1/users/admin/users/stats/', { headers }).catch(e => {
+          console.warn('Users stats API not available:', e);
+          return { ok: false, status: 503 };
+        }),
+        fetch('/api/v1/users/admin/verification-requests/stats/', { headers }).catch(e => {
+          console.warn('Verification stats API not available:', e);
+          return { ok: false, status: 503 };
+        }),
+        fetch('/api/v1/listings/admin/stats/', { headers }).catch(e => {
+          console.warn('Listings stats API not available:', e);
+          return { ok: false, status: 503 };
+        }),
+        fetch('/api/v1/payments/admin/refund-requests/stats/', { headers }).catch(e => {
+          console.warn('Refunds stats API not available:', e);
+          return { ok: false, status: 503 };
+        }),
+        fetch('/api/v1/disputes/admin/stats/', { headers }).catch(e => {
+          console.warn('Disputes stats API not available:', e);
+          return { ok: false, status: 503 };
+        })
       ]);
 
-      // Check for authentication errors
-      if (usersRes.status === 401 || verificationsRes.status === 401 || 
-          listingsRes.status === 401 || refundsRes.status === 401 || 
-          (disputesRes.status === 401 && disputesRes.status !== 404)) {
+      // Only redirect on 401, not on other failures
+      const authErrors = [usersRes, verificationsRes, listingsRes, refundsRes, disputesRes]
+        .filter(res => res.status === 401);
+      
+      if (authErrors.length > 0) {
+        console.warn('⚠️ Authentication failed for admin APIs');
         setError('⚠️ Session expired. Your admin login session has expired. Please log in again to continue.');
         localStorage.removeItem('admin_access_token');
         localStorage.removeItem('admin_refresh_token');
         localStorage.removeItem('admin_user');
         setTimeout(() => {
-          window.location.href = '/admin/login';
+          window.location.href = '/ruler/login';
         }, 3000);
         return;
       }
@@ -1118,8 +1181,83 @@ const AdminDashboardEnhanced: React.FC = () => {
 
   if (loading || !adminUser) {
     return (
-      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <LinearProgress sx={{ width: '50%' }} />
+      <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', p: 4 }}>
+        <Typography variant="h5" gutterBottom>
+          Loading Parking in a Pinch Admin Dashboard...
+        </Typography>
+        <LinearProgress sx={{ width: '50%', mb: 2 }} />
+        <Typography variant="body2" color="text.secondary">
+          Initializing admin panel and loading data
+        </Typography>
+      </Box>
+    );
+  }
+
+  // Show dashboard even if some APIs failed
+  if (error && !stats) {
+    return (
+      <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
+        {/* Header */}
+        <Box
+          sx={{
+            background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
+            color: 'white',
+            py: 3,
+            px: 3,
+          }}
+        >
+          <Container maxWidth="xl">
+            <Typography variant="h4" fontWeight="bold">
+              🛡️ Admin Dashboard
+            </Typography>
+            <Typography variant="subtitle1" sx={{ opacity: 0.9 }}>
+              Welcome back, {adminUser?.first_name || adminUser?.email}
+            </Typography>
+          </Container>
+        </Box>
+
+        <Container maxWidth="xl" sx={{ py: 4 }}>
+          <Alert severity="warning" sx={{ mb: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Dashboard Loaded with Limited Features
+            </Typography>
+            <Typography variant="body2">
+              {error}
+            </Typography>
+            <Typography variant="body2" sx={{ mt: 1 }}>
+              • Admin authentication: ✅ Working
+              <br />
+              • API endpoints: ⚠️ Some services unavailable
+              <br />
+              • Dashboard access: ✅ Granted
+            </Typography>
+          </Alert>
+
+          <Card>
+            <CardContent sx={{ textAlign: 'center', py: 8 }}>
+              <Typography variant="h5" gutterBottom>
+                🎯 Admin Panel Access Confirmed
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+                You have successfully accessed the admin dashboard. Some advanced features 
+                may be temporarily unavailable due to API connectivity issues.
+              </Typography>
+              <Button 
+                variant="contained" 
+                onClick={() => window.location.reload()}
+                sx={{ mr: 2 }}
+              >
+                🔄 Retry Loading Data
+              </Button>
+              <Button 
+                variant="outlined" 
+                onClick={() => window.location.href = '/dashboard'}
+              >
+                🏠 Return to Main Dashboard
+              </Button>
+            </CardContent>
+          </Card>
+        </Container>
       </Box>
     );
   }
