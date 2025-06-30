@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, memo } from 'react';
+// Force rebuild - fix module loading issue
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
