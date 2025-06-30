@@ -92,7 +92,7 @@ export default function Footer() {
                 >
                   <LocalParking sx={{ color: 'white', fontSize: 24 }} />
                 </Box>
-                <Typography variant="h6" fontWeight={700}>
+                <Typography variant="h6" fontWeight={700} sx={{ color: 'white' }}>
                   Parking in a Pinch
                 </Typography>
               </Box>
