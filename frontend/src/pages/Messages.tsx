@@ -757,7 +757,7 @@ const Messages: React.FC = React.memo(() => {
       {/* Header */}
       <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Typography variant="h6" fontWeight={600}>
+          <Typography variant="h6" fontWeight={600} color="text.primary">
             Messages
           </Typography>
           <Typography variant="body2" color="text.secondary">
@@ -980,7 +980,7 @@ const Messages: React.FC = React.memo(() => {
             </Avatar>
             
             <Box sx={{ flex: 1 }}>
-              <Typography variant="h6" fontWeight={600}>
+              <Typography variant="h6" fontWeight={600} color="text.primary">
                 {getConversationTitle(selectedConversation)}
               </Typography>
               <Typography variant="body2" color="text.secondary">
