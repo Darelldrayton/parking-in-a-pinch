@@ -290,7 +290,7 @@ const MiniHostBookings: React.FC = () => {
           <Card sx={{ borderRadius: 3, height: '100%' }}>
             <CardContent sx={{ p: 3, textAlign: 'center' }}>
               <MoneyIcon sx={{ fontSize: 32, color: 'warning.main', mb: 1 }} />
-              <Typography variant="h5" fontWeight={600} >
+              <Typography variant="h5" fontWeight={600} sx={{ color: 'white' }}>
                 ${Number(bookings.filter(b => b.status === 'completed').reduce((sum, b) => sum + (parseFloat(b.total_amount) || 0), 0)).toFixed(0)}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -407,7 +407,7 @@ const MiniHostBookings: React.FC = () => {
         <Card sx={{ borderRadius: 3 }}>
           <CardContent sx={{ p: 3 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h6" fontWeight={600}>
+              <Typography variant="h6" fontWeight={600} sx={{ color: 'white' }}>
                 Recent Bookings
               </Typography>
               <Button
@@ -750,7 +750,7 @@ const MiniMyListings: React.FC = () => {
         <Card sx={{ borderRadius: 3, mb: 3 }}>
           <CardContent sx={{ p: 3 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h6" fontWeight={600}>
+              <Typography variant="h6" fontWeight={600} sx={{ color: 'white' }}>
                 Your Listings ({listings.length})
               </Typography>
               <Button
@@ -810,7 +810,7 @@ const MiniMyListings: React.FC = () => {
                       </Box>
                     </Box>
                     <CardContent sx={{ p: 2 }}>
-                      <Typography variant="subtitle2" fontWeight={600} noWrap sx={{ mb: 1 }}>
+                      <Typography variant="subtitle2" fontWeight={600} noWrap sx={{ mb: 1, color: 'white' }}>
                         {listing.title}
                       </Typography>
                       
@@ -1582,7 +1582,7 @@ const MiniMyBookings: React.FC = () => {
         <Card sx={{ borderRadius: 3, mb: 3 }}>
           <CardContent sx={{ p: 3 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h6" fontWeight={600}>
+              <Typography variant="h6" fontWeight={600} sx={{ color: 'white' }}>
                 Recent Bookings
               </Typography>
               <Button
@@ -1852,10 +1852,10 @@ const NewUserDashboard: React.FC = () => {
             <Box>
               <Grid container alignItems="center" justifyContent="space-between">
                 <Grid size={{ xs: 12, md: 8 }}>
-                  <Typography variant="h3" component="h1" fontWeight={700} gutterBottom>
+                  <Typography variant="h3" component="h1" fontWeight={700} gutterBottom sx={{ color: 'white' }}>
                     Welcome to Parking in a Pinch, {user?.first_name}! 🎉
                   </Typography>
-                  <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 300 }}>
+                  <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 300, color: 'white' }}>
                     Your parking journey starts here. Let's get you set up!
                   </Typography>
                 </Grid>
@@ -2009,7 +2009,7 @@ const NewUserDashboard: React.FC = () => {
                     height: 'fit-content',
                   }}>
                     <CardContent sx={{ p: 3 }}>
-                      <Typography variant="h6" fontWeight={600} gutterBottom>
+                      <Typography variant="h6" fontWeight={600} gutterBottom sx={{ color: 'white' }}>
                         Getting Started
                       </Typography>
                       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
@@ -2155,7 +2155,7 @@ const NewUserDashboard: React.FC = () => {
               border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
             }}>
               <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                <Typography variant="h5" fontWeight={600} gutterBottom>
+                <Typography variant="h5" fontWeight={600} gutterBottom sx={{ color: 'white' }}>
                   Welcome to the Community!
                 </Typography>
                 <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
@@ -2270,7 +2270,7 @@ const NewUserDashboard: React.FC = () => {
                 border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
               }}>
                 <CardContent sx={{ p: 3 }}>
-                  <Typography variant="h6" fontWeight={600} sx={{ mb: 3 }}>
+                  <Typography variant="h6" fontWeight={600} sx={{ mb: 3, color: 'white' }}>
                     Start Earning Today
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
@@ -2293,7 +2293,7 @@ const NewUserDashboard: React.FC = () => {
 
         {/* Requests Tab */}
         <CustomTabPanel value={activeTab} index={4}>
-          <Typography variant="h5" fontWeight={600} sx={{ mb: 3 }}>
+          <Typography variant="h5" fontWeight={600} sx={{ mb: 3, color: 'white' }}>
             Booking Requests
           </Typography>
           
@@ -2792,7 +2792,7 @@ const ExistingUserDashboard: React.FC = () => {
 
         {/* Requests Tab */}
         <CustomTabPanel value={activeTab} index={4}>
-          <Typography variant="h5" fontWeight={600} sx={{ mb: 3 }}>
+          <Typography variant="h5" fontWeight={600} sx={{ mb: 3, color: 'white' }}>
             Booking Requests
           </Typography>
           
