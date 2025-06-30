@@ -576,17 +576,17 @@ const AdminDashboardEnhanced: React.FC = () => {
         ...listing,
         approval_status: listing.approval_status || 'PENDING',
         approval_status_display: listing.approval_status_display || 'Pending Approval',
-        host_name: listing.host?.first_name + ' ' + listing.host?.last_name || 'Host User',
-        host_email: listing.host?.email || 'host@example.com',
-        borough: listing.borough || 'New York',
-        space_type: listing.space_type || 'Standard',
-        hourly_rate: listing.price_per_hour || '20.00',
+        host_name: listing.host?.first_name + ' ' + listing.host?.last_name || 'N/A',
+        host_email: listing.host?.email || 'N/A',
+        borough: listing.borough || 'N/A',
+        space_type: listing.space_type || 'N/A',
+        hourly_rate: listing.price_per_hour || '0.00',
         images_count: listing.images?.length || 0,
         can_be_reviewed: true
       }));
       
       console.log('📋 Admin listings processed:', adminListings.length);
-      setListings(adminListings.slice(0, 10)); // Show first 10 for admin review
+      setListings(adminListings); // Show all listings from API
     } catch (err: any) {
       console.warn('Listings fetch error:', err);
       setListings([]);
@@ -1357,7 +1357,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                         }
                       }
                     }}
-                    placeholder="Enter booking/reservation number (e.g., BK679E4363)..."
+                    placeholder="Enter booking/reservation number..."
                     size="large"
                     InputProps={{
                       startAdornment: (
@@ -2459,7 +2459,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {users.slice(0, 100).map((user) => (
+                        {users.map((user) => (
                           <TableRow key={user.id}>
                             <TableCell>{user.id}</TableCell>
                             <TableCell>{user.email}</TableCell>
@@ -3350,7 +3350,7 @@ const AdminDashboardEnhanced: React.FC = () => {
             {/* Floating Search Results */}
             {showSearchResults && searchResults.length > 0 && (
               <Box sx={{ mb: 2, maxHeight: 200, overflow: 'auto' }}>
-                {searchResults.slice(0, 3).map((booking, index) => (
+                {searchResults.map((booking, index) => (
                   <Box
                     key={index}
                     onClick={() => handleBookingSelect(booking)}
@@ -3399,7 +3399,7 @@ const AdminDashboardEnhanced: React.FC = () => {
             </Button>
 
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'center', mt: 1 }}>
-              Enter: BK679E4363, #BK679E4363, or just the number
+              Enter: booking number with or without prefix
             </Typography>
           </Box>
         </Paper>
