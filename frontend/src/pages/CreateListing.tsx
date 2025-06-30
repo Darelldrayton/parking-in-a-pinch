@@ -711,7 +711,7 @@ export default function CreateListing() {
                           {option.value === 'street' && '🛣️'}
                           {option.value === 'covered' && '🏗️'}
                         </Box>
-                        <Typography variant="h6" fontWeight="bold">
+                        <Typography variant="h6" fontWeight="bold" color="text.primary">
                           {option.label}
                         </Typography>
                         <Radio
@@ -774,7 +774,7 @@ export default function CreateListing() {
                           {option.value === 'van' && '🚐'}
                           {option.value === 'motorcycle' && '🏍️'}
                         </Box>
-                        <Typography variant="subtitle1" fontWeight="bold">
+                        <Typography variant="subtitle1" fontWeight="bold" color="text.primary">
                           {option.label}
                         </Typography>
                         <Checkbox
@@ -997,7 +997,7 @@ export default function CreateListing() {
         {/* Auto-geocoding status and optional map */}
         <Grid size={12}>
           <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
-            <Typography variant="h6" gutterBottom>
+            <Typography variant="h6" gutterBottom color="text.primary">
               📍 Location Verification
             </Typography>
             {watchedLocation?.latitude && watchedLocation?.longitude && 
@@ -1097,7 +1097,7 @@ export default function CreateListing() {
                         onChange={(e) => field.onChange(e.target.checked)}
                       />
                     </Box>
-                    <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                    <Typography variant="subtitle1" fontWeight="bold" gutterBottom color="text.primary">
                       {amenity.label}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
@@ -1222,7 +1222,7 @@ export default function CreateListing() {
                   spacing={3}
                 >
                   <Box sx={{ minWidth: { xs: 'auto', md: 120 } }}>
-                    <Typography variant="h6" fontWeight="bold">
+                    <Typography variant="h6" fontWeight="bold" color="text.primary">
                       {day.label}
                     </Typography>
                   </Box>
