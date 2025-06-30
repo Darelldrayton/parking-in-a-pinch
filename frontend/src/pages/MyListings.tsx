@@ -206,11 +206,11 @@ export default function MyListings() {
                     >
                       <ArrowBack />
                     </IconButton>
-                    <Typography variant="h3" component="h1" fontWeight={700}>
+                    <Typography variant="h3" component="h1" fontWeight={700} color="white">
                       My Listings
                     </Typography>
                   </Stack>
-                  <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 300 }}>
+                  <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 300 }} color="white">
                     Manage your parking spaces and track their performance
                   </Typography>
                 </Box>
@@ -381,7 +381,7 @@ export default function MyListings() {
                         </Typography>
                       </Stack>
                       
-                      <Typography variant="h6" fontWeight={600} noWrap sx={{ mb: 1 }}>
+                      <Typography variant="h6" fontWeight={600} noWrap sx={{ mb: 1 }} color="text.primary">
                         {listing.title}
                       </Typography>
                       
