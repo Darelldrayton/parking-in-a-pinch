@@ -926,26 +926,27 @@ export default function BookingDetail() {
                     </Button>
 
                     {(booking.status === 'confirmed' || booking.status === 'active') && (
-                      <>
-                        <Button
-                          variant="contained"
-                          startIcon={<QrCode />}
-                          onClick={() => setQrDialogOpen(true)}
-                          fullWidth
-                          color="secondary"
-                        >
-                          QR Check-In
-                        </Button>
-                        
-                        <Button
-                          variant="outlined"
-                          startIcon={<LocationOn />}
-                          onClick={handleVerifyLocation}
-                          fullWidth
-                        >
-                          Verify Location
-                        </Button>
-                      </>
+                      <Button
+                        variant="contained"
+                        startIcon={<QrCode />}
+                        onClick={() => setQrDialogOpen(true)}
+                        fullWidth
+                        color="secondary"
+                      >
+                        QR Check-In
+                      </Button>
+                    )}
+
+                    {/* Verify Location - only show after check-in */}
+                    {booking.actual_start_time && (
+                      <Button
+                        variant="outlined"
+                        startIcon={<LocationOn />}
+                        onClick={handleVerifyLocation}
+                        fullWidth
+                      >
+                        Verify Location
+                      </Button>
                     )}
 
                     {/* Check-in/Check-out buttons */}
