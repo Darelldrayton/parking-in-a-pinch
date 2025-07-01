@@ -116,17 +116,39 @@ const RulerDashboardFixed: React.FC = () => {
         'Content-Type': 'application/json'
       };
 
-      // TRY TO FETCH REAL STATS
+      // TRY TO FETCH REAL STATS FROM MULTIPLE ENDPOINTS
       try {
-        const statsResponse = await fetch('/api/v1/users/admin/users/stats/', { headers });
-        if (statsResponse.ok) {
-          const realStats = await statsResponse.json();
-          console.log('✅ Real stats loaded:', realStats);
-          setStats(realStats);
-        } else {
-          console.log('⚠️ Stats API not available, showing zeros');
-          // Keep stats at 0 - NO FAKE DATA
-        }
+        const [usersRes, verificationsRes, refundsRes] = await Promise.allSettled([
+          fetch('/api/v1/users/admin/users/stats/', { headers }),
+          fetch('/api/v1/users/admin/verification-requests/stats/', { headers }),
+          fetch('/api/v1/payments/admin/refund-requests/stats/', { headers })
+        ]);
+        
+        const users = usersRes.status === 'fulfilled' && usersRes.value.ok ? 
+          await usersRes.value.json() : { total_users: 0, verified_users: 0, recent_signups: 0 };
+        const verifications = verificationsRes.status === 'fulfilled' && verificationsRes.value.ok ? 
+          await verificationsRes.value.json() : { pending_requests: 0, total_requests: 0 };
+        const refunds = refundsRes.status === 'fulfilled' && refundsRes.value.ok ? 
+          await refundsRes.value.json() : { pending_requests: 0, total_requests: 0, total_requested_amount: 0 };
+        
+        const realStats = {
+          total_users: users.total_users || 0,
+          verified_users: users.verified_users || 0,
+          recent_signups: users.recent_signups || 0,
+          pending_requests: verifications.pending_requests || 0,
+          total_requests: verifications.total_requests || 0,
+          pending_refunds: refunds.pending_requests || 0,
+          total_refunds: refunds.total_requests || 0,
+          total_requested_amount: refunds.total_requested_amount || 0,
+          pending_listings: 0,
+          total_listings: 0,
+          approved_listings: 0,
+          open_disputes: 0,
+          total_disputes: 0,
+        };
+        
+        console.log('✅ Real stats loaded from multiple APIs:', realStats);
+        setStats(realStats);
       } catch (statsError) {
         console.log('⚠️ Stats API error, showing zeros:', statsError);
         // Keep stats at 0 - NO FAKE DATA
@@ -134,7 +156,14 @@ const RulerDashboardFixed: React.FC = () => {
 
       // TRY TO FETCH REAL LISTINGS
       try {
-        const listingsResponse = await fetch('/api/v1/listings/admin/', { headers });
+        let listingsResponse = await fetch('/api/v1/listings/admin/', { headers });
+        
+        // If admin endpoint fails, try regular listings endpoint
+        if (!listingsResponse.ok) {
+          console.log('⚠️ Admin listings API failed, trying regular listings API');
+          listingsResponse = await fetch('/api/v1/listings/', { headers });
+        }
+        
         if (listingsResponse.ok) {
           const realListings = await listingsResponse.json();
           console.log('✅ Real listings loaded:', realListings);
