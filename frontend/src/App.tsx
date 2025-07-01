@@ -327,7 +327,7 @@ function AppRoutes() {
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/ruler/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminProtectedRoute redirectTo="/admin/login"><AdminDashboard /></AdminProtectedRoute>} />
-        <Route path="/ruler/dashboard" element={<AdminProtectedRoute redirectTo="/ruler/login"><RulerDashboard /></AdminProtectedRoute>} />
+        <Route path="/ruler/dashboard" element={<AdminProtectedRoute redirectTo="/ruler/login"><AdminDashboard /></AdminProtectedRoute>} />
         {/* 🚨 DEBUGGING: If you see AdminDashboardEnhanced in console, the routing is still wrong */}
         <Route path="/admin/cleanup-listings" element={<AdminProtectedRoute redirectTo="/admin/login"><CleanupListings /></AdminProtectedRoute>} />
         <Route path="/ruler/cleanup-listings" element={<AdminProtectedRoute redirectTo="/ruler/login"><CleanupListings /></AdminProtectedRoute>} />
