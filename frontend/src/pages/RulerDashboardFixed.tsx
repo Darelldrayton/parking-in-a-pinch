@@ -118,7 +118,7 @@ const RulerDashboardFixed: React.FC = () => {
 
       // TRY TO FETCH REAL STATS
       try {
-        const statsResponse = await fetch('/api/v1/ruler/dashboard-stats/', { headers });
+        const statsResponse = await fetch('/api/v1/users/admin/users/stats/', { headers });
         if (statsResponse.ok) {
           const realStats = await statsResponse.json();
           console.log('✅ Real stats loaded:', realStats);
@@ -134,7 +134,7 @@ const RulerDashboardFixed: React.FC = () => {
 
       // TRY TO FETCH REAL LISTINGS
       try {
-        const listingsResponse = await fetch('/api/v1/listings/ruler/', { headers });
+        const listingsResponse = await fetch('/api/v1/listings/admin/', { headers });
         if (listingsResponse.ok) {
           const realListings = await listingsResponse.json();
           console.log('✅ Real listings loaded:', realListings);
