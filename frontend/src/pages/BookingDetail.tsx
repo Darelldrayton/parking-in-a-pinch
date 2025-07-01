@@ -280,43 +280,25 @@ export default function BookingDetail() {
       return;
     }
 
-    // Detect platform
+    // Detect platform and use direct URL schemes
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     const isAndroid = /Android/.test(navigator.userAgent);
     
     let mapsUrl;
     
-    // Priority: Waze (universal) > Platform-specific default
-    // Try Waze first as it's available on all platforms
-    const wazeUrl = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
-    
-    // Platform-specific fallbacks
     if (isIOS) {
-      // iOS: Apple Maps with MKMapItem or URL scheme
-      const appleUrl = `maps://maps.apple.com/?daddr=${lat},${lng}`;
-      mapsUrl = appleUrl;
+      // iOS: Use Apple Maps URL scheme
+      mapsUrl = `maps://maps.apple.com/?daddr=${lat},${lng}`;
     } else if (isAndroid) {
-      // Android: Google Maps intent
-      const googleUrl = `geo:${lat},${lng}?q=${lat},${lng}(${encodeURIComponent(address || 'Parking Space')})`;
-      mapsUrl = googleUrl;
+      // Android: Use geo URI scheme
+      mapsUrl = `geo:${lat},${lng}?q=${lat},${lng}(${encodeURIComponent(address || 'Parking Space')})`;
     } else {
-      // Web/Desktop: Google Maps web
-      const webUrl = `https://maps.google.com/maps?daddr=${lat},${lng}`;
-      mapsUrl = webUrl;
+      // Web: Use Google Maps web
+      mapsUrl = `https://maps.google.com/maps?daddr=${lat},${lng}`;
     }
     
-    // Try Waze first, fallback to platform default if Waze isn't available
-    try {
-      window.open(wazeUrl, '_blank');
-      // Small delay to check if Waze opened successfully
-      setTimeout(() => {
-        // If user is still on page, they might not have Waze - open platform default
-        window.open(mapsUrl, '_blank');
-      }, 500);
-    } catch (error) {
-      // If Waze fails, open platform default immediately
-      window.open(mapsUrl, '_blank');
-    }
+    // Launch maps directly
+    window.open(mapsUrl);
   };
 
   const loadExistingReview = async () => {
