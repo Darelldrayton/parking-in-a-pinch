@@ -60,7 +60,6 @@ import { useAuth } from '../context/AuthContext';
 import { useBookings } from '../context/BookingsContext';
 import QRCheckInSystem from '../components/checkin/QRCheckInSystem';
 import GPSLocationVerifier from '../components/location/GPSLocationVerifier';
-import SmartLocationFeatures from '../components/location/SmartLocationFeatures';
 import RefundRequestDialog from '../components/payment/RefundRequestDialog';
 import RefundStatus from '../components/payment/RefundStatus';
 import RefundRequestStatus from '../components/payment/RefundRequestStatus';
@@ -85,6 +84,8 @@ interface BookingDetail {
       email?: string;
     };
   };
+  parking_space_latitude?: number;
+  parking_space_longitude?: number;
   start_time: string;
   end_time: string;
   actual_start_time?: string;
@@ -130,7 +131,6 @@ export default function BookingDetail() {
   const [booking, setBooking] = useState<BookingDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
-  const [showLocationFeatures, setShowLocationFeatures] = useState(false);
   const [refundDialogOpen, setRefundDialogOpen] = useState(false);
   
   // Review state
@@ -265,6 +265,58 @@ export default function BookingDetail() {
         }
       } 
     });
+  };
+
+  const handleVerifyLocation = () => {
+    if (!booking) return;
+    
+    // Get coordinates from parking_space object first, then fallback to booking level coordinates
+    const lat = booking.parking_space?.latitude || booking.parking_space_latitude;
+    const lng = booking.parking_space?.longitude || booking.parking_space_longitude;
+    const address = booking.parking_space?.address;
+    
+    if (!lat || !lng) {
+      toast.error('Location coordinates not available');
+      return;
+    }
+
+    // Detect platform
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isAndroid = /Android/.test(navigator.userAgent);
+    
+    let mapsUrl;
+    
+    // Priority: Waze (universal) > Platform-specific default
+    // Try Waze first as it's available on all platforms
+    const wazeUrl = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
+    
+    // Platform-specific fallbacks
+    if (isIOS) {
+      // iOS: Apple Maps with MKMapItem or URL scheme
+      const appleUrl = `maps://maps.apple.com/?daddr=${lat},${lng}`;
+      mapsUrl = appleUrl;
+    } else if (isAndroid) {
+      // Android: Google Maps intent
+      const googleUrl = `geo:${lat},${lng}?q=${lat},${lng}(${encodeURIComponent(address || 'Parking Space')})`;
+      mapsUrl = googleUrl;
+    } else {
+      // Web/Desktop: Google Maps web
+      const webUrl = `https://maps.google.com/maps?daddr=${lat},${lng}`;
+      mapsUrl = webUrl;
+    }
+    
+    // Try Waze first, fallback to platform default if Waze isn't available
+    try {
+      window.open(wazeUrl, '_blank');
+      // Small delay to check if Waze opened successfully
+      setTimeout(() => {
+        // If user is still on page, they might not have Waze - open platform default
+        window.open(mapsUrl, '_blank');
+      }, 500);
+    } catch (error) {
+      // If Waze fails, open platform default immediately
+      window.open(mapsUrl, '_blank');
+    }
   };
 
   const loadExistingReview = async () => {
@@ -906,9 +958,8 @@ export default function BookingDetail() {
                         <Button
                           variant="outlined"
                           startIcon={<LocationOn />}
-                          onClick={() => setShowLocationFeatures(true)}
+                          onClick={handleVerifyLocation}
                           fullWidth
-                          
                         >
                           Verify Location
                         </Button>
@@ -1304,35 +1355,6 @@ export default function BookingDetail() {
         </DialogActions>
       </Dialog>
 
-      {/* Smart Location Features Dialog */}
-      <Dialog
-        open={showLocationFeatures}
-        onClose={() => setShowLocationFeatures(false)}
-        maxWidth="lg"
-        fullWidth
-      >
-        <DialogContent sx={{ p: 0 }}>
-          {booking && (
-            <SmartLocationFeatures
-              parkingLocation={{
-                lat: 40.7128, // Mock coordinates for demo
-                lng: -74.0060,
-                address: booking.parking_space.address,
-              }}
-              onLocationVerified={(data) => {
-                console.log('Location verified:', data);
-                toast.success('Location verification completed!');
-                setShowLocationFeatures(false);
-              }}
-            />
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowLocationFeatures(false)}>
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       {/* Refund Request Dialog */}
       <RefundRequestDialog
@@ -1347,6 +1369,7 @@ export default function BookingDetail() {
           toast.success('Refund request submitted successfully!');
         }}
       />
+
     </Box>
   );
 }
