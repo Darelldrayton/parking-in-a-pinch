@@ -8,6 +8,8 @@ from .models import Booking, BookingReview, BookingStatus
 class BookingSerializer(serializers.ModelSerializer):
     parking_space_title = serializers.CharField(source='parking_space.title', read_only=True)
     parking_space_address = serializers.CharField(source='parking_space.address', read_only=True)
+    parking_space_latitude = serializers.DecimalField(source='parking_space.latitude', max_digits=10, decimal_places=8, read_only=True)
+    parking_space_longitude = serializers.DecimalField(source='parking_space.longitude', max_digits=11, decimal_places=8, read_only=True)
     user_name = serializers.CharField(source='user.get_full_name', read_only=True)
     user_email = serializers.CharField(source='user.email', read_only=True)
     is_active = serializers.ReadOnlyField()
@@ -19,6 +21,7 @@ class BookingSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'booking_id', 'user', 'user_name', 'user_email',
             'parking_space', 'parking_space_title', 'parking_space_address',
+            'parking_space_latitude', 'parking_space_longitude',
             'start_time', 'end_time', 'duration_hours',
             'hourly_rate', 'total_amount', 'platform_fee',
             'status', 'special_instructions',

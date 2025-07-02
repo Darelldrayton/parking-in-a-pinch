@@ -43,9 +43,6 @@ import {
   AccessTime,
   Block,
   Schedule,
-  Refresh,
-  AutoMode,
-  PauseCircle,
 } from '@mui/icons-material';
 import type { ParkingListing, SearchFilters } from '../types/parking';
 import api from '../services/api';
@@ -124,7 +121,6 @@ export default function Listings() {
   const [selectedNeighborhood, setSelectedNeighborhood] = useState<string>('');
   const [showOnlyAvailable, setShowOnlyAvailable] = useState(false);
   const [lastAvailabilityCheck, setLastAvailabilityCheck] = useState<Date | null>(null);
-  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
 
   // Get search parameters from URL
   useEffect(() => {
@@ -154,17 +150,6 @@ export default function Listings() {
     }
   }, [listings]);
 
-  // Auto-refresh availability every 60 seconds
-  useEffect(() => {
-    if (!autoRefreshEnabled || listings.length === 0) return;
-
-    const interval = setInterval(() => {
-      console.log('🔄 Auto-refreshing availability...');
-      checkAllAvailability();
-    }, 60000); // 60 seconds
-
-    return () => clearInterval(interval);
-  }, [listings, autoRefreshEnabled]);
 
   // Batch availability checking function
   const checkAllAvailability = async () => {
@@ -658,49 +643,6 @@ export default function Listings() {
                     />
                   )}
                   
-                  {/* Refresh Button */}
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={checkingCount > 0 ? <CircularProgress size={16} /> : <Refresh />}
-                    onClick={() => checkAllAvailability()}
-                    disabled={checkingCount > 0}
-                    sx={{
-                      minWidth: 'auto',
-                      px: 2,
-                      borderColor: alpha(theme.palette.primary.main, 0.3),
-                      '&:hover': {
-                        borderColor: theme.palette.primary.main,
-                        backgroundColor: alpha(theme.palette.primary.main, 0.05),
-                      },
-                    }}
-                  >
-                    Refresh
-                  </Button>
-                  
-                  {/* Auto-refresh Toggle */}
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={autoRefreshEnabled ? <AutoMode /> : <PauseCircle />}
-                    onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
-                    sx={{
-                      minWidth: 'auto',
-                      px: 2,
-                      borderColor: autoRefreshEnabled 
-                        ? alpha(theme.palette.success.main, 0.3)
-                        : alpha(theme.palette.grey[500], 0.3),
-                      color: autoRefreshEnabled ? 'success.main' : 'grey.600',
-                      '&:hover': {
-                        borderColor: autoRefreshEnabled ? 'success.main' : 'grey.500',
-                        backgroundColor: autoRefreshEnabled 
-                          ? alpha(theme.palette.success.main, 0.05)
-                          : alpha(theme.palette.grey[500], 0.05),
-                      },
-                    }}
-                  >
-                    Auto
-                  </Button>
                   
                   {/* Last Check Time */}
                   {lastAvailabilityCheck && (
