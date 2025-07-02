@@ -25,38 +25,22 @@ class PaymentService:
             # Calculate amounts
             amount = int(booking_data['amount'] * 100)  # Convert to cents
             
-            # Check if we have valid Stripe keys and ensure we're not using live keys in development
-            has_valid_stripe_keys = (
-                settings.STRIPE_SECRET_KEY and 
-                settings.STRIPE_SECRET_KEY.startswith('sk_test_') and
-                len(settings.STRIPE_SECRET_KEY) > 20
-            )
+            # ALWAYS USE REAL STRIPE API - NO MORE MOCK GENERATION
+            # Validate Stripe keys are properly configured
+            if not settings.STRIPE_SECRET_KEY:
+                logger.error("⚠️ CRITICAL: STRIPE_SECRET_KEY not configured")
+                raise ValueError("Payment processing unavailable - STRIPE_SECRET_KEY not configured")
+            
+            if not settings.STRIPE_SECRET_KEY.startswith(('sk_test_', 'sk_live_')):
+                logger.error("⚠️ CRITICAL: Invalid STRIPE_SECRET_KEY format")
+                raise ValueError("Payment processing unavailable - Invalid STRIPE_SECRET_KEY format")
             
             # Safety check: NEVER allow live keys in development
-            if settings.DEBUG and settings.STRIPE_SECRET_KEY and settings.STRIPE_SECRET_KEY.startswith('sk_live_'):
-                logger.error("⚠️ LIVE STRIPE KEY DETECTED IN DEVELOPMENT MODE! Using mock payments for safety.")
-                has_valid_stripe_keys = False
+            if settings.DEBUG and settings.STRIPE_SECRET_KEY.startswith('sk_live_'):
+                logger.error("⚠️ LIVE STRIPE KEY DETECTED IN DEVELOPMENT MODE! This is dangerous.")
+                raise ValueError("Cannot use live Stripe keys in development mode for safety")
             
-            if not has_valid_stripe_keys:
-                # Mock payment intent for testing when no valid Stripe keys
-                import uuid
-                # Generate proper format: pi_[id]_secret_[secret] (no 'test' words)
-                mock_id = uuid.uuid4().hex[:16]  # Longer ID like real Stripe
-                mock_secret = uuid.uuid4().hex[:16]  # Longer secret like real Stripe
-                payment_intent_id = f"pi_{mock_id}"
-                client_secret = f"pi_{mock_id}_secret_{mock_secret}"
-                
-                # Update booking to indicate payment is being processed
-                booking = Booking.objects.get(id=booking_data['booking_id'])
-                booking.status = 'payment_pending'
-                booking.save()
-                
-                logger.info(f"Mock payment intent created for booking {booking_data['booking_id']} (no valid Stripe keys)")
-                
-                return {
-                    'client_secret': client_secret,
-                    'payment_intent_id': payment_intent_id
-                }
+            logger.info(f"✅ Using real Stripe API with key: {settings.STRIPE_SECRET_KEY[:20]}...")
             
             # Initialize Stripe with the API key
             stripe.api_key = settings.STRIPE_SECRET_KEY
