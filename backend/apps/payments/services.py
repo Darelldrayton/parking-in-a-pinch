@@ -25,42 +25,23 @@ class PaymentService:
             # Calculate amounts
             amount = int(booking_data['amount'] * 100)  # Convert to cents
             
-            # Check if we have valid Stripe keys and ensure we're not using live keys in development
-            has_valid_stripe_keys = (
-                settings.STRIPE_SECRET_KEY and 
-                settings.STRIPE_SECRET_KEY.startswith('sk_test_') and
-                len(settings.STRIPE_SECRET_KEY) > 20
-            )
+            # Validate Stripe configuration
+            if not settings.STRIPE_SECRET_KEY:
+                raise ValueError("STRIPE_SECRET_KEY is not configured. Please add it to your environment variables.")
+            
+            if not settings.STRIPE_SECRET_KEY.startswith(('sk_test_', 'sk_live_')):
+                raise ValueError("Invalid STRIPE_SECRET_KEY format. Must start with 'sk_test_' or 'sk_live_'")
             
             # Safety check: NEVER allow live keys in development
-            if settings.DEBUG and settings.STRIPE_SECRET_KEY and settings.STRIPE_SECRET_KEY.startswith('sk_live_'):
-                logger.error("⚠️ LIVE STRIPE KEY DETECTED IN DEVELOPMENT MODE! Using mock payments for safety.")
-                has_valid_stripe_keys = False
-            
-            if not has_valid_stripe_keys:
-                # Mock payment intent for testing when no valid Stripe keys
-                import uuid
-                mock_id = uuid.uuid4().hex[:8]
-                mock_secret = uuid.uuid4().hex[:8]
-                payment_intent_id = f"pi_{mock_id}"
-                client_secret = f"pi_{mock_id}_secret_{mock_secret}"
-                
-                # Update booking to indicate payment is being processed
-                booking = Booking.objects.get(id=booking_data['booking_id'])
-                booking.status = 'payment_pending'
-                booking.save()
-                
-                logger.info(f"Mock payment intent created for booking {booking_data['booking_id']} (no valid Stripe keys)")
-                
-                return {
-                    'client_secret': client_secret,
-                    'payment_intent_id': payment_intent_id
-                }
+            if settings.DEBUG and settings.STRIPE_SECRET_KEY.startswith('sk_live_'):
+                raise ValueError("⚠️ LIVE STRIPE KEY DETECTED IN DEVELOPMENT MODE! This is not allowed for safety. Use sk_test_ keys in development.")
             
             # Initialize Stripe with the API key
             stripe.api_key = settings.STRIPE_SECRET_KEY
             
-            # Create real Stripe payment intent
+            # Create REAL Stripe payment intent - NO MOCK GENERATION
+            logger.info(f"Creating real Stripe PaymentIntent for booking {booking_data['booking_id']} with amount ${booking_data['amount']}")
+            
             payment_intent = stripe.PaymentIntent.create(
                 amount=amount,
                 currency='usd',
@@ -77,21 +58,27 @@ class PaymentService:
             booking.status = 'payment_pending'
             booking.save()
             
-            # Store payment intent ID in Payment model for later reference
-            # (This would be better done in a separate Payment record)
+            # Get the EXACT client secret from Stripe - DO NOT MODIFY IT
+            client_secret = payment_intent.client_secret
             
-            # Validate client secret format
-            client_secret = getattr(payment_intent, 'client_secret', None)
             if not client_secret:
                 raise ValueError("Stripe did not return a client_secret")
             
-            # Validate client secret format: pi_[id]_secret_[secret]
+            # Log the actual response for debugging
+            logger.info(f"✅ Real Stripe response client_secret: {client_secret}")
+            
+            # Validate client secret format: should be pi_[id]_secret_[secret] (no 'test' words)
             import re
             if not re.match(r'^pi_[a-zA-Z0-9]+_secret_[a-zA-Z0-9]+$', client_secret):
-                logger.error(f"Invalid client secret format received from Stripe: {client_secret}")
+                logger.error(f"❌ Invalid client secret format received from Stripe: {client_secret}")
                 raise ValueError(f"Invalid client secret format: {client_secret}")
             
-            logger.info(f"Real Stripe payment intent created for booking {booking_data['booking_id']}")
+            # Additional check: ensure no 'test' word appears in the client secret
+            if 'test' in client_secret.lower():
+                logger.error(f"❌ Client secret contains 'test' word which indicates mock generation: {client_secret}")
+                raise ValueError(f"Client secret should not contain 'test' word: {client_secret}")
+            
+            logger.info(f"✅ Valid Stripe payment intent created for booking {booking_data['booking_id']}")
             
             return {
                 'client_secret': client_secret,
