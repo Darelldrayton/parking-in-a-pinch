@@ -98,17 +98,39 @@ const RulerDashboardRealAPIs: React.FC = () => {
   
   // Real data state - starts at zero
   const [stats, setStats] = useState({
+    // User stats
     total_users: 0,
+    active_users: 0,
     verified_users: 0,
     recent_signups: 0,
+    monthly_signups: 0,
+    hosts: 0,
+    seekers: 0,
+    staff_users: 0,
+    
+    // Verification stats
     pending_verifications: 0,
     total_verifications: 0,
+    approved_verifications: 0,
+    rejected_verifications: 0,
+    recent_verification_requests: 0,
+    
+    // Listing stats
     pending_listings: 0,
     total_listings: 0,
     approved_listings: 0,
+    rejected_listings: 0,
+    active_approved_listings: 0,
+    recent_listings: 0,
+    
+    // Refund stats
     pending_refunds: 0,
     total_refunds: 0,
+    approved_refunds: 0,
+    processed_refunds: 0,
     total_requested_amount: 0,
+    total_approved_amount: 0,
+    recent_refund_requests: 0,
   });
   
   // Data arrays
@@ -127,6 +149,8 @@ const RulerDashboardRealAPIs: React.FC = () => {
   const [actionType, setActionType] = useState<string>('');
   const [notes, setNotes] = useState('');
   const [reason, setReason] = useState('');
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [autoRefresh, setAutoRefresh] = useState(true);
 
   // Authentication enforcement
   useEffect(() => {
@@ -210,8 +234,13 @@ const RulerDashboardRealAPIs: React.FC = () => {
         setStats(prev => ({
           ...prev,
           total_users: userStats.total_users || 0,
+          active_users: userStats.active_users || 0,
           verified_users: userStats.verified_users || 0,
           recent_signups: userStats.recent_signups || 0,
+          monthly_signups: userStats.monthly_signups || 0,
+          hosts: userStats.hosts || 0,
+          seekers: userStats.seekers || 0,
+          staff_users: userStats.staff_users || 0,
         }));
       }
 
@@ -223,6 +252,9 @@ const RulerDashboardRealAPIs: React.FC = () => {
           ...prev,
           pending_verifications: verificationStats.pending_requests || 0,
           total_verifications: verificationStats.total_requests || 0,
+          approved_verifications: verificationStats.approved_requests || 0,
+          rejected_verifications: verificationStats.rejected_requests || 0,
+          recent_verification_requests: verificationStats.recent_requests || 0,
         }));
       }
 
@@ -234,7 +266,11 @@ const RulerDashboardRealAPIs: React.FC = () => {
           ...prev,
           pending_refunds: refundStats.pending_requests || 0,
           total_refunds: refundStats.total_requests || 0,
+          approved_refunds: refundStats.approved_requests || 0,
+          processed_refunds: refundStats.processed_requests || 0,
           total_requested_amount: refundStats.total_requested_amount || 0,
+          total_approved_amount: refundStats.total_approved_amount || 0,
+          recent_refund_requests: refundStats.recent_requests || 0,
         }));
       }
 
@@ -247,6 +283,9 @@ const RulerDashboardRealAPIs: React.FC = () => {
           pending_listings: listingStats.pending_listings || 0,
           total_listings: listingStats.total_listings || 0,
           approved_listings: listingStats.approved_listings || 0,
+          rejected_listings: listingStats.rejected_listings || 0,
+          active_approved_listings: listingStats.active_approved_listings || 0,
+          recent_listings: listingStats.recent_listings || 0,
         }));
       }
 
@@ -274,8 +313,21 @@ const RulerDashboardRealAPIs: React.FC = () => {
       setError('Some features may be limited due to connectivity issues.');
     } finally {
       setLoading(false);
+      setLastUpdated(new Date());
     }
   };
+
+  // Auto-refresh data every 30 seconds
+  useEffect(() => {
+    if (!authenticationVerified || !autoRefresh) return;
+
+    const intervalId = setInterval(() => {
+      console.log('🔄 Auto-refreshing dashboard data...');
+      loadRealData();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(intervalId);
+  }, [authenticationVerified, autoRefresh]);
 
   // API action handlers
   const handleVerificationAction = async (verificationId: number, action: 'approve' | 'reject' | 'request_revision') => {
@@ -599,7 +651,7 @@ const RulerDashboardRealAPIs: React.FC = () => {
                       Total Users
                     </Typography>
                     <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                      {stats.recent_signups} new this week
+                      {stats.recent_signups} new this week • {stats.verified_users} verified
                     </Typography>
                   </Box>
                 </Stack>
@@ -620,7 +672,7 @@ const RulerDashboardRealAPIs: React.FC = () => {
                       Pending Verifications
                     </Typography>
                     <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                      {stats.total_verifications} total
+                      {stats.approved_verifications} approved • {stats.rejected_verifications} rejected
                     </Typography>
                   </Box>
                 </Stack>
@@ -641,7 +693,7 @@ const RulerDashboardRealAPIs: React.FC = () => {
                       Pending Listings
                     </Typography>
                     <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                      {stats.approved_listings} approved
+                      {stats.approved_listings} approved • {stats.active_approved_listings} active
                     </Typography>
                   </Box>
                 </Stack>
@@ -662,7 +714,7 @@ const RulerDashboardRealAPIs: React.FC = () => {
                       Pending Refunds
                     </Typography>
                     <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                      ${stats.total_requested_amount.toFixed(2)} requested
+                      ${stats.total_approved_amount.toFixed(2)} approved
                     </Typography>
                   </Box>
                 </Stack>
@@ -670,6 +722,43 @@ const RulerDashboardRealAPIs: React.FC = () => {
             </Card>
           </Grid>
         </Grid>
+
+        {/* Status and Controls Bar */}
+        <Card sx={{ mb: 3, bgcolor: alpha(theme.palette.primary.main, 0.1) }}>
+          <CardContent>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Box>
+                <Typography variant="body2" color="text.secondary">
+                  Last Updated: {lastUpdated ? lastUpdated.toLocaleTimeString() : 'Never'}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Dashboard Status: {loading ? 'Refreshing...' : 'Live Data Connected'} • Auto-refresh: {autoRefresh ? 'On' : 'Off'}
+                </Typography>
+              </Box>
+              <Stack direction="row" spacing={2}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={autoRefresh}
+                      onChange={(e) => setAutoRefresh(e.target.checked)}
+                      color="primary"
+                    />
+                  }
+                  label="Auto-refresh"
+                />
+                <Button
+                  variant="outlined"
+                  startIcon={<Refresh />}
+                  onClick={loadRealData}
+                  disabled={loading}
+                  size="small"
+                >
+                  Refresh Now
+                </Button>
+              </Stack>
+            </Stack>
+          </CardContent>
+        </Card>
 
         {/* Tabs for different sections */}
         <Card>

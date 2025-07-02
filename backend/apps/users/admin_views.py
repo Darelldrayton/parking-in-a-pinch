@@ -165,24 +165,35 @@ class AdminUserViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
         
-        queryset = self.get_queryset()
+        # Get all users (not filtered by get_queryset for accurate counts)
+        all_users = User.objects.all()
+        
+        # Calculate current timestamp for recent signups
+        one_week_ago = timezone.now() - timezone.timedelta(days=7)
+        one_month_ago = timezone.now() - timezone.timedelta(days=30)
         
         stats = {
-            'total_users': queryset.count(),
-            'verified_users': queryset.filter(is_identity_verified=True).count(),
-            'email_verified_users': queryset.filter(is_email_verified=True).count(),
-            'phone_verified_users': queryset.filter(is_phone_verified=True).count(),
-            'hosts': queryset.filter(
+            'total_users': all_users.count(),
+            'active_users': all_users.filter(is_active=True).count(),
+            'verified_users': all_users.filter(is_identity_verified=True).count(),
+            'email_verified_users': all_users.filter(is_email_verified=True).count(),
+            'phone_verified_users': all_users.filter(is_phone_verified=True).count(),
+            'hosts': all_users.filter(
                 Q(user_type=User.UserType.HOST) | 
                 Q(user_type=User.UserType.BOTH)
             ).count(),
-            'seekers': queryset.filter(
+            'seekers': all_users.filter(
                 Q(user_type=User.UserType.SEEKER) | 
                 Q(user_type=User.UserType.BOTH)
             ).count(),
-            'recent_signups': queryset.filter(
-                created_at__gte=timezone.now() - timezone.timedelta(days=7)
+            'recent_signups': all_users.filter(
+                created_at__gte=one_week_ago
             ).count(),
+            'monthly_signups': all_users.filter(
+                created_at__gte=one_month_ago
+            ).count(),
+            'staff_users': all_users.filter(is_staff=True).count(),
+            'super_users': all_users.filter(is_superuser=True).count(),
         }
         
         return Response(stats)
@@ -513,29 +524,40 @@ class VerificationRequestViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
         
-        queryset = self.get_queryset()
+        # Get all verification requests (not filtered by get_queryset for accurate counts)
+        all_verifications = VerificationRequest.objects.all()
+        
+        # Calculate time-based stats
+        one_week_ago = timezone.now() - timezone.timedelta(days=7)
+        one_month_ago = timezone.now() - timezone.timedelta(days=30)
         
         stats = {
-            'total_requests': queryset.count(),
-            'pending_requests': queryset.filter(
+            'total_requests': all_verifications.count(),
+            'pending_requests': all_verifications.filter(
                 status=VerificationRequest.VerificationStatus.PENDING
             ).count(),
-            'approved_requests': queryset.filter(
+            'approved_requests': all_verifications.filter(
                 status=VerificationRequest.VerificationStatus.APPROVED
             ).count(),
-            'rejected_requests': queryset.filter(
+            'rejected_requests': all_verifications.filter(
                 status=VerificationRequest.VerificationStatus.REJECTED
             ).count(),
-            'revision_requested': queryset.filter(
+            'revision_requested': all_verifications.filter(
                 status=VerificationRequest.VerificationStatus.REVISION_REQUESTED
             ).count(),
-            'identity_requests': queryset.filter(
+            'recent_requests': all_verifications.filter(
+                created_at__gte=one_week_ago
+            ).count(),
+            'monthly_requests': all_verifications.filter(
+                created_at__gte=one_month_ago
+            ).count(),
+            'identity_requests': all_verifications.filter(
                 verification_type=VerificationRequest.VerificationType.IDENTITY
             ).count(),
-            'phone_requests': queryset.filter(
+            'phone_requests': all_verifications.filter(
                 verification_type=VerificationRequest.VerificationType.PHONE
             ).count(),
-            'email_requests': queryset.filter(
+            'email_requests': all_verifications.filter(
                 verification_type=VerificationRequest.VerificationType.EMAIL
             ).count(),
         }

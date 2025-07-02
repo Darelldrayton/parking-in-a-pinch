@@ -210,24 +210,39 @@ class RefundRequestViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
         
-        queryset = self.get_queryset()
+        # Get all refund requests (not filtered by get_queryset for accurate counts)
+        all_refunds = RefundRequest.objects.all()
+        
+        # Calculate time-based stats
+        one_week_ago = timezone.now() - timezone.timedelta(days=7)
+        one_month_ago = timezone.now() - timezone.timedelta(days=30)
         
         stats = {
-            'total_requests': queryset.count(),
-            'pending_requests': queryset.filter(status=RefundRequest.RequestStatus.PENDING).count(),
-            'approved_requests': queryset.filter(status=RefundRequest.RequestStatus.APPROVED).count(),
-            'rejected_requests': queryset.filter(status=RefundRequest.RequestStatus.REJECTED).count(),
-            'processed_requests': queryset.filter(status=RefundRequest.RequestStatus.PROCESSED).count(),
+            'total_requests': all_refunds.count(),
+            'pending_requests': all_refunds.filter(status=RefundRequest.RequestStatus.PENDING).count(),
+            'approved_requests': all_refunds.filter(status=RefundRequest.RequestStatus.APPROVED).count(),
+            'rejected_requests': all_refunds.filter(status=RefundRequest.RequestStatus.REJECTED).count(),
+            'processed_requests': all_refunds.filter(status=RefundRequest.RequestStatus.PROCESSED).count(),
+            'recent_requests': all_refunds.filter(
+                created_at__gte=one_week_ago
+            ).count(),
+            'monthly_requests': all_refunds.filter(
+                created_at__gte=one_month_ago
+            ).count(),
             'total_requested_amount': sum(
                 float(req.requested_amount or 0) 
-                for req in queryset
+                for req in all_refunds
             ),
             'total_approved_amount': sum(
                 float(req.approved_amount or 0) 
-                for req in queryset.filter(status__in=[
+                for req in all_refunds.filter(status__in=[
                     RefundRequest.RequestStatus.APPROVED,
                     RefundRequest.RequestStatus.PROCESSED
                 ])
+            ),
+            'total_pending_amount': sum(
+                float(req.requested_amount or 0) 
+                for req in all_refunds.filter(status=RefundRequest.RequestStatus.PENDING)
             ),
         }
         

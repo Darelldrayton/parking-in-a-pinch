@@ -275,38 +275,51 @@ class AdminListingViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
         
-        queryset = self.get_queryset()
+        # Get all listings (not filtered by get_queryset for accurate counts)
+        all_listings = ParkingListing.objects.all()
+        
+        # Calculate time-based stats
+        one_week_ago = timezone.now() - timezone.timedelta(days=7)
+        one_month_ago = timezone.now() - timezone.timedelta(days=30)
         
         stats = {
-            'total_listings': queryset.count(),
-            'pending_listings': queryset.filter(
+            'total_listings': all_listings.count(),
+            'pending_listings': all_listings.filter(
                 approval_status=ParkingListing.ApprovalStatus.PENDING
             ).count(),
-            'approved_listings': queryset.filter(
+            'approved_listings': all_listings.filter(
                 approval_status=ParkingListing.ApprovalStatus.APPROVED
             ).count(),
-            'rejected_listings': queryset.filter(
+            'rejected_listings': all_listings.filter(
                 approval_status=ParkingListing.ApprovalStatus.REJECTED
             ).count(),
-            'revision_requested': queryset.filter(
+            'revision_requested': all_listings.filter(
                 approval_status=ParkingListing.ApprovalStatus.REVISION_REQUESTED
             ).count(),
-            'active_approved_listings': queryset.filter(
+            'active_approved_listings': all_listings.filter(
                 approval_status=ParkingListing.ApprovalStatus.APPROVED,
                 is_active=True
             ).count(),
+            'inactive_listings': all_listings.filter(is_active=False).count(),
+            'recent_listings': all_listings.filter(
+                created_at__gte=one_week_ago
+            ).count(),
+            'monthly_listings': all_listings.filter(
+                created_at__gte=one_month_ago
+            ).count(),
             'listings_by_type': {
-                'driveway': queryset.filter(space_type=ParkingListing.SpaceType.DRIVEWAY).count(),
-                'garage': queryset.filter(space_type=ParkingListing.SpaceType.GARAGE).count(),
-                'lot': queryset.filter(space_type=ParkingListing.SpaceType.LOT).count(),
-                'street': queryset.filter(space_type=ParkingListing.SpaceType.STREET).count(),
+                'driveway': all_listings.filter(space_type=ParkingListing.SpaceType.DRIVEWAY).count(),
+                'garage': all_listings.filter(space_type=ParkingListing.SpaceType.GARAGE).count(),
+                'lot': all_listings.filter(space_type=ParkingListing.SpaceType.LOT).count(),
+                'street': all_listings.filter(space_type=ParkingListing.SpaceType.STREET).count(),
+                'covered': all_listings.filter(space_type=ParkingListing.SpaceType.COVERED).count(),
             },
             'listings_by_borough': {
-                'manhattan': queryset.filter(borough=ParkingListing.Borough.MANHATTAN).count(),
-                'brooklyn': queryset.filter(borough=ParkingListing.Borough.BROOKLYN).count(),
-                'queens': queryset.filter(borough=ParkingListing.Borough.QUEENS).count(),
-                'bronx': queryset.filter(borough=ParkingListing.Borough.BRONX).count(),
-                'staten_island': queryset.filter(borough=ParkingListing.Borough.STATEN_ISLAND).count(),
+                'manhattan': all_listings.filter(borough=ParkingListing.Borough.MANHATTAN).count(),
+                'brooklyn': all_listings.filter(borough=ParkingListing.Borough.BROOKLYN).count(),
+                'queens': all_listings.filter(borough=ParkingListing.Borough.QUEENS).count(),
+                'bronx': all_listings.filter(borough=ParkingListing.Borough.BRONX).count(),
+                'staten_island': all_listings.filter(borough=ParkingListing.Borough.STATEN_ISLAND).count(),
             },
         }
         
