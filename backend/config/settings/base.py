@@ -255,15 +255,11 @@ SPECTACULAR_SETTINGS = {
 # Cache Configuration
 CACHES = {
     'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': env('REDIS_URL', default='redis://localhost:6379/2'),
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-        }
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
     }
 }
 
 # Session Configuration
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_CACHE_ALIAS = 'default'
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 7  # 1 week

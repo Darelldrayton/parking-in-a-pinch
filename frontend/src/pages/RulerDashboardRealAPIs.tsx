@@ -171,14 +171,16 @@ const RulerDashboardRealAPIs: React.FC = () => {
         console.log('🔐 Verifying user:', user.email);
         
         if (user.email === 'darelldrayton93@gmail.com' || user.is_staff || user.is_superuser) {
-          console.log('✅ SECURITY: Admin access verified');
+          console.log('✅ SECURITY: Admin access verified for user:', user.email);
+          console.log('✅ User privileges:', { is_staff: user.is_staff, is_superuser: user.is_superuser });
           setAdminUser(user);
           setAuthenticationVerified(true);
           loadRealData();
           return;
         }
         
-        console.log('🚨 SECURITY: Non-admin user blocked');
+        console.log('🚨 SECURITY: Non-admin user blocked:', user.email);
+        console.log('🚨 User privileges:', { is_staff: user.is_staff, is_superuser: user.is_superuser });
         alert('SECURITY: Insufficient privileges. Admin access required.');
         localStorage.clear();
         window.location.replace('/ruler/login');
@@ -203,10 +205,21 @@ const RulerDashboardRealAPIs: React.FC = () => {
     
     try {
       const token = localStorage.getItem('admin_access_token');
+      console.log('🔑 Admin token found:', token ? `${token.substring(0, 20)}...` : 'NO TOKEN');
+      
+      if (!token) {
+        throw new Error('No admin access token found. Please log in again.');
+      }
+      
       const headers = { 
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       };
+
+      console.log('📡 Making API calls with headers:', {
+        'Authorization': `Bearer ${token.substring(0, 20)}...`,
+        'Content-Type': 'application/json'
+      });
 
       // Load all data in parallel
       const [
@@ -242,6 +255,12 @@ const RulerDashboardRealAPIs: React.FC = () => {
           seekers: userStats.seekers || 0,
           staff_users: userStats.staff_users || 0,
         }));
+      } else {
+        console.error('❌ User stats API failed:', userStatsRes);
+        if (userStatsRes.status === 'fulfilled') {
+          const errorText = await userStatsRes.value.text();
+          console.error('❌ User stats error response:', errorText);
+        }
       }
 
       // Process verification stats
