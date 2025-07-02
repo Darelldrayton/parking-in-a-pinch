@@ -24,10 +24,9 @@ import {
 
 // 🛑 NO DEMO DATA - ONLY REAL APIs OR ZEROS
 const RulerDashboardFixed: React.FC = () => {
-  console.log('🎯 FORCE REBUILD: RulerDashboardFINAL component loading - NO DEMO DATA');
-  console.log('🛑 RulerDashboardFixed: NO DEMO DATA - REAL APIS ONLY');
-  console.log('🛑 ROUTING CONFIRMED: RulerDashboardFixed component loading at:', new Date().toISOString());
-  console.log('🚨 If you see AdminDashboardEnhanced in console, clear browser cache!');
+  console.log('🎯 RULER DASHBOARD FIXED v2.0 - LOADING AT:', new Date().toISOString());
+  console.log('🛑 THIS IS RulerDashboardFixed.tsx - USING /api/v1/listings/admin/pending/');
+  console.log('🚨 If you see different console logs, the wrong component is loading!');
   
   const theme = useTheme();
   const [loading, setLoading] = useState(true);
@@ -157,11 +156,15 @@ const RulerDashboardFixed: React.FC = () => {
       // TRY TO FETCH PENDING LISTINGS AND STATS
       try {
         // Fetch pending listings that need approval
+        console.log('📡 Fetching pending listings from: /api/v1/listings/admin/pending/');
         const pendingListingsResponse = await fetch('/api/v1/listings/admin/pending/', { headers });
+        
+        console.log('📡 Pending listings response status:', pendingListingsResponse.status);
         
         if (pendingListingsResponse.ok) {
           const pendingData = await pendingListingsResponse.json();
-          console.log('✅ Pending listings loaded:', pendingData);
+          console.log('✅ Pending listings API response:', pendingData);
+          console.log('📊 Found', pendingData.count || pendingData.results?.length || 0, 'pending listings');
           setListings(pendingData.results || []);
           
           // Update pending listings count in stats
@@ -170,7 +173,8 @@ const RulerDashboardFixed: React.FC = () => {
             pending_listings: pendingData.count || pendingData.results?.length || 0
           }));
         } else {
-          console.log('⚠️ Pending listings API not available, showing empty');
+          const errorText = await pendingListingsResponse.text();
+          console.log('❌ Pending listings API failed:', pendingListingsResponse.status, errorText);
           setListings([]); // EMPTY ARRAY - NO FAKE DATA
         }
         
