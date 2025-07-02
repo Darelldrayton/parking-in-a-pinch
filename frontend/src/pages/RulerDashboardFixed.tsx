@@ -154,24 +154,43 @@ const RulerDashboardFixed: React.FC = () => {
         // Keep stats at 0 - NO FAKE DATA
       }
 
-      // TRY TO FETCH REAL LISTINGS
+      // TRY TO FETCH PENDING LISTINGS AND STATS
       try {
-        let listingsResponse = await fetch('/api/v1/listings/admin/', { headers });
+        // Fetch pending listings that need approval
+        const pendingListingsResponse = await fetch('/api/v1/listings/admin/pending/', { headers });
         
-        // If admin endpoint fails, try regular listings endpoint
-        if (!listingsResponse.ok) {
-          console.log('⚠️ Admin listings API failed, trying regular listings API');
-          listingsResponse = await fetch('/api/v1/listings/', { headers });
-        }
-        
-        if (listingsResponse.ok) {
-          const realListings = await listingsResponse.json();
-          console.log('✅ Real listings loaded:', realListings);
-          setListings(realListings.results || realListings || []);
+        if (pendingListingsResponse.ok) {
+          const pendingData = await pendingListingsResponse.json();
+          console.log('✅ Pending listings loaded:', pendingData);
+          setListings(pendingData.results || []);
+          
+          // Update pending listings count in stats
+          setStats(prevStats => ({
+            ...prevStats,
+            pending_listings: pendingData.count || pendingData.results?.length || 0
+          }));
         } else {
-          console.log('⚠️ Listings API not available, showing empty');
+          console.log('⚠️ Pending listings API not available, showing empty');
           setListings([]); // EMPTY ARRAY - NO FAKE DATA
         }
+        
+        // Also fetch listing stats if available
+        try {
+          const statsResponse = await fetch('/api/v1/listings/admin/stats/', { headers });
+          if (statsResponse.ok) {
+            const listingStats = await statsResponse.json();
+            console.log('✅ Listing stats loaded:', listingStats);
+            setStats(prevStats => ({
+              ...prevStats,
+              total_listings: listingStats.total_listings || 0,
+              approved_listings: listingStats.approved_listings || 0,
+              pending_listings: listingStats.pending_listings || prevStats.pending_listings
+            }));
+          }
+        } catch (statsErr) {
+          console.log('⚠️ Listing stats API not available:', statsErr);
+        }
+        
       } catch (listingsError) {
         console.log('⚠️ Listings API error, showing empty:', listingsError);
         setListings([]); // EMPTY ARRAY - NO FAKE DATA
@@ -188,6 +207,99 @@ const RulerDashboardFixed: React.FC = () => {
   const handleLogout = () => {
     localStorage.clear();
     window.location.replace('/ruler/login');
+  };
+
+  // LISTING APPROVAL HANDLERS
+  const handleApproveListing = async (listingId: number) => {
+    try {
+      const token = localStorage.getItem('admin_access_token');
+      const response = await fetch(`/api/v1/listings/admin/${listingId}/approve/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          admin_notes: 'Approved via ruler dashboard'
+        })
+      });
+
+      if (response.ok) {
+        console.log('✅ Listing approved successfully');
+        // Refresh the data to remove the approved listing from pending list
+        loadRealData();
+      } else {
+        console.error('❌ Failed to approve listing:', response.statusText);
+        setError('Failed to approve listing. Please try again.');
+      }
+    } catch (error) {
+      console.error('❌ Error approving listing:', error);
+      setError('Error approving listing. Please check your connection.');
+    }
+  };
+
+  const handleRejectListing = async (listingId: number) => {
+    const reason = prompt('Please provide a reason for rejection:');
+    if (!reason) return;
+
+    try {
+      const token = localStorage.getItem('admin_access_token');
+      const response = await fetch(`/api/v1/listings/admin/${listingId}/reject/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          rejection_reason: reason,
+          admin_notes: 'Rejected via ruler dashboard'
+        })
+      });
+
+      if (response.ok) {
+        console.log('✅ Listing rejected successfully');
+        // Refresh the data to remove the rejected listing from pending list
+        loadRealData();
+      } else {
+        console.error('❌ Failed to reject listing:', response.statusText);
+        setError('Failed to reject listing. Please try again.');
+      }
+    } catch (error) {
+      console.error('❌ Error rejecting listing:', error);
+      setError('Error rejecting listing. Please check your connection.');
+    }
+  };
+
+  const handleRequestRevision = async (listingId: number) => {
+    const reason = prompt('Please provide a reason for requesting revision:');
+    if (!reason) return;
+
+    try {
+      const token = localStorage.getItem('admin_access_token');
+      const response = await fetch(`/api/v1/listings/admin/${listingId}/request_revision/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          revision_reason: reason,
+          admin_notes: 'Revision requested via ruler dashboard'
+        })
+      });
+
+      if (response.ok) {
+        console.log('✅ Revision requested successfully');
+        // Refresh the data to remove the listing from pending list
+        loadRealData();
+      } else {
+        console.error('❌ Failed to request revision:', response.statusText);
+        setError('Failed to request revision. Please try again.');
+      }
+    } catch (error) {
+      console.error('❌ Error requesting revision:', error);
+      setError('Error requesting revision. Please check your connection.');
+    }
   };
 
   // 🚨 SECURITY: Don't render until authenticated
@@ -400,32 +512,83 @@ const RulerDashboardFixed: React.FC = () => {
           </Grid>
         </Grid>
 
-        {/* REAL LISTINGS - NO FAKE DATA */}
+        {/* PENDING LISTINGS - REAL DATA ONLY */}
         <Card sx={{ borderRadius: 3 }}>
           <CardContent>
             <Typography variant="h5" gutterBottom>
-              Listing Approvals ({listings.length} pending)
+              Pending Listing Requests ({listings.length})
             </Typography>
             
             {listings.length === 0 ? (
               <Alert severity="info" sx={{ mt: 2 }}>
-                No pending listings found. All listings have been processed or the API is not available yet.
+                ✅ No pending listings found. All listings have been processed.
               </Alert>
             ) : (
               <Box sx={{ mt: 2 }}>
-                <Typography variant="body2" color="text.secondary">
-                  Showing {listings.length} real listings from ruler API
-                </Typography>
-                {/* Real listings table would go here */}
+                <Alert severity="warning" sx={{ mb: 2 }}>
+                  📋 {listings.length} listing request(s) need your review and approval
+                </Alert>
+                
                 {listings.map((listing, index) => (
-                  <Box key={index} sx={{ p: 2, border: 1, borderColor: 'divider', borderRadius: 1, mb: 1 }}>
-                    <Typography variant="body1" fontWeight="bold">
-                      {listing.title || `Listing #${listing.id}`}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Host: {listing.host_name || 'Unknown'} | Status: {listing.approval_status || 'Pending'}
-                    </Typography>
-                  </Box>
+                  <Card key={listing.id || index} sx={{ mb: 2, border: 1, borderColor: 'warning.light' }}>
+                    <CardContent>
+                      <Grid container spacing={2} alignItems="center">
+                        <Grid size={{ xs: 12, md: 8 }}>
+                          <Typography variant="h6" fontWeight="bold" color="primary.main">
+                            {listing.title || `Listing #${listing.id}`}
+                          </Typography>
+                          <Typography variant="body1" color="text.secondary" gutterBottom>
+                            📍 {listing.address || 'No address provided'}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Host: {listing.host?.first_name || listing.host?.username || 'Unknown'} 
+                            {listing.host?.email && ` (${listing.host.email})`}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Rate: ${listing.hourly_rate || 0}/hour | 
+                            Type: {listing.space_type || 'Not specified'} |
+                            Status: {listing.approval_status || 'PENDING'}
+                          </Typography>
+                          {listing.created_at && (
+                            <Typography variant="caption" color="text.secondary">
+                              Submitted: {new Date(listing.created_at).toLocaleDateString()}
+                            </Typography>
+                          )}
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 4 }}>
+                          <Stack spacing={1}>
+                            <Button
+                              variant="contained"
+                              color="success"
+                              size="small"
+                              onClick={() => handleApproveListing(listing.id)}
+                              fullWidth
+                            >
+                              ✅ Approve
+                            </Button>
+                            <Button
+                              variant="outlined"
+                              color="warning"
+                              size="small"
+                              onClick={() => handleRequestRevision(listing.id)}
+                              fullWidth
+                            >
+                              🔄 Request Revision
+                            </Button>
+                            <Button
+                              variant="outlined"
+                              color="error"
+                              size="small"
+                              onClick={() => handleRejectListing(listing.id)}
+                              fullWidth
+                            >
+                              ❌ Reject
+                            </Button>
+                          </Stack>
+                        </Grid>
+                      </Grid>
+                    </CardContent>
+                  </Card>
                 ))}
               </Box>
             )}
