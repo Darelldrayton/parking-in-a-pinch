@@ -165,7 +165,7 @@ class UserPublicSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'id', 'display_name', 'profile_picture', 'bio',
+            'id', 'display_name', 'full_name', 'profile_picture', 'bio',
             'user_type', 'average_rating_as_host', 'total_reviews_as_host',
             'average_rating_as_guest', 'total_reviews_as_guest',
             'is_verified', 'created_at'

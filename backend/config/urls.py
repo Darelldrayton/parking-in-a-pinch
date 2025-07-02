@@ -31,8 +31,6 @@ urlpatterns = [
     # path('api/v1/qr-codes/', include('apps.qr_codes.urls')),
     # path('api/v1/analytics/', include('apps.analytics.urls')),
     
-    # Admin booking search
-    path('admin/bookings/', include('apps.bookings.urls')),
 ]
 
 # Serve media files in development
