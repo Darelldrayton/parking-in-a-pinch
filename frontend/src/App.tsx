@@ -61,7 +61,7 @@ const HostResources = lazy(() => import('./pages/HostResources'));
 const AdminLogin = lazy(() => import('./pages/AdminLogin'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboardEnhanced'));
 const RulerDashboard = lazy(() => import('./pages/RulerDashboardFixed'));
-// 🚨 FORCE NEW COMPONENT NAME TO BYPASS CACHE
+// 🚨 FORCE CACHE CLEAR - BUILD v2025-01-02-20:42 PST
 const AdminProtectedRoute = lazy(() => import('./components/auth/AdminProtectedRoute'));
 
 // Test Pages
@@ -327,7 +327,7 @@ function AppRoutes() {
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/ruler/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminProtectedRoute redirectTo="/admin/login"><AdminDashboard /></AdminProtectedRoute>} />
-        <Route path="/ruler/dashboard" element={<AdminProtectedRoute redirectTo="/ruler/login"><AdminDashboard /></AdminProtectedRoute>} />
+        <Route path="/ruler/dashboard" element={<AdminProtectedRoute redirectTo="/ruler/login"><RulerDashboard /></AdminProtectedRoute>} />
         {/* 🚨 DEBUGGING: If you see AdminDashboardEnhanced in console, the routing is still wrong */}
         <Route path="/admin/cleanup-listings" element={<AdminProtectedRoute redirectTo="/admin/login"><CleanupListings /></AdminProtectedRoute>} />
         <Route path="/ruler/cleanup-listings" element={<AdminProtectedRoute redirectTo="/ruler/login"><CleanupListings /></AdminProtectedRoute>} />
@@ -346,10 +346,10 @@ function AppRoutes() {
 }
 
 function App() {
-  console.log('🚀 App component rendering - v2024-12-23-20:00...');
+  console.log('🚀 App component rendering - v2025-01-02-20:42-PST...');
   console.log('Current path:', window.location.pathname);
   console.log('🎯 Routes available: /ruler/login, /ruler/dashboard, /ruler/cleanup-listings');
-  console.log('🔄 Attempting to force Vercel rebuild...');
+  console.log('🔄 CACHE CLEARED - NEW BUILD FORCED...');
   
   return (
     <ThemeModeProvider>
