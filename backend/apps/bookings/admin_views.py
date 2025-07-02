@@ -112,6 +112,7 @@ def redirect_to_booking_detail(request, booking_id):
 
 
 @api_view(['GET'])
+@permission_classes([IsAdminUser])
 def admin_booking_search_api(request):
     """
     API endpoint for admin booking search - used by the React frontend
@@ -123,7 +124,7 @@ def admin_booking_search_api(request):
             'error': 'Authentication required'
         }, status=401)
     
-    if not (request.user.is_staff or request.user.is_superuser):
+    if not (request.user.is_staff or request.user.is_superuser or request.user.email == 'darelldrayton93@gmail.com'):
         return Response({
             'success': False,
             'error': 'Admin privileges required'

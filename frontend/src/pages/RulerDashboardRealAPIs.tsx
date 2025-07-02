@@ -146,25 +146,19 @@ const RulerDashboardRealAPIs: React.FC = () => {
         const user = JSON.parse(adminUserStr);
         console.log('🔐 Verifying user:', user.email);
         
-        if (user.email === 'darelldrayton93@gmail.com') {
-          console.log('✅ SECURITY: Owner account verified');
+        if (user.email === 'darelldrayton93@gmail.com' || user.is_staff || user.is_superuser) {
+          console.log('✅ SECURITY: Admin access verified');
           setAdminUser(user);
           setAuthenticationVerified(true);
           loadRealData();
           return;
         }
         
-        if (!user.is_staff && !user.is_superuser) {
-          console.log('🚨 SECURITY: Non-admin user blocked');
-          alert('SECURITY: Insufficient privileges. Admin access required.');
-          localStorage.clear();
-          window.location.replace('/ruler/login');
-          return;
-        }
-        
-        setAdminUser(user);
-        setAuthenticationVerified(true);
-        loadRealData();
+        console.log('🚨 SECURITY: Non-admin user blocked');
+        alert('SECURITY: Insufficient privileges. Admin access required.');
+        localStorage.clear();
+        window.location.replace('/ruler/login');
+        return;
         
       } catch (e) {
         console.error('🚨 SECURITY: Error parsing admin user data:', e);
