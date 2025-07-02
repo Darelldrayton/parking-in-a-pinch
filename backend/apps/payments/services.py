@@ -40,8 +40,9 @@ class PaymentService:
             if not has_valid_stripe_keys:
                 # Mock payment intent for testing when no valid Stripe keys
                 import uuid
-                mock_id = uuid.uuid4().hex[:8]
-                mock_secret = uuid.uuid4().hex[:8]
+                # Generate proper format: pi_[id]_secret_[secret] (no 'test' words)
+                mock_id = uuid.uuid4().hex[:16]  # Longer ID like real Stripe
+                mock_secret = uuid.uuid4().hex[:16]  # Longer secret like real Stripe
                 payment_intent_id = f"pi_{mock_id}"
                 client_secret = f"pi_{mock_id}_secret_{mock_secret}"
                 
