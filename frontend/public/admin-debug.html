@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard Debug Tool</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; border: 1px solid #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Admin Dashboard Debug Tool</h1>
+    
+    <div id="token-info" class="test-result info">
+        <h3>Token Information</h3>
+        <div id="token-details">Checking tokens...</div>
+    </div>
+    
+    <div>
+        <button onclick="testLogin()">🔑 Test Admin Login</button>
+        <button onclick="testAllAPIs()">📡 Test All Dashboard APIs</button>
+        <button onclick="clearTokens()">🗑️ Clear All Tokens</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = `<strong>[${new Date().toLocaleTimeString()}]</strong> ${message}`;
+            document.getElementById('results').appendChild(div);
+        }
+
+        function checkTokens() {
+            const adminToken = localStorage.getItem('admin_access_token');
+            const adminUser = localStorage.getItem('admin_user');
+            const regularToken = localStorage.getItem('access_token');
+            
+            const tokenInfo = document.getElementById('token-details');
+            tokenInfo.innerHTML = `
+                <p><strong>Admin Access Token:</strong> ${adminToken ? `${adminToken.substring(0, 30)}...` : 'NOT FOUND'}</p>
+                <p><strong>Admin User:</strong> ${adminUser ? 'FOUND' : 'NOT FOUND'}</p>
+                <p><strong>Regular Access Token:</strong> ${regularToken ? `${regularToken.substring(0, 30)}...` : 'NOT FOUND'}</p>
+                ${adminUser ? `<p><strong>User Data:</strong> <pre>${JSON.stringify(JSON.parse(adminUser), null, 2)}</pre></p>` : ''}
+            `;
+        }
+
+        async function testLogin() {
+            log('🔑 Testing admin login...', 'info');
+            
+            try {
+                const response = await fetch('/api/v1/auth/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'test-admin@example.com',
+                        password: 'admin123'
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Store admin tokens
+                    localStorage.setItem('admin_access_token', data.access);
+                    localStorage.setItem('admin_refresh_token', data.refresh);
+                    localStorage.setItem('admin_user', JSON.stringify(data.user));
+                    
+                    log('✅ Admin login successful!', 'success');
+                    log(`User: ${data.user.email} (Staff: ${data.user.is_staff}, Super: ${data.user.is_superuser})`, 'success');
+                    checkTokens();
+                } else {
+                    const errorData = await response.json();
+                    log(`❌ Login failed: ${JSON.stringify(errorData)}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Login error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAllAPIs() {
+            log('📡 Testing all dashboard APIs...', 'info');
+            
+            const token = localStorage.getItem('admin_access_token');
+            if (!token) {
+                log('❌ No admin token found. Please login first.', 'error');
+                return;
+            }
+
+            const headers = {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+
+            const apis = [
+                { name: 'User Stats', url: '/api/v1/users/admin/users/stats/' },
+                { name: 'Listing Stats', url: '/api/v1/listings/admin/stats/' },
+                { name: 'Verification Stats', url: '/api/v1/users/admin/verification-requests/stats/' },
+                { name: 'Refund Stats', url: '/api/v1/payments/admin/refund-requests/stats/' },
+                { name: 'Pending Listings', url: '/api/v1/listings/admin/pending/' },
+                { name: 'Pending Verifications', url: '/api/v1/users/admin/verification-requests/pending/' },
+                { name: 'Pending Refunds', url: '/api/v1/payments/admin/refund-requests/pending/' }
+            ];
+
+            for (const api of apis) {
+                try {
+                    log(`Testing ${api.name}...`, 'info');
+                    const response = await fetch(api.url, { headers });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        log(`✅ ${api.name}: <pre>${JSON.stringify(data, null, 2)}</pre>`, 'success');
+                    } else {
+                        const errorText = await response.text();
+                        log(`❌ ${api.name} failed (${response.status}): ${errorText}`, 'error');
+                    }
+                } catch (error) {
+                    log(`❌ ${api.name} error: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        function clearTokens() {
+            localStorage.removeItem('admin_access_token');
+            localStorage.removeItem('admin_refresh_token');
+            localStorage.removeItem('admin_user');
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            localStorage.removeItem('user');
+            
+            log('🗑️ All tokens cleared', 'info');
+            checkTokens();
+        }
+
+        // Check tokens on page load
+        checkTokens();
+    </script>
+</body>
+</html>
