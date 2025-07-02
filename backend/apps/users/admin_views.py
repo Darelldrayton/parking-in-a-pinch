@@ -42,6 +42,118 @@ class AdminUserViewSet(viewsets.ModelViewSet):
             return [permissions.IsAdminUser()]
         return [permissions.IsAuthenticated()]
     
+    @action(detail=True, methods=['post'])
+    def suspend(self, request, pk=None):
+        """
+        Suspend a user account
+        """
+        if not request.user.is_staff:
+            return Response(
+                {'error': 'Only admin users can suspend accounts'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        user = self.get_object()
+        
+        if user.is_staff:
+            return Response(
+                {'error': 'Cannot suspend admin accounts'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            reason = request.data.get('reason', '')
+            admin_notes = request.data.get('admin_notes', '')
+            
+            # Deactivate the user account
+            user.is_active = False
+            user.save()
+            
+            logger.info(f"User {user.email} suspended by {request.user.email}")
+            
+            # Send notification to user about suspension
+            try:
+                from apps.notifications.services import NotificationService
+                
+                variables = {
+                    'user_name': user.first_name or user.username,
+                    'reason': reason or 'Account policy violation',
+                }
+                
+                NotificationService.send_notification(
+                    user=user,
+                    template_type='ACCOUNT_SUSPENDED',
+                    context=variables,
+                    channels=['EMAIL']
+                )
+            except Exception as e:
+                logger.warning(f"Failed to send suspension notification: {str(e)}")
+            
+            serializer = UserSerializer(user)
+            return Response({
+                'message': 'User account suspended successfully',
+                'user': serializer.data
+            })
+            
+        except Exception as e:
+            logger.error(f"Error suspending user: {str(e)}")
+            return Response(
+                {'error': f'Failed to suspend user: {str(e)}'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    @action(detail=True, methods=['post'])
+    def activate(self, request, pk=None):
+        """
+        Activate a suspended user account
+        """
+        if not request.user.is_staff:
+            return Response(
+                {'error': 'Only admin users can activate accounts'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        user = self.get_object()
+        
+        try:
+            admin_notes = request.data.get('admin_notes', '')
+            
+            # Activate the user account
+            user.is_active = True
+            user.save()
+            
+            logger.info(f"User {user.email} activated by {request.user.email}")
+            
+            # Send notification to user about activation
+            try:
+                from apps.notifications.services import NotificationService
+                
+                variables = {
+                    'user_name': user.first_name or user.username,
+                }
+                
+                NotificationService.send_notification(
+                    user=user,
+                    template_type='ACCOUNT_ACTIVATED',
+                    context=variables,
+                    channels=['EMAIL']
+                )
+            except Exception as e:
+                logger.warning(f"Failed to send activation notification: {str(e)}")
+            
+            serializer = UserSerializer(user)
+            return Response({
+                'message': 'User account activated successfully',
+                'user': serializer.data
+            })
+            
+        except Exception as e:
+            logger.error(f"Error activating user: {str(e)}")
+            return Response(
+                {'error': f'Failed to activate user: {str(e)}'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
     @action(detail=False, methods=['get'])
     def stats(self, request):
         """
@@ -74,6 +186,83 @@ class AdminUserViewSet(viewsets.ModelViewSet):
         }
         
         return Response(stats)
+    
+    @action(detail=True, methods=['post'])
+    def suspend(self, request, pk=None):
+        """
+        Suspend a user account
+        """
+        if not request.user.is_staff:
+            return Response(
+                {'error': 'Only admin users can suspend accounts'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        user = self.get_object()
+        
+        if user.is_staff:
+            return Response(
+                {'error': 'Cannot suspend admin accounts'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            reason = request.data.get('reason', '')
+            admin_notes = request.data.get('admin_notes', '')
+            
+            # Deactivate the user account
+            user.is_active = False
+            user.save()
+            
+            logger.info(f"User {user.email} suspended by {request.user.email}")
+            
+            serializer = UserSerializer(user)
+            return Response({
+                'message': 'User account suspended successfully',
+                'user': serializer.data
+            })
+            
+        except Exception as e:
+            logger.error(f"Error suspending user: {str(e)}")
+            return Response(
+                {'error': f'Failed to suspend user: {str(e)}'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    @action(detail=True, methods=['post'])
+    def activate(self, request, pk=None):
+        """
+        Activate a suspended user account
+        """
+        if not request.user.is_staff:
+            return Response(
+                {'error': 'Only admin users can activate accounts'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        user = self.get_object()
+        
+        try:
+            admin_notes = request.data.get('admin_notes', '')
+            
+            # Activate the user account
+            user.is_active = True
+            user.save()
+            
+            logger.info(f"User {user.email} activated by {request.user.email}")
+            
+            serializer = UserSerializer(user)
+            return Response({
+                'message': 'User account activated successfully',
+                'user': serializer.data
+            })
+            
+        except Exception as e:
+            logger.error(f"Error activating user: {str(e)}")
+            return Response(
+                {'error': f'Failed to activate user: {str(e)}'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class VerificationRequestViewSet(viewsets.ModelViewSet):

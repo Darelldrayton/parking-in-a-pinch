@@ -60,7 +60,7 @@ const HostResources = lazy(() => import('./pages/HostResources'));
 // Admin Pages
 const AdminLogin = lazy(() => import('./pages/AdminLogin'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboardEnhanced'));
-const RulerDashboard = lazy(() => import('./pages/RulerDashboardFixed'));
+const RulerDashboard = lazy(() => import('./pages/RulerDashboardRealAPIs'));
 // 🚨 FORCE CACHE CLEAR - BUILD v2025-01-02-20:42 PST
 const AdminProtectedRoute = lazy(() => import('./components/auth/AdminProtectedRoute'));
 
