@@ -40,8 +40,10 @@ class PaymentService:
             if not has_valid_stripe_keys:
                 # Mock payment intent for testing when no valid Stripe keys
                 import uuid
-                payment_intent_id = f"pi_test_{uuid.uuid4().hex[:8]}_{booking_data['booking_id']}"
-                client_secret = f"{payment_intent_id}_secret_test"
+                mock_id = uuid.uuid4().hex[:8]
+                mock_secret = uuid.uuid4().hex[:8]
+                payment_intent_id = f"pi_{mock_id}"
+                client_secret = f"pi_{mock_id}_secret_{mock_secret}"
                 
                 # Update booking to indicate payment is being processed
                 booking = Booking.objects.get(id=booking_data['booking_id'])
@@ -78,10 +80,21 @@ class PaymentService:
             # Store payment intent ID in Payment model for later reference
             # (This would be better done in a separate Payment record)
             
+            # Validate client secret format
+            client_secret = getattr(payment_intent, 'client_secret', None)
+            if not client_secret:
+                raise ValueError("Stripe did not return a client_secret")
+            
+            # Validate client secret format: pi_[id]_secret_[secret]
+            import re
+            if not re.match(r'^pi_[a-zA-Z0-9]+_secret_[a-zA-Z0-9]+$', client_secret):
+                logger.error(f"Invalid client secret format received from Stripe: {client_secret}")
+                raise ValueError(f"Invalid client secret format: {client_secret}")
+            
             logger.info(f"Real Stripe payment intent created for booking {booking_data['booking_id']}")
             
             return {
-                'client_secret': getattr(payment_intent, 'client_secret', None),
+                'client_secret': client_secret,
                 'payment_intent_id': payment_intent.id
             }
             

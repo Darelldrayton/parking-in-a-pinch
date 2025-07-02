@@ -110,7 +110,7 @@ def confirm_real_payment(request):
             booking=booking,
             user=booking.user,
             stripe_payment_intent_id=payment_intent_id,
-            client_secret=f'{payment_intent_id}_secret_mock',  # Mock client secret
+            client_secret=f'{payment_intent_id}_secret_{payment_intent_id[3:11]}',  # Proper format mock client secret
             amount=amount,
             platform_fee=platform_fee,
             currency='USD',
