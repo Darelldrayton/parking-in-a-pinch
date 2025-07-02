@@ -43,6 +43,9 @@ import {
   AccessTime,
   Block,
   Schedule,
+  Refresh,
+  AutoMode,
+  PauseCircle,
 } from '@mui/icons-material';
 import type { ParkingListing, SearchFilters } from '../types/parking';
 import api from '../services/api';
@@ -120,6 +123,8 @@ export default function Listings() {
   const [selectedBorough, setSelectedBorough] = useState<string>('');
   const [selectedNeighborhood, setSelectedNeighborhood] = useState<string>('');
   const [showOnlyAvailable, setShowOnlyAvailable] = useState(false);
+  const [lastAvailabilityCheck, setLastAvailabilityCheck] = useState<Date | null>(null);
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
 
   // Get search parameters from URL
   useEffect(() => {
@@ -142,19 +147,116 @@ export default function Listings() {
     loadFavorites();
   }, [user, selectedBorough, parkingTypeFilter, priceFilter, advancedFilters]);
 
-  // Auto-check availability for first few listings when they load
+  // Batch availability check for ALL listings when they load
   useEffect(() => {
     if (listings.length > 0) {
-      // Check availability for first 6 listings to give immediate feedback
-      const firstListings = listings.slice(0, 6);
-      firstListings.forEach((listing, index) => {
-        // Stagger the checks to avoid overwhelming the API
-        setTimeout(() => {
-          checkCurrentAvailability(listing.id, false); // Don't show toast for initial checks
-        }, index * 1000); // 1 second delay between each check
-      });
+      checkAllAvailability();
     }
   }, [listings]);
+
+  // Auto-refresh availability every 60 seconds
+  useEffect(() => {
+    if (!autoRefreshEnabled || listings.length === 0) return;
+
+    const interval = setInterval(() => {
+      console.log('🔄 Auto-refreshing availability...');
+      checkAllAvailability();
+    }, 60000); // 60 seconds
+
+    return () => clearInterval(interval);
+  }, [listings, autoRefreshEnabled]);
+
+  // Batch availability checking function
+  const checkAllAvailability = async () => {
+    console.log(`🔄 Checking availability for ${listings.length} listings in batch...`);
+    
+    // Set all listings to "checking" state
+    const checkingStatuses: Record<number, AvailabilityStatus> = {};
+    listings.forEach(listing => {
+      checkingStatuses[listing.id] = {
+        isChecking: true,
+        isAvailable: null,
+      };
+    });
+    setAvailabilityStatuses(checkingStatuses);
+
+    // Prepare time range (5 minutes from now to 2 hours from now)
+    const fiveMinutesFromNow = new Date(Date.now() + 5 * 60 * 1000);
+    const twoHoursFromNow = new Date(Date.now() + 2 * 60 * 60 * 1000 + 5 * 60 * 1000);
+    
+    const startDate = fiveMinutesFromNow.toISOString().split('T')[0];
+    const endDate = twoHoursFromNow.toISOString().split('T')[0];
+    const startTime = fiveMinutesFromNow.toTimeString().slice(0, 5);
+    const endTime = twoHoursFromNow.toTimeString().slice(0, 5);
+
+    // Create promises for all availability checks
+    const availabilityPromises = listings.map(listing => 
+      bookingsService.checkAvailability(
+        listing.id,
+        startDate,
+        endDate,
+        startTime,
+        endTime
+      ).then(result => ({
+        listingId: listing.id,
+        available: result.available,
+        success: true
+      })).catch(error => {
+        console.error(`Error checking availability for listing ${listing.id}:`, error);
+        return {
+          listingId: listing.id,
+          available: null,
+          success: false
+        };
+      })
+    );
+
+    try {
+      // Execute all availability checks in parallel
+      const results = await Promise.all(availabilityPromises);
+      
+      // Update all statuses at once
+      const newStatuses: Record<number, AvailabilityStatus> = {};
+      results.forEach(result => {
+        newStatuses[result.listingId] = {
+          isChecking: false,
+          isAvailable: result.available,
+          lastChecked: new Date(),
+        };
+      });
+      
+      setAvailabilityStatuses(newStatuses);
+      setLastAvailabilityCheck(new Date());
+      
+      // Count results for user feedback
+      const availableCount = results.filter(r => r.available === true).length;
+      const bookedCount = results.filter(r => r.available === false).length;
+      const errorCount = results.filter(r => !r.success).length;
+      
+      console.log(`✅ Availability check complete: ${availableCount} available, ${bookedCount} booked, ${errorCount} errors`);
+      
+      // Show subtle feedback to user (only for manual checks, not auto-refresh)
+      if (availableCount > 0 && !lastAvailabilityCheck) {
+        toast.success(`Found ${availableCount} available parking spaces`, { 
+          duration: 3000,
+          id: 'availability-batch-check' // Prevent duplicate toasts
+        });
+      }
+      
+    } catch (error) {
+      console.error('Batch availability check failed:', error);
+      
+      // Reset all to unchecked state on failure
+      const resetStatuses: Record<number, AvailabilityStatus> = {};
+      listings.forEach(listing => {
+        resetStatuses[listing.id] = {
+          isChecking: false,
+          isAvailable: null,
+        };
+      });
+      setAvailabilityStatuses(resetStatuses);
+    }
+  };
 
   const loadFavorites = () => {
     if (user) {
@@ -493,12 +595,26 @@ export default function Listings() {
             {(() => {
               const availableCount = Object.values(availabilityStatuses).filter(status => status.isAvailable === true).length;
               const bookedCount = Object.values(availabilityStatuses).filter(status => status.isAvailable === false).length;
+              const checkingCount = Object.values(availabilityStatuses).filter(status => status.isChecking).length;
               const checkedCount = availableCount + bookedCount;
               
-              if (checkedCount > 0) {
-                return (
-                  <>
-                    <Typography variant="body2" color="text.secondary">•</Typography>
+              return (
+                <>
+                  <Typography variant="body2" color="text.secondary">•</Typography>
+                  
+                  {/* Availability Status */}
+                  {checkingCount > 0 ? (
+                    <Chip
+                      icon={<CircularProgress size={12} sx={{ color: 'inherit' }} />}
+                      label={`Checking ${checkingCount} listings...`}
+                      size="small"
+                      sx={{
+                        bgcolor: alpha(theme.palette.info.main, 0.1),
+                        color: 'info.main',
+                        fontWeight: 600,
+                      }}
+                    />
+                  ) : (
                     <Chip
                       icon={<CheckCircle sx={{ fontSize: 16 }} />}
                       label={`${availableCount} Available Now`}
@@ -525,23 +641,78 @@ export default function Listings() {
                         }
                       }}
                     />
-                    {bookedCount > 0 && (
-                      <Chip
-                        icon={<AccessTime sx={{ fontSize: 16 }} />}
-                        label={`${bookedCount} Booked`}
-                        size="small"
-                        sx={{
-                          bgcolor: alpha(theme.palette.warning.main, 0.1),
-                          color: 'warning.main',
-                          fontWeight: 600,
-                          '& .MuiChip-icon': { color: 'warning.main' }
-                        }}
-                      />
-                    )}
-                  </>
-                );
-              }
-              return null;
+                  )}
+                  
+                  {/* Booked Count */}
+                  {bookedCount > 0 && (
+                    <Chip
+                      icon={<AccessTime sx={{ fontSize: 16 }} />}
+                      label={`${bookedCount} Booked`}
+                      size="small"
+                      sx={{
+                        bgcolor: alpha(theme.palette.warning.main, 0.1),
+                        color: 'warning.main',
+                        fontWeight: 600,
+                        '& .MuiChip-icon': { color: 'warning.main' }
+                      }}
+                    />
+                  )}
+                  
+                  {/* Refresh Button */}
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={checkingCount > 0 ? <CircularProgress size={16} /> : <Refresh />}
+                    onClick={() => checkAllAvailability()}
+                    disabled={checkingCount > 0}
+                    sx={{
+                      minWidth: 'auto',
+                      px: 2,
+                      borderColor: alpha(theme.palette.primary.main, 0.3),
+                      '&:hover': {
+                        borderColor: theme.palette.primary.main,
+                        backgroundColor: alpha(theme.palette.primary.main, 0.05),
+                      },
+                    }}
+                  >
+                    Refresh
+                  </Button>
+                  
+                  {/* Auto-refresh Toggle */}
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={autoRefreshEnabled ? <AutoMode /> : <PauseCircle />}
+                    onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
+                    sx={{
+                      minWidth: 'auto',
+                      px: 2,
+                      borderColor: autoRefreshEnabled 
+                        ? alpha(theme.palette.success.main, 0.3)
+                        : alpha(theme.palette.grey[500], 0.3),
+                      color: autoRefreshEnabled ? 'success.main' : 'grey.600',
+                      '&:hover': {
+                        borderColor: autoRefreshEnabled ? 'success.main' : 'grey.500',
+                        backgroundColor: autoRefreshEnabled 
+                          ? alpha(theme.palette.success.main, 0.05)
+                          : alpha(theme.palette.grey[500], 0.05),
+                      },
+                    }}
+                  >
+                    Auto
+                  </Button>
+                  
+                  {/* Last Check Time */}
+                  {lastAvailabilityCheck && (
+                    <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                      Last updated: {lastAvailabilityCheck.toLocaleTimeString([], { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })}
+                    </Typography>
+                  )}
+                </>
+              );
             })()}
           </Stack>
         </Box>
