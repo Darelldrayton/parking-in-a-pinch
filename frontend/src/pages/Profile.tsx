@@ -34,6 +34,7 @@ import {
   Select,
   MenuItem,
   Stack,
+  CircularProgress,
 } from '@mui/material'
 import {
   Edit as EditIcon,
@@ -110,6 +111,7 @@ export default function Profile() {
   const [disputeDialogOpen, setDisputeDialogOpen] = useState(false)
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [photoUploading, setPhotoUploading] = useState(false)
 
   const {
     register,
@@ -190,6 +192,55 @@ export default function Profile() {
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue)
+  }
+
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Please select a valid image file (JPEG, PNG, GIF, or WebP)')
+      return
+    }
+
+    // Validate file size (2MB max)
+    const maxSize = 2 * 1024 * 1024 // 2MB in bytes
+    if (file.size > maxSize) {
+      toast.error('Image file is too large. Maximum size is 2MB.')
+      return
+    }
+
+    setPhotoUploading(true)
+    try {
+      const updatedUser = await authService.uploadProfilePhoto(file)
+      updateUser(updatedUser)
+      toast.success('Profile photo updated successfully!')
+    } catch (error: any) {
+      console.error('Photo upload error:', error)
+      toast.error(error?.response?.data?.error || 'Failed to upload profile photo')
+    } finally {
+      setPhotoUploading(false)
+      // Clear the input to allow re-uploading the same file
+      if (event.target) {
+        event.target.value = ''
+      }
+    }
+  }
+
+  const handlePhotoDelete = async () => {
+    setPhotoUploading(true)
+    try {
+      const updatedUser = await authService.deleteProfilePhoto()
+      updateUser(updatedUser)
+      toast.success('Profile photo deleted successfully!')
+    } catch (error: any) {
+      console.error('Photo delete error:', error)
+      toast.error(error?.response?.data?.error || 'Failed to delete profile photo')
+    } finally {
+      setPhotoUploading(false)
+    }
   }
 
   return (
@@ -283,6 +334,7 @@ export default function Profile() {
                   <Grid size={12}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
                       <Avatar
+                        src={user?.profile_image || undefined}
                         sx={{
                           width: 100,
                           height: 100,
@@ -290,17 +342,41 @@ export default function Profile() {
                           fontSize: '2.5rem',
                         }}
                       >
-                        {user?.first_name?.charAt(0) || 'U'}
+                        {!user?.profile_image && (user?.first_name?.charAt(0) || 'U')}
                       </Avatar>
                       {isEditing && (
                         <Box>
-                          <Button
-                            variant="outlined"
-                            startIcon={<PhotoCamera />}
-                            size="small"
-                          >
-                            Change Photo
-                          </Button>
+                          <input
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            id="profile-photo-upload"
+                            type="file"
+                            onChange={handlePhotoUpload}
+                          />
+                          <label htmlFor="profile-photo-upload">
+                            <Button
+                              variant="outlined"
+                              component="span"
+                              startIcon={photoUploading ? <CircularProgress size={20} /> : <PhotoCamera />}
+                              size="small"
+                              disabled={photoUploading}
+                            >
+                              {photoUploading ? 'Uploading...' : 'Change Photo'}
+                            </Button>
+                          </label>
+                          {user?.profile_image && (
+                            <Button
+                              variant="outlined"
+                              color="error"
+                              startIcon={<Delete />}
+                              size="small"
+                              onClick={handlePhotoDelete}
+                              disabled={photoUploading}
+                              sx={{ ml: 1 }}
+                            >
+                              Remove
+                            </Button>
+                          )}
                           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
                             JPG, PNG up to 2MB
                           </Typography>

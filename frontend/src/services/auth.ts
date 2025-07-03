@@ -176,6 +176,43 @@ class AuthService {
     }
   }
 
+  async uploadProfilePhoto(file: File): Promise<User> {
+    const formData = new FormData()
+    formData.append('profile_picture', file)
+    
+    try {
+      const response = await api.post('/users/profile-photo/upload/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+      
+      // Get updated user data
+      const updatedUser = await this.getCurrentUser()
+      localStorage.setItem('user', JSON.stringify(updatedUser))
+      
+      return updatedUser
+    } catch (error) {
+      console.error('Error uploading profile photo:', error)
+      throw error
+    }
+  }
+
+  async deleteProfilePhoto(): Promise<User> {
+    try {
+      await api.delete('/users/profile-photo/delete/')
+      
+      // Get updated user data
+      const updatedUser = await this.getCurrentUser()
+      localStorage.setItem('user', JSON.stringify(updatedUser))
+      
+      return updatedUser
+    } catch (error) {
+      console.error('Error deleting profile photo:', error)
+      throw error
+    }
+  }
+
   async changePassword(data: {
     old_password: string
     new_password: string
