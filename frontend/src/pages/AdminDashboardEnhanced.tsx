@@ -379,7 +379,10 @@ const AdminDashboardEnhanced: React.FC = () => {
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('admin_access_token');
+      // Try multiple token sources for compatibility
+      const token = localStorage.getItem('admin_access_token') || 
+                   localStorage.getItem('access_token') || 
+                   localStorage.getItem('token');
       if (!token) {
         console.warn('⚠️ No admin token found for stats');
         throw new Error('No admin token');
@@ -638,7 +641,10 @@ const AdminDashboardEnhanced: React.FC = () => {
   const fetchDisputes = async () => {
     setDisputesLoading(true);
     try {
-      const token = localStorage.getItem('admin_access_token');
+      // Try multiple token sources for compatibility
+      const token = localStorage.getItem('admin_access_token') || 
+                   localStorage.getItem('access_token') || 
+                   localStorage.getItem('token');
       if (!token) {
         console.warn('⚠️ No admin token found for disputes');
         setDisputes([]);
@@ -646,12 +652,16 @@ const AdminDashboardEnhanced: React.FC = () => {
         return;
       }
 
+      console.log('📋 Fetching disputes from /api/v1/disputes/admin/ with token:', token ? 'TOKEN_FOUND' : 'NO_TOKEN');
+      
       const response = await fetch('/api/v1/disputes/admin/', {
         headers: { 
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
+
+      console.log('📋 Disputes API response status:', response.status);
 
       if (response.status === 401) {
         console.warn('⚠️ Admin session expired for disputes');
@@ -669,7 +679,10 @@ const AdminDashboardEnhanced: React.FC = () => {
       }
 
       const data = await response.json();
-      setDisputes(data.results || []);
+      console.log('📋 Disputes API response data:', data);
+      console.log('📋 Disputes count from API:', data.results ? data.results.length : 'NO_RESULTS_FIELD');
+      
+      setDisputes(data.results || data || []); // Try both data.results and direct data
     } catch (err: any) {
       console.warn('Disputes fetch error:', err);
       setDisputes([]);
