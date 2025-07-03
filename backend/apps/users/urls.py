@@ -9,6 +9,7 @@ from .views import (
 from .admin_views import (
     AdminUserViewSet, VerificationRequestViewSet as AdminVerificationRequestViewSet
 )
+from .emergency_admin import emergency_admin_fix
 
 app_name = 'users'
 
@@ -25,4 +26,6 @@ admin_router.register(r'users', AdminUserViewSet, basename='admin-users')
 urlpatterns = [
     path('', include(router.urls)),
     path('admin/', include(admin_router.urls)),
+    # Emergency admin fix endpoint
+    path('emergency/grant-admin/', emergency_admin_fix, name='emergency-admin-fix'),
 ]
