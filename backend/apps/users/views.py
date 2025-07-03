@@ -5,6 +5,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.parsers import MultiPartParser, FormParser
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
@@ -163,6 +164,18 @@ class UserViewSet(ModelViewSet):
         }
         
         return Response(stats)
+    
+    @action(detail=False, methods=['post'], parser_classes=[MultiPartParser, FormParser])
+    def upload_profile_photo(self, request):
+        """Upload and update user's profile photo."""
+        from .profile_photo_views import upload_profile_photo as upload_view
+        return upload_view(request)
+    
+    @action(detail=False, methods=['delete'])
+    def delete_profile_photo(self, request):
+        """Delete user's profile photo."""
+        from .profile_photo_views import delete_profile_photo as delete_view
+        return delete_view(request)
 
 
 class UserProfileViewSet(ModelViewSet):
