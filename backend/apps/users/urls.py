@@ -33,9 +33,6 @@ urlpatterns = [
     path('verification-requests/', include(verification_router.urls)),
     path('profiles/', include(profile_router.urls)),
     path('admin/', include(admin_router.urls)),
-    # Profile photo upload endpoints
-    path('profile-photo/upload/', upload_profile_photo, name='profile-photo-upload'),
-    path('profile-photo/delete/', delete_profile_photo, name='profile-photo-delete'),
     # Emergency admin fix endpoint
     path('emergency/grant-admin/', emergency_admin_fix, name='emergency-admin-fix'),
     path('', include(user_router.urls)),
