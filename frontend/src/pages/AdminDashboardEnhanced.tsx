@@ -379,10 +379,7 @@ const AdminDashboardEnhanced: React.FC = () => {
 
   const fetchStats = async () => {
     try {
-      // Try multiple token sources for compatibility
-      const token = localStorage.getItem('admin_access_token') || 
-                   localStorage.getItem('access_token') || 
-                   localStorage.getItem('token');
+      const token = localStorage.getItem('admin_access_token');
       if (!token) {
         console.warn('⚠️ No admin token found for stats');
         throw new Error('No admin token');
@@ -641,10 +638,7 @@ const AdminDashboardEnhanced: React.FC = () => {
   const fetchDisputes = async () => {
     setDisputesLoading(true);
     try {
-      // Try multiple token sources for compatibility
-      const token = localStorage.getItem('admin_access_token') || 
-                   localStorage.getItem('access_token') || 
-                   localStorage.getItem('token');
+      const token = localStorage.getItem('admin_access_token');
       if (!token) {
         console.warn('⚠️ No admin token found for disputes');
         setDisputes([]);
