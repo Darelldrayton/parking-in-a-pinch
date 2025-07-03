@@ -92,6 +92,9 @@ urlpatterns = [
     # Admin dashboard endpoints
     path('api/v1/admin/', include('apps.admin_dashboard.urls')),
     
+    # Direct test endpoint for admin dashboard
+    path('api/v1/test-admin-stats/', dashboard_data_test, name='test-admin-stats'),
+    
 ]
 
 # Serve media files in development
