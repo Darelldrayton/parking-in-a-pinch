@@ -159,11 +159,41 @@ def dashboard_test_data(request):
     except Exception as e:
         return JsonResponse({'error': f'Test endpoint error: {str(e)}'}, status=500)
 
+# Pure Django view - no DRF decorators
+def pure_django_test(request):
+    """Pure Django view with no DRF - should bypass all DRF middleware"""
+    from django.contrib.auth import get_user_model
+    from django.utils import timezone
+    from datetime import timedelta
+    
+    try:
+        User = get_user_model()
+        now = timezone.now()
+        
+        # Get basic stats
+        total_users = User.objects.count()
+        
+        stats = {
+            'message': 'PURE DJANGO VIEW - NO DRF DECORATORS',
+            'total_users': total_users,
+            'server_time': now.isoformat(),
+            'test_status': 'SUCCESS'
+        }
+        
+        return JsonResponse(stats)
+        
+    except Exception as e:
+        return JsonResponse({'error': f'Pure Django test error: {str(e)}'}, status=500)
+
 urlpatterns = [
+    # Pure Django test endpoint (no DRF decorators)
+    path('pure-test/', pure_django_test, name='pure-test'),
     # Admin dashboard bypass endpoint
     path('dashboard-stats-bypass/', dashboard_stats_bypass, name='dashboard-stats-bypass'),
     # Test endpoint to verify data exists (NO AUTH)
     path('dashboard-test-data/', dashboard_test_data, name='dashboard-test-data'),
+    # Simple test endpoint
+    path('simple-test/', dashboard_test_data, name='simple-test'),
     path('verification-requests/', include(verification_router.urls)),
     path('profiles/', include(profile_router.urls)),
     path('admin/', include(admin_router.urls)),

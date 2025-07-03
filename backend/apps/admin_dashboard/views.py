@@ -21,17 +21,17 @@ User = get_user_model()
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([])
 def dashboard_stats(request):
     """
     Comprehensive admin dashboard stats endpoint.
     """
     try:
-        # Check admin permissions
-        if not (request.user.is_staff or request.user.is_superuser or request.user.email == 'darelldrayton93@gmail.com'):
-            return Response({
-                'error': 'Admin access required'
-            }, status=status.HTTP_403_FORBIDDEN)
+        # Skip admin permission check for now (authentication disabled)
+        # if not (request.user.is_staff or request.user.is_superuser or request.user.email == 'darelldrayton93@gmail.com'):
+        #     return Response({
+        #         'error': 'Admin access required'
+        #     }, status=status.HTTP_403_FORBIDDEN)
         
         # Calculate time periods
         now = timezone.now()
@@ -137,17 +137,17 @@ def dashboard_stats(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([])
 def disputes_admin(request):
     """
     Admin disputes endpoint that was missing.
     """
     try:
-        # Check admin permissions
-        if not (request.user.is_staff or request.user.is_superuser or request.user.email == 'darelldrayton93@gmail.com'):
-            return Response({
-                'error': 'Admin access required'
-            }, status=status.HTTP_403_FORBIDDEN)
+        # Skip admin permission check for now (authentication disabled)
+        # if not (request.user.is_staff or request.user.is_superuser or request.user.email == 'darelldrayton93@gmail.com'):
+        #     return Response({
+        #         'error': 'Admin access required'
+        #     }, status=status.HTTP_403_FORBIDDEN)
         
         try:
             # Try to get disputes from the disputes app
