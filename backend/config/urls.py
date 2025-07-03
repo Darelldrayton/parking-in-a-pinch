@@ -31,6 +31,9 @@ urlpatterns = [
     # path('api/v1/qr-codes/', include('apps.qr_codes.urls')),
     # path('api/v1/analytics/', include('apps.analytics.urls')),
     
+    # Admin dashboard endpoints
+    path('api/v1/admin/', include('apps.admin_dashboard.urls')),
+    
 ]
 
 # Serve media files in development
