@@ -60,6 +60,7 @@ LOCAL_APPS = [
     'apps.messaging',
     'apps.notifications',
     'apps.disputes',
+    'apps.admin_dashboard',
     # 'apps.location',
     # 'apps.qr_codes',
     # 'apps.analytics',
