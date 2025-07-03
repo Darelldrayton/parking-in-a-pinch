@@ -5,11 +5,14 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
 
-# Create router and register viewsets
-router = DefaultRouter()
-router.register(r'', views.DisputeViewSet, basename='dispute')
-router.register(r'admin', views.AdminDisputeViewSet, basename='admin-dispute')
+# Create separate routers for regular and admin viewsets
+user_router = DefaultRouter()
+user_router.register(r'', views.DisputeViewSet, basename='dispute')
+
+admin_router = DefaultRouter()
+admin_router.register(r'', views.AdminDisputeViewSet, basename='admin-dispute')
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('admin/', include(admin_router.urls)),
+    path('', include(user_router.urls)),
 ]
