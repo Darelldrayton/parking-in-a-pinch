@@ -6,6 +6,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     UserViewSet, UserProfileViewSet, VerificationRequestViewSet
 )
+from .profile_photo_views import upload_profile_photo, delete_profile_photo
 from .admin_views import (
     AdminUserViewSet, VerificationRequestViewSet as AdminVerificationRequestViewSet
 )
@@ -26,6 +27,9 @@ admin_router.register(r'users', AdminUserViewSet, basename='admin-users')
 urlpatterns = [
     path('', include(router.urls)),
     path('admin/', include(admin_router.urls)),
+    # Profile photo upload endpoints
+    path('profile-photo/upload/', upload_profile_photo, name='profile-photo-upload'),
+    path('profile-photo/delete/', delete_profile_photo, name='profile-photo-delete'),
     # Emergency admin fix endpoint
     path('emergency/grant-admin/', emergency_admin_fix, name='emergency-admin-fix'),
 ]
