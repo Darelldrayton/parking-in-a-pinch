@@ -199,7 +199,7 @@ class VerificationRequestViewSet(ModelViewSet):
     ViewSet for managing verification requests.
     """
     queryset = VerificationRequest.objects.all()
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
     serializer_class = VerificationRequestSerializer
     
     def get_serializer_class(self):
@@ -211,11 +211,10 @@ class VerificationRequestViewSet(ModelViewSet):
     
     def get_queryset(self):
         """Return user's own verification requests."""
-        return VerificationRequest.objects.filter(user=self.request.user)
+        if self.request.user.is_authenticated:
+            return VerificationRequest.objects.filter(user=self.request.user)
+        return VerificationRequest.objects.none()
     
-    def perform_create(self, serializer):
-        """Create verification request for current user."""
-        serializer.save(user=self.request.user)
     
     @action(detail=False, methods=['get'])
     def latest(self, request):

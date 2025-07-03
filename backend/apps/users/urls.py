@@ -14,10 +14,15 @@ from .emergency_admin import emergency_admin_fix
 
 app_name = 'users'
 
-router = DefaultRouter()
-router.register(r'', UserViewSet, basename='users')
-router.register(r'profiles', UserProfileViewSet, basename='profiles')
-router.register(r'verification-requests', VerificationRequestViewSet, basename='verification-requests')
+# Create separate routers to avoid URL conflicts
+user_router = DefaultRouter()
+user_router.register(r'', UserViewSet, basename='users')
+
+profile_router = DefaultRouter()
+profile_router.register(r'', UserProfileViewSet, basename='profiles')
+
+verification_router = DefaultRouter()
+verification_router.register(r'', VerificationRequestViewSet, basename='verification-requests')
 
 # Admin endpoints
 admin_router = DefaultRouter()
@@ -25,11 +30,13 @@ admin_router.register(r'verification-requests', AdminVerificationRequestViewSet,
 admin_router.register(r'users', AdminUserViewSet, basename='admin-users')
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('verification-requests/', include(verification_router.urls)),
+    path('profiles/', include(profile_router.urls)),
     path('admin/', include(admin_router.urls)),
     # Profile photo upload endpoints
     path('profile-photo/upload/', upload_profile_photo, name='profile-photo-upload'),
     path('profile-photo/delete/', delete_profile_photo, name='profile-photo-delete'),
     # Emergency admin fix endpoint
     path('emergency/grant-admin/', emergency_admin_fix, name='emergency-admin-fix'),
+    path('', include(user_router.urls)),
 ]
