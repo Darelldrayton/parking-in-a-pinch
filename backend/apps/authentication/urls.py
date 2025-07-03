@@ -3,6 +3,7 @@ URL configuration for authentication app.
 """
 from django.urls import path
 from . import views
+from .enhanced_auth import enhanced_token_refresh, auto_login_refresh
 
 app_name = 'authentication'
 
@@ -27,4 +28,8 @@ urlpatterns = [
     
     # Account deletion
     path('account/delete/', views.DeleteAccountView.as_view(), name='delete_account'),
+    
+    # Enhanced authentication endpoints
+    path('token/refresh/enhanced/', enhanced_token_refresh, name='enhanced_token_refresh'),
+    path('auto-refresh/', auto_login_refresh, name='auto_login_refresh'),
 ]
