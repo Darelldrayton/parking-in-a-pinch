@@ -517,51 +517,124 @@ class VerificationRequestViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def stats(self, request):
         """
-        Get verification request statistics
+        Get verification request statistics and user stats for admin dashboard
         """
-        # Temporarily disabled admin check
-        # if not (request.user.is_staff or request.user.is_superuser or request.user.email == 'darelldrayton93@gmail.com'):
-        #     return Response(
-        #         {'error': 'Only admin users can view verification stats'}, 
-        #         status=status.HTTP_403_FORBIDDEN
-        #     )
-        
-        # Get all verification requests (not filtered by get_queryset for accurate counts)
-        all_verifications = VerificationRequest.objects.all()
-        
-        # Calculate time-based stats
-        one_week_ago = timezone.now() - timezone.timedelta(days=7)
-        one_month_ago = timezone.now() - timezone.timedelta(days=30)
-        
-        stats = {
-            'total_requests': all_verifications.count(),
-            'pending_requests': all_verifications.filter(
-                status=VerificationRequest.VerificationStatus.PENDING
-            ).count(),
-            'approved_requests': all_verifications.filter(
-                status=VerificationRequest.VerificationStatus.APPROVED
-            ).count(),
-            'rejected_requests': all_verifications.filter(
-                status=VerificationRequest.VerificationStatus.REJECTED
-            ).count(),
-            'revision_requested': all_verifications.filter(
-                status=VerificationRequest.VerificationStatus.REVISION_REQUESTED
-            ).count(),
-            'recent_requests': all_verifications.filter(
-                created_at__gte=one_week_ago
-            ).count(),
-            'monthly_requests': all_verifications.filter(
-                created_at__gte=one_month_ago
-            ).count(),
-            'identity_requests': all_verifications.filter(
-                verification_type=VerificationRequest.VerificationType.IDENTITY
-            ).count(),
-            'phone_requests': all_verifications.filter(
-                verification_type=VerificationRequest.VerificationType.PHONE
-            ).count(),
-            'email_requests': all_verifications.filter(
-                verification_type=VerificationRequest.VerificationType.EMAIL
-            ).count(),
-        }
-        
-        return Response(stats)
+        try:
+            # Temporarily disabled admin check
+            # if not (request.user.is_staff or request.user.is_superuser or request.user.email == 'darelldrayton93@gmail.com'):
+            #     return Response(
+            #         {'error': 'Only admin users can view verification stats'}, 
+            #         status=status.HTTP_403_FORBIDDEN
+            #     )
+            
+            # Get all verification requests (not filtered by get_queryset for accurate counts)
+            try:
+                all_verifications = VerificationRequest.objects.all()
+            except Exception as e:
+                logger.warning(f"Error accessing VerificationRequest model: {str(e)}")
+                all_verifications = VerificationRequest.objects.none()
+            
+            # Get all users for user statistics  
+            all_users = User.objects.all()
+            
+            # Calculate time-based stats
+            today = timezone.now().date()
+            one_week_ago = timezone.now() - timezone.timedelta(days=7)
+            one_month_ago = timezone.now() - timezone.timedelta(days=30)
+            
+            # Count verifications by type and status
+            by_type = {}
+            try:
+                for vtype in VerificationRequest.VerificationType.choices:
+                    type_key = vtype[0]
+                    type_requests = all_verifications.filter(verification_type=type_key)
+                    by_type[type_key] = {
+                        'pending': type_requests.filter(status=VerificationRequest.VerificationStatus.PENDING).count(),
+                        'approved': type_requests.filter(status=VerificationRequest.VerificationStatus.APPROVED).count(),
+                        'rejected': type_requests.filter(status=VerificationRequest.VerificationStatus.REJECTED).count(),
+                    }
+            except Exception as e:
+                logger.warning(f"Error calculating verification stats by type: {str(e)}")
+                by_type = {
+                    'IDENTITY': {'pending': 0, 'approved': 0, 'rejected': 0},
+                    'PHONE': {'pending': 0, 'approved': 0, 'rejected': 0},
+                    'EMAIL': {'pending': 0, 'approved': 0, 'rejected': 0},
+                }
+            
+            stats = {
+                # Fields expected by the frontend (AdminDashboard.tsx VerificationStats interface)
+                'pending_count': all_verifications.filter(
+                    status=VerificationRequest.VerificationStatus.PENDING
+                ).count() if all_verifications.exists() else 0,
+                'approved_today': all_verifications.filter(
+                    status=VerificationRequest.VerificationStatus.APPROVED,
+                    reviewed_at__date=today
+                ).count() if all_verifications.exists() else 0,
+                'rejected_today': all_verifications.filter(
+                    status=VerificationRequest.VerificationStatus.REJECTED,
+                    reviewed_at__date=today
+                ).count() if all_verifications.exists() else 0,
+                'total_verified_users': all_users.filter(is_identity_verified=True).count(),
+                'total_users': all_users.count(),
+                'by_type': by_type,
+                
+                # Additional verification statistics
+                'total_requests': all_verifications.count(),
+                'pending_requests': all_verifications.filter(
+                    status=VerificationRequest.VerificationStatus.PENDING
+                ).count() if all_verifications.exists() else 0,
+                'approved_requests': all_verifications.filter(
+                    status=VerificationRequest.VerificationStatus.APPROVED
+                ).count() if all_verifications.exists() else 0,
+                'rejected_requests': all_verifications.filter(
+                    status=VerificationRequest.VerificationStatus.REJECTED
+                ).count() if all_verifications.exists() else 0,
+                'revision_requested': all_verifications.filter(
+                    status=VerificationRequest.VerificationStatus.REVISION_REQUESTED
+                ).count() if all_verifications.exists() else 0,
+                'recent_requests': all_verifications.filter(
+                    created_at__gte=one_week_ago
+                ).count() if all_verifications.exists() else 0,
+                'monthly_requests': all_verifications.filter(
+                    created_at__gte=one_month_ago
+                ).count() if all_verifications.exists() else 0,
+                'identity_requests': all_verifications.filter(
+                    verification_type=VerificationRequest.VerificationType.IDENTITY
+                ).count() if all_verifications.exists() else 0,
+                'phone_requests': all_verifications.filter(
+                    verification_type=VerificationRequest.VerificationType.PHONE
+                ).count() if all_verifications.exists() else 0,
+                'email_requests': all_verifications.filter(
+                    verification_type=VerificationRequest.VerificationType.EMAIL
+                ).count() if all_verifications.exists() else 0,
+            }
+            
+            return Response(stats)
+            
+        except Exception as e:
+            logger.error(f"Error in verification stats endpoint: {str(e)}")
+            return Response({
+                'error': 'Failed to retrieve verification statistics',
+                'details': str(e),
+                # Fallback stats to prevent frontend crashes
+                'pending_count': 0,
+                'approved_today': 0,
+                'rejected_today': 0,
+                'total_verified_users': 0,
+                'total_users': 0,
+                'by_type': {
+                    'IDENTITY': {'pending': 0, 'approved': 0, 'rejected': 0},
+                    'PHONE': {'pending': 0, 'approved': 0, 'rejected': 0},
+                    'EMAIL': {'pending': 0, 'approved': 0, 'rejected': 0},
+                },
+                'total_requests': 0,
+                'pending_requests': 0,
+                'approved_requests': 0,
+                'rejected_requests': 0,
+                'revision_requested': 0,
+                'recent_requests': 0,
+                'monthly_requests': 0,
+                'identity_requests': 0,
+                'phone_requests': 0,
+                'email_requests': 0,
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
