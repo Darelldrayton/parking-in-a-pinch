@@ -49,11 +49,11 @@ def dashboard_stats(request):
         # Debug: Log actual counts
         logger.info(f"DEBUG USER COUNTS: total={total_users}, active={active_users}, verified={verified_users}")
         
-        # Booking statistics
+        # Booking statistics - Using proper enum constants
         total_bookings = Booking.objects.count()
-        pending_bookings = Booking.objects.filter(status='pending').count()
-        confirmed_bookings = Booking.objects.filter(status='confirmed').count()
-        completed_bookings = Booking.objects.filter(status='completed').count()
+        pending_bookings = Booking.objects.filter(status=Booking.BookingStatus.PENDING).count()
+        confirmed_bookings = Booking.objects.filter(status=Booking.BookingStatus.CONFIRMED).count()
+        completed_bookings = Booking.objects.filter(status=Booking.BookingStatus.COMPLETED).count()
         recent_bookings = Booking.objects.filter(created_at__gte=one_week_ago).count()
         
         # Listing statistics - Using proper enum constants
@@ -82,18 +82,18 @@ def dashboard_stats(request):
             resolved_disputes = 0
             recent_disputes = 0
         
-        # Revenue statistics (simplified)
+        # Revenue statistics (simplified) - Using proper enum constants
         try:
             from decimal import Decimal
             total_revenue = sum(
                 booking.total_amount for booking in 
-                Booking.objects.filter(status='completed') 
+                Booking.objects.filter(status=Booking.BookingStatus.COMPLETED) 
                 if booking.total_amount
             )
             monthly_revenue = sum(
                 booking.total_amount for booking in 
                 Booking.objects.filter(
-                    status='completed',
+                    status=Booking.BookingStatus.COMPLETED,
                     created_at__gte=one_month_ago
                 ) if booking.total_amount
             )
@@ -151,7 +151,7 @@ def dashboard_stats(request):
         # Add verification data from VerificationRequest model
         try:
             from apps.users.models import VerificationRequest
-            dashboard_stats['pending_verifications'] = VerificationRequest.objects.filter(status='PENDING').count()
+            dashboard_stats['pending_verifications'] = VerificationRequest.objects.filter(status=VerificationRequest.VerificationStatus.PENDING).count()
             dashboard_stats['total_verifications'] = VerificationRequest.objects.count()
         except Exception as e:
             logger.warning(f"Could not fetch verification data: {str(e)}")
@@ -159,10 +159,10 @@ def dashboard_stats(request):
         # Add refund data from RefundRequest model
         try:
             from apps.payments.models import RefundRequest
-            dashboard_stats['pending_refunds'] = RefundRequest.objects.filter(status='PENDING').count()
+            dashboard_stats['pending_refunds'] = RefundRequest.objects.filter(status=RefundRequest.RequestStatus.PENDING).count()
             dashboard_stats['total_refunds'] = RefundRequest.objects.count()
             total_refund_amount = sum(
-                refund.amount for refund in RefundRequest.objects.filter(status='PENDING')
+                refund.amount for refund in RefundRequest.objects.filter(status=RefundRequest.RequestStatus.PENDING)
                 if refund.amount
             )
             dashboard_stats['total_refund_amount'] = float(total_refund_amount) if total_refund_amount else 0.0
