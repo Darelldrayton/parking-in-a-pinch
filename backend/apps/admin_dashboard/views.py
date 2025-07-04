@@ -55,13 +55,13 @@ def dashboard_stats(request):
         # Listing statistics
         total_listings = ParkingListing.objects.count()
         active_listings = ParkingListing.objects.filter(is_active=True).count()
-        pending_listings = ParkingListing.objects.filter(is_active=False).count()
+        pending_listings = ParkingListing.objects.filter(approval_status='PENDING').count()
         recent_listings = ParkingListing.objects.filter(created_at__gte=one_week_ago).count()
         
         # Dispute statistics
         try:
             total_disputes = Dispute.objects.count()
-            pending_disputes = Dispute.objects.filter(status='pending').count()
+            pending_disputes = Dispute.objects.filter(status__in=['open', 'in_review']).count()
             resolved_disputes = Dispute.objects.filter(status='resolved').count()
             recent_disputes = Dispute.objects.filter(created_at__gte=one_week_ago).count()
         except:
@@ -105,17 +105,28 @@ def dashboard_stats(request):
             'completed_bookings': completed_bookings,
             'recent_bookings': recent_bookings,
             
-            # Listing metrics
+            # Listing metrics (frontend expects these names)
             'total_listings': total_listings,
             'active_listings': active_listings,
             'pending_listings': pending_listings,
+            'approved_listings': ParkingListing.objects.filter(approval_status='APPROVED').count(),
             'recent_listings': recent_listings,
             
-            # Dispute metrics
+            # Dispute metrics (frontend expects these names)
             'total_disputes': total_disputes,
+            'open_disputes': pending_disputes,  # Frontend expects 'open_disputes'
             'pending_disputes': pending_disputes,
             'resolved_disputes': resolved_disputes,
             'recent_disputes': recent_disputes,
+            
+            # Verification metrics (get from VerificationRequest model)
+            'pending_verifications': 0,  # Will be updated below
+            'total_verifications': 0,   # Will be updated below
+            
+            # Refund metrics (placeholder for now)
+            'pending_refunds': 0,
+            'total_refunds': 0,
+            'total_refund_amount': 0,
             
             # Revenue metrics
             'total_revenue': float(total_revenue),
@@ -125,6 +136,27 @@ def dashboard_stats(request):
             'system_health': 'good',
             'last_updated': now.isoformat(),
         }
+        
+        # Add verification data from VerificationRequest model
+        try:
+            from apps.users.models import VerificationRequest
+            dashboard_stats['pending_verifications'] = VerificationRequest.objects.filter(status='PENDING').count()
+            dashboard_stats['total_verifications'] = VerificationRequest.objects.count()
+        except Exception as e:
+            logger.warning(f"Could not fetch verification data: {str(e)}")
+            
+        # Add refund data from RefundRequest model
+        try:
+            from apps.payments.models import RefundRequest
+            dashboard_stats['pending_refunds'] = RefundRequest.objects.filter(status='PENDING').count()
+            dashboard_stats['total_refunds'] = RefundRequest.objects.count()
+            total_refund_amount = sum(
+                refund.amount for refund in RefundRequest.objects.filter(status='PENDING')
+                if refund.amount
+            )
+            dashboard_stats['total_refund_amount'] = float(total_refund_amount) if total_refund_amount else 0.0
+        except Exception as e:
+            logger.warning(f"Could not fetch refund data: {str(e)}")
         
         return Response(dashboard_stats, status=status.HTTP_200_OK)
         
@@ -169,7 +201,7 @@ def disputes_admin(request):
                 'disputes': disputes_data,
                 'count': len(disputes_data),
                 'total_disputes': Dispute.objects.count(),
-                'pending_disputes': Dispute.objects.filter(status='pending').count() if hasattr(Dispute, 'status') else 0,
+                'pending_disputes': Dispute.objects.filter(status__in=['open', 'in_review']).count() if hasattr(Dispute, 'status') else 0,
             }, status=status.HTTP_200_OK)
             
         except Exception as dispute_error:
