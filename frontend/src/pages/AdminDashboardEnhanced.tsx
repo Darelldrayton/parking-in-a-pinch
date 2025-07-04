@@ -1675,7 +1675,7 @@ const AdminDashboardEnhanced: React.FC = () => {
               />
               <Tab 
                 label={
-                  <Badge badgeContent={stats?.disputes.open_disputes} color="error">
+                  <Badge badgeContent={stats?.open_disputes || 0} color="error">
                     Disputes
                   </Badge>
                 }
