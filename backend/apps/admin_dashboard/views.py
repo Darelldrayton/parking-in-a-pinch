@@ -25,6 +25,7 @@ User = get_user_model()
 def dashboard_stats(request):
     """
     Comprehensive admin dashboard stats endpoint.
+    DEBUG: Updated with correct queries for real data
     """
     try:
         # Skip admin permission check for now (authentication disabled)
@@ -45,6 +46,9 @@ def dashboard_stats(request):
         recent_signups = User.objects.filter(created_at__gte=one_week_ago).count()
         monthly_signups = User.objects.filter(created_at__gte=one_month_ago).count()
         
+        # Debug: Log actual counts
+        logger.info(f"DEBUG USER COUNTS: total={total_users}, active={active_users}, verified={verified_users}")
+        
         # Booking statistics
         total_bookings = Booking.objects.count()
         pending_bookings = Booking.objects.filter(status='pending').count()
@@ -52,20 +56,27 @@ def dashboard_stats(request):
         completed_bookings = Booking.objects.filter(status='completed').count()
         recent_bookings = Booking.objects.filter(created_at__gte=one_week_ago).count()
         
-        # Listing statistics
+        # Listing statistics - Using proper enum constants
         total_listings = ParkingListing.objects.count()
         active_listings = ParkingListing.objects.filter(is_active=True).count()
-        pending_listings = ParkingListing.objects.filter(approval_status='PENDING').count()
+        pending_listings = ParkingListing.objects.filter(approval_status=ParkingListing.ApprovalStatus.PENDING).count()
         recent_listings = ParkingListing.objects.filter(created_at__gte=one_week_ago).count()
         
-        # Dispute statistics
+        # Debug: Log actual counts
+        logger.info(f"DEBUG LISTING COUNTS: total={total_listings}, pending={pending_listings}, active={active_listings}")
+        
+        # Dispute statistics - Using proper enum constants
         try:
             total_disputes = Dispute.objects.count()
-            pending_disputes = Dispute.objects.filter(status__in=['open', 'in_review']).count()
-            resolved_disputes = Dispute.objects.filter(status='resolved').count()
+            pending_disputes = Dispute.objects.filter(status__in=[Dispute.DisputeStatus.OPEN, Dispute.DisputeStatus.IN_REVIEW]).count()
+            resolved_disputes = Dispute.objects.filter(status=Dispute.DisputeStatus.RESOLVED).count()
             recent_disputes = Dispute.objects.filter(created_at__gte=one_week_ago).count()
-        except:
+            
+            # Debug: Log actual counts
+            logger.info(f"DEBUG DISPUTE COUNTS: total={total_disputes}, pending={pending_disputes}, resolved={resolved_disputes}")
+        except Exception as e:
             # Fallback if Dispute model doesn't exist
+            logger.warning(f"Dispute query error: {str(e)}")
             total_disputes = 0
             pending_disputes = 0
             resolved_disputes = 0
@@ -109,7 +120,7 @@ def dashboard_stats(request):
             'total_listings': total_listings,
             'active_listings': active_listings,
             'pending_listings': pending_listings,
-            'approved_listings': ParkingListing.objects.filter(approval_status='APPROVED').count(),
+            'approved_listings': ParkingListing.objects.filter(approval_status=ParkingListing.ApprovalStatus.APPROVED).count(),
             'recent_listings': recent_listings,
             
             # Dispute metrics (frontend expects these names)
@@ -201,7 +212,7 @@ def disputes_admin(request):
                 'disputes': disputes_data,
                 'count': len(disputes_data),
                 'total_disputes': Dispute.objects.count(),
-                'pending_disputes': Dispute.objects.filter(status__in=['open', 'in_review']).count() if hasattr(Dispute, 'status') else 0,
+                'pending_disputes': Dispute.objects.filter(status__in=[Dispute.DisputeStatus.OPEN, Dispute.DisputeStatus.IN_REVIEW]).count() if hasattr(Dispute, 'status') else 0,
             }, status=status.HTTP_200_OK)
             
         except Exception as dispute_error:
