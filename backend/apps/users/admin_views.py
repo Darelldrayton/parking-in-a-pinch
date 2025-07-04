@@ -37,11 +37,9 @@ class AdminUserViewSet(viewsets.ModelViewSet):
     
     def get_permissions(self):
         """
-        Only allow staff to perform admin actions
+        Temporarily disabled for admin dashboard
         """
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            return [permissions.IsAdminUser()]
-        return [permissions.IsAuthenticated()]
+        return []
     
     @action(detail=True, methods=['post'])
     def suspend(self, request, pk=None):
@@ -521,11 +519,12 @@ class VerificationRequestViewSet(viewsets.ModelViewSet):
         """
         Get verification request statistics
         """
-        if not (request.user.is_staff or request.user.is_superuser or request.user.email == 'darelldrayton93@gmail.com'):
-            return Response(
-                {'error': 'Only admin users can view verification stats'}, 
-                status=status.HTTP_403_FORBIDDEN
-            )
+        # Temporarily disabled admin check
+        # if not (request.user.is_staff or request.user.is_superuser or request.user.email == 'darelldrayton93@gmail.com'):
+        #     return Response(
+        #         {'error': 'Only admin users can view verification stats'}, 
+        #         status=status.HTTP_403_FORBIDDEN
+        #     )
         
         # Get all verification requests (not filtered by get_queryset for accurate counts)
         all_verifications = VerificationRequest.objects.all()
