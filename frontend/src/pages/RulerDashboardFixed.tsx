@@ -411,13 +411,13 @@ const RulerDashboardFixed: React.FC = () => {
                   </Box>
                   <Box>
                     <Typography variant="h4" color="primary.main" fontWeight="bold">
-                      {stats.total_users}
+                      {stats?.total_users || 0}
                     </Typography>
                     <Typography variant="h6" color="text.secondary">
                       Total Users
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {stats.recent_signups} new this week
+                      {stats?.recent_signups || 0} new this week
                     </Typography>
                   </Box>
                 </Stack>
@@ -441,13 +441,13 @@ const RulerDashboardFixed: React.FC = () => {
                   </Box>
                   <Box>
                     <Typography variant="h4" color="warning.main" fontWeight="bold">
-                      {stats.pending_requests}
+                      {stats?.pending_requests || 0}
                     </Typography>
                     <Typography variant="h6" color="text.secondary">
                       Pending Verifications
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {stats.total_requests} total requests
+                      {stats?.total_requests || 0} total requests
                     </Typography>
                   </Box>
                 </Stack>
@@ -471,13 +471,13 @@ const RulerDashboardFixed: React.FC = () => {
                   </Box>
                   <Box>
                     <Typography variant="h4" color="info.main" fontWeight="bold">
-                      {stats.pending_listings}
+                      {stats?.pending_listings || 0}
                     </Typography>
                     <Typography variant="h6" color="text.secondary">
                       Pending Listings
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {stats.approved_listings} approved
+                      {stats?.approved_listings || 0} approved
                     </Typography>
                   </Box>
                 </Stack>
@@ -501,13 +501,13 @@ const RulerDashboardFixed: React.FC = () => {
                   </Box>
                   <Box>
                     <Typography variant="h4" color="error.main" fontWeight="bold">
-                      {stats.pending_refunds}
+                      {stats?.pending_refunds || 0}
                     </Typography>
                     <Typography variant="h6" color="text.secondary">
                       Pending Refunds
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      ${stats.total_requested_amount.toFixed(2)} requested
+                      ${(stats?.total_requested_amount || 0).toFixed(2)} requested
                     </Typography>
                   </Box>
                 </Stack>

@@ -595,7 +595,7 @@ export default function AdminDashboard() {
                     </Box>
                     <Box>
                       <Typography variant="h4" fontWeight={700} color="warning.main">
-                        {stats.pending_count}
+                        {stats?.pending_count || 0}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         Pending Reviews
@@ -621,7 +621,7 @@ export default function AdminDashboard() {
                     </Box>
                     <Box>
                       <Typography variant="h4" fontWeight={700} color="success.main">
-                        {stats.approved_today}
+                        {stats?.approved_today || 0}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         Approved Today
@@ -647,7 +647,7 @@ export default function AdminDashboard() {
                     </Box>
                     <Box>
                       <Typography variant="h4" fontWeight={700} color="primary.main">
-                        {stats.total_verified_users}
+                        {stats?.total_verified_users || 0}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         Verified Users
@@ -673,7 +673,7 @@ export default function AdminDashboard() {
                     </Box>
                     <Box>
                       <Typography variant="h4" fontWeight={700} color="info.main">
-                        {stats.total_users}
+                        {stats?.total_users || 0}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         Total Users

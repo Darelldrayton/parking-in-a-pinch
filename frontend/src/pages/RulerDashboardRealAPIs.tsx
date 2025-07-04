@@ -664,13 +664,13 @@ const RulerDashboardRealAPIs: React.FC = () => {
                   <Person sx={{ fontSize: 32 }} />
                   <Box>
                     <Typography variant="h4" fontWeight="bold">
-                      {stats.total_users}
+                      {stats?.total_users || 0}
                     </Typography>
                     <Typography variant="h6">
                       Total Users
                     </Typography>
                     <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                      {stats.recent_signups} new this week • {stats.verified_users} verified
+                      {stats?.recent_signups || 0} new this week • {stats?.verified_users || 0} verified
                     </Typography>
                   </Box>
                 </Stack>
@@ -685,13 +685,13 @@ const RulerDashboardRealAPIs: React.FC = () => {
                   <Verified sx={{ fontSize: 32 }} />
                   <Box>
                     <Typography variant="h4" fontWeight="bold">
-                      {stats.pending_verifications}
+                      {stats?.pending_verifications || 0}
                     </Typography>
                     <Typography variant="h6">
                       Pending Verifications
                     </Typography>
                     <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                      {stats.approved_verifications} approved • {stats.rejected_verifications} rejected
+                      {stats?.approved_verifications || 0} approved • {stats?.rejected_verifications || 0} rejected
                     </Typography>
                   </Box>
                 </Stack>
@@ -706,13 +706,13 @@ const RulerDashboardRealAPIs: React.FC = () => {
                   <Home sx={{ fontSize: 32 }} />
                   <Box>
                     <Typography variant="h4" fontWeight="bold">
-                      {stats.pending_listings}
+                      {stats?.pending_listings || 0}
                     </Typography>
                     <Typography variant="h6">
                       Pending Listings
                     </Typography>
                     <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                      {stats.approved_listings} approved • {stats.active_approved_listings} active
+                      {stats?.approved_listings || 0} approved • {stats?.active_approved_listings || 0} active
                     </Typography>
                   </Box>
                 </Stack>
@@ -727,13 +727,13 @@ const RulerDashboardRealAPIs: React.FC = () => {
                   <Payment sx={{ fontSize: 32 }} />
                   <Box>
                     <Typography variant="h4" fontWeight="bold">
-                      {stats.pending_refunds}
+                      {stats?.pending_refunds || 0}
                     </Typography>
                     <Typography variant="h6">
                       Pending Refunds
                     </Typography>
                     <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                      ${stats.total_approved_amount.toFixed(2)} approved
+                      ${(stats?.total_approved_amount || 0).toFixed(2)} approved
                     </Typography>
                   </Box>
                 </Stack>
@@ -787,9 +787,9 @@ const RulerDashboardRealAPIs: React.FC = () => {
               onChange={(e, newValue) => setCurrentTab(newValue)}
               aria-label="admin tabs"
             >
-              <Tab label={`Verifications (${stats.pending_verifications})`} />
-              <Tab label={`Refunds (${stats.pending_refunds})`} />
-              <Tab label={`Listings (${stats.pending_listings})`} />
+              <Tab label={`Verifications (${stats?.pending_verifications || 0})`} />
+              <Tab label={`Refunds (${stats?.pending_refunds || 0})`} />
+              <Tab label={`Listings (${stats?.pending_listings || 0})`} />
               <Tab label="Booking Search" />
             </Tabs>
           </Box>

@@ -1569,8 +1569,8 @@ const AdminDashboardEnhanced: React.FC = () => {
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <StatCard
                 title="Total Users"
-                value={stats.users.total_users}
-                subtitle={`${stats.users.recent_signups} new this week`}
+                value={stats?.users?.total_users || 0}
+                subtitle={`${stats?.users?.recent_signups || 0} new this week`}
                 icon={<Person />}
                 
               />
@@ -1578,8 +1578,8 @@ const AdminDashboardEnhanced: React.FC = () => {
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <StatCard
                 title="Pending Verifications"
-                value={stats.verifications.pending_requests}
-                subtitle={`${stats.verifications.total_requests} total requests`}
+                value={stats?.verifications?.pending_requests || 0}
+                subtitle={`${stats?.verifications?.total_requests || 0} total requests`}
                 icon={<CheckCircle />}
                 color="warning"
                 onClick={() => setTabValue(0)}
@@ -1588,8 +1588,8 @@ const AdminDashboardEnhanced: React.FC = () => {
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <StatCard
                 title="Pending Listings"
-                value={stats.listings.pending_listings}
-                subtitle={`${stats.listings.approved_listings} approved`}
+                value={stats?.listings?.pending_listings || 0}
+                subtitle={`${stats?.listings?.approved_listings || 0} approved`}
                 icon={<Home />}
                 color="info"
                 onClick={() => setTabValue(2)}
@@ -1598,8 +1598,8 @@ const AdminDashboardEnhanced: React.FC = () => {
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <StatCard
                 title="Pending Refunds"
-                value={stats.refunds.pending_requests}
-                subtitle={`$${stats.refunds.total_requested_amount.toFixed(2)} requested`}
+                value={stats?.refunds?.pending_requests || 0}
+                subtitle={`$${(stats?.refunds?.total_requested_amount || 0).toFixed(2)} requested`}
                 icon={<Payment />}
                 color="error"
                 onClick={() => setTabValue(1)}
