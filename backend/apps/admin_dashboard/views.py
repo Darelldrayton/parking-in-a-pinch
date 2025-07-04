@@ -12,7 +12,7 @@ from datetime import timedelta
 import logging
 
 from ..users.models import User
-from ..bookings.models import Booking
+from ..bookings.models import Booking, BookingStatus
 from ..listings.models import ParkingListing
 from ..disputes.models import Dispute
 
@@ -51,9 +51,9 @@ def dashboard_stats(request):
         
         # Booking statistics - Using proper enum constants
         total_bookings = Booking.objects.count()
-        pending_bookings = Booking.objects.filter(status=Booking.BookingStatus.PENDING).count()
-        confirmed_bookings = Booking.objects.filter(status=Booking.BookingStatus.CONFIRMED).count()
-        completed_bookings = Booking.objects.filter(status=Booking.BookingStatus.COMPLETED).count()
+        pending_bookings = Booking.objects.filter(status=BookingStatus.PENDING).count()
+        confirmed_bookings = Booking.objects.filter(status=BookingStatus.CONFIRMED).count()
+        completed_bookings = Booking.objects.filter(status=BookingStatus.COMPLETED).count()
         recent_bookings = Booking.objects.filter(created_at__gte=one_week_ago).count()
         
         # Listing statistics - Using proper enum constants
@@ -87,13 +87,13 @@ def dashboard_stats(request):
             from decimal import Decimal
             total_revenue = sum(
                 booking.total_amount for booking in 
-                Booking.objects.filter(status=Booking.BookingStatus.COMPLETED) 
+                Booking.objects.filter(status=BookingStatus.COMPLETED) 
                 if booking.total_amount
             )
             monthly_revenue = sum(
                 booking.total_amount for booking in 
                 Booking.objects.filter(
-                    status=Booking.BookingStatus.COMPLETED,
+                    status=BookingStatus.COMPLETED,
                     created_at__gte=one_month_ago
                 ) if booking.total_amount
             )
