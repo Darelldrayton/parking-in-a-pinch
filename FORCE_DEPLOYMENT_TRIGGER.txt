@@ -1,0 +1,13 @@
+FORCE DEPLOYMENT TRIGGER - July 4, 2025 - 11:30 AM
+
+This file forces a new deployment to ensure frontend changes are applied.
+
+Changes made:
+- Fixed AdminDashboardEnhanced.tsx interface from nested to flat structure
+- Fixed stats?.users?.total_users to stats?.total_users
+- Fixed backend admin_views.py permission issues
+- All changes committed and pushed to main branch
+
+Expected result: Admin dashboard should load without "Something went wrong" error
+
+Deployment timestamp: 2025-07-04 11:30:00
