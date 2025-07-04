@@ -148,30 +148,30 @@ interface Listing {
 }
 
 interface DashboardStats {
-  users: {
-    total_users: number;
-    verified_users: number;
-    recent_signups: number;
-  };
-  verifications: {
-    pending_requests: number;
-    total_requests: number;
-  };
-  listings: {
-    pending_listings: number;
-    total_listings: number;
-    approved_listings: number;
-  };
-  refunds: {
-    pending_requests: number;
-    total_requests: number;
-    total_requested_amount: number;
-  };
-  disputes: {
-    open_disputes: number;
-    total_disputes: number;
-    unassigned_disputes: number;
-  };
+  // User stats
+  total_users: number;
+  active_users: number;
+  verified_users: number;
+  recent_signups: number;
+  monthly_signups: number;
+  
+  // Verification stats  
+  pending_verifications: number;
+  total_verifications: number;
+  
+  // Listing stats
+  pending_listings: number;
+  total_listings: number;
+  approved_listings: number;
+  
+  // Refund stats
+  pending_refunds: number;
+  total_refunds: number;
+  total_refund_amount: number;
+  
+  // Dispute stats
+  open_disputes: number;
+  total_disputes: number;
 }
 
 interface BookingSearchResult {
@@ -437,11 +437,30 @@ const AdminDashboardEnhanced: React.FC = () => {
         const disputes = disputesRes.ok ? await disputesRes.json() : { open_disputes: 0, total_disputes: 0, unassigned_disputes: 0 };
 
         realStats = {
-          users,
-          verifications,
-          listings,
-          refunds,
-          disputes
+          // User stats
+          total_users: users.total_users || 0,
+          active_users: users.active_users || 0,
+          verified_users: users.verified_users || 0,
+          recent_signups: users.recent_signups || 0,
+          monthly_signups: users.monthly_signups || 0,
+          
+          // Verification stats
+          pending_verifications: verifications.pending_requests || 0,
+          total_verifications: verifications.total_requests || 0,
+          
+          // Listing stats
+          pending_listings: listings.pending_listings || 0,
+          total_listings: listings.total_listings || 0,
+          approved_listings: listings.approved_listings || 0,
+          
+          // Refund stats
+          pending_refunds: refunds.pending_requests || 0,
+          total_refunds: refunds.total_requests || 0,
+          total_refund_amount: refunds.total_requested_amount || 0,
+          
+          // Dispute stats
+          open_disputes: disputes.open_disputes || 0,
+          total_disputes: disputes.total_disputes || 0
         };
         
         console.log('✅ Stats compiled from individual endpoints:', realStats);
@@ -453,11 +472,21 @@ const AdminDashboardEnhanced: React.FC = () => {
       console.error('Stats fetch error:', err);
       // No fallback stats - show zeros if APIs fail
       const emptyStats = {
-        users: { total_users: 0, verified_users: 0, recent_signups: 0 },
-        verifications: { pending_requests: 0, total_requests: 0 },
-        listings: { pending_listings: 0, total_listings: 0, approved_listings: 0 },
-        refunds: { pending_requests: 0, total_requests: 0, total_requested_amount: 0 },
-        disputes: { open_disputes: 0, total_disputes: 0, unassigned_disputes: 0 }
+        total_users: 0,
+        active_users: 0,
+        verified_users: 0,
+        recent_signups: 0,
+        monthly_signups: 0,
+        pending_verifications: 0,
+        total_verifications: 0,
+        pending_listings: 0,
+        total_listings: 0,
+        approved_listings: 0,
+        pending_refunds: 0,
+        total_refunds: 0,
+        total_refund_amount: 0,
+        open_disputes: 0,
+        total_disputes: 0
       };
       console.log('📊 Using empty stats due to API errors - no demo data');
       setStats(emptyStats);
@@ -1569,8 +1598,8 @@ const AdminDashboardEnhanced: React.FC = () => {
             <Grid size={{ xs: 12, sm: 6, md: 3 }}>
               <StatCard
                 title="Total Users"
-                value={stats?.users?.total_users || 0}
-                subtitle={`${stats?.users?.recent_signups || 0} new this week`}
+                value={stats?.total_users || 0}
+                subtitle={`${stats?.recent_signups || 0} new this week`}
                 icon={<Person />}
                 
               />
@@ -1622,7 +1651,7 @@ const AdminDashboardEnhanced: React.FC = () => {
               />
               <Tab 
                 label={
-                  <Badge badgeContent={stats?.refunds.pending_requests} color="error">
+                  <Badge badgeContent={stats?.pending_refunds || 0} color="error">
                     Refund Requests
                   </Badge>
                 }
@@ -1630,7 +1659,7 @@ const AdminDashboardEnhanced: React.FC = () => {
               />
               <Tab 
                 label={
-                  <Badge badgeContent={stats?.listings.pending_listings} color="error">
+                  <Badge badgeContent={stats?.pending_listings || 0} color="error">
                     Listing Approvals
                   </Badge>
                 }
