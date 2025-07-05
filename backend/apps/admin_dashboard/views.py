@@ -101,7 +101,17 @@ def dashboard_stats(request):
             total_revenue = Decimal('0.00')
             monthly_revenue = Decimal('0.00')
         
+        # Add database info for debugging
+        from django.db import connection
+        db_info = {
+            'engine': connection.vendor,
+            'database_name': connection.settings_dict.get('NAME', 'Unknown'),
+            'host': connection.settings_dict.get('HOST', 'localhost'),
+        }
+        
         dashboard_stats = {
+            # Database debug info
+            'database_info': db_info,
             # User metrics
             'total_users': total_users,
             'active_users': active_users,
