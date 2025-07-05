@@ -39,12 +39,18 @@ def dashboard_stats(request):
         one_week_ago = now - timedelta(days=7)
         one_month_ago = now - timedelta(days=30)
         
-        # User statistics - Try both ORM and raw SQL
-        total_users = User.objects.count()
+        # User statistics - COMPREHENSIVE: Count ALL users regardless of status
+        total_users = User.objects.count()  # All users
+        all_users_unfiltered = User.objects.all().count()  # Double check
         active_users = User.objects.filter(is_active=True).count()
+        inactive_users = User.objects.filter(is_active=False).count()
         verified_users = User.objects.filter(is_email_verified=True).count()
         recent_signups = User.objects.filter(created_at__gte=one_week_ago).count()
         monthly_signups = User.objects.filter(created_at__gte=one_month_ago).count()
+        
+        # Get ALL users with different approaches
+        superusers = User.objects.filter(is_superuser=True).count()
+        staff_users = User.objects.filter(is_staff=True).count()
         
         # CRITICAL: Also try raw SQL to bypass any ORM issues
         from django.db import connection
@@ -109,35 +115,69 @@ def dashboard_stats(request):
         completed_bookings = Booking.objects.filter(status=BookingStatus.COMPLETED).count()
         recent_bookings = Booking.objects.filter(created_at__gte=one_week_ago).count()
         
-        # Listing statistics - Using proper enum constants + raw SQL
+        # Listing statistics - COMPREHENSIVE: Count ALL listings with multiple methods
         total_listings = ParkingListing.objects.count()
+        all_listings_unfiltered = ParkingListing.objects.all().count()
         active_listings = ParkingListing.objects.filter(is_active=True).count()
-        pending_listings = ParkingListing.objects.filter(approval_status=ParkingListing.ApprovalStatus.PENDING).count()
+        inactive_listings = ParkingListing.objects.filter(is_active=False).count()
+        
+        # Try all possible approval statuses
+        pending_listings_orm = ParkingListing.objects.filter(approval_status=ParkingListing.ApprovalStatus.PENDING).count()
+        approved_listings = ParkingListing.objects.filter(approval_status=ParkingListing.ApprovalStatus.APPROVED).count()
+        rejected_listings = ParkingListing.objects.filter(approval_status=ParkingListing.ApprovalStatus.REJECTED).count()
         recent_listings = ParkingListing.objects.filter(created_at__gte=one_week_ago).count()
         
-        # Try raw SQL for listings
+        # Try raw SQL for listings with all possible enum values
         try:
             with connection.cursor() as cursor:
+                # Total count
                 cursor.execute("SELECT COUNT(*) FROM parking_listings")
                 raw_counts['total_listings_sql'] = cursor.fetchone()[0]
                 
+                # Try different enum values for pending
                 cursor.execute("SELECT COUNT(*) FROM parking_listings WHERE approval_status = 'PENDING'")
-                raw_counts['pending_listings_sql'] = cursor.fetchone()[0]
+                raw_counts['pending_listings_PENDING'] = cursor.fetchone()[0]
+                
+                cursor.execute("SELECT COUNT(*) FROM parking_listings WHERE approval_status = 'pending'")
+                raw_counts['pending_listings_pending'] = cursor.fetchone()[0]
+                
+                # Show all approval statuses
+                cursor.execute("SELECT approval_status, COUNT(*) FROM parking_listings GROUP BY approval_status")
+                raw_counts['approval_status_breakdown'] = dict(cursor.fetchall())
+                
         except Exception as e:
             raw_counts['listings_error'] = str(e)
         
         # Debug: Log actual counts
         logger.info(f"DEBUG LISTING COUNTS: ORM total={total_listings}, pending={pending_listings}, SQL={raw_counts.get('total_listings_sql', 'N/A')}")
         
-        # Dispute statistics - Using proper enum constants
+        # Dispute statistics - COMPREHENSIVE: Count ALL disputes with multiple methods
         try:
             total_disputes = Dispute.objects.count()
-            pending_disputes = Dispute.objects.filter(status__in=[Dispute.DisputeStatus.OPEN, Dispute.DisputeStatus.IN_REVIEW]).count()
+            all_disputes_unfiltered = Dispute.objects.all().count()
+            
+            # Try all possible dispute statuses
+            open_disputes = Dispute.objects.filter(status=Dispute.DisputeStatus.OPEN).count()
+            in_review_disputes = Dispute.objects.filter(status=Dispute.DisputeStatus.IN_REVIEW).count()
+            pending_disputes = open_disputes + in_review_disputes
             resolved_disputes = Dispute.objects.filter(status=Dispute.DisputeStatus.RESOLVED).count()
+            closed_disputes = Dispute.objects.filter(status=Dispute.DisputeStatus.CLOSED).count()
             recent_disputes = Dispute.objects.filter(created_at__gte=one_week_ago).count()
             
+            # Try raw SQL for disputes
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute("SELECT COUNT(*) FROM disputes_dispute")
+                    raw_counts['total_disputes_sql'] = cursor.fetchone()[0]
+                    
+                    # Show all dispute statuses
+                    cursor.execute("SELECT status, COUNT(*) FROM disputes_dispute GROUP BY status")
+                    raw_counts['dispute_status_breakdown'] = dict(cursor.fetchall())
+            except Exception as sql_e:
+                raw_counts['disputes_sql_error'] = str(sql_e)
+            
             # Debug: Log actual counts
-            logger.info(f"DEBUG DISPUTE COUNTS: total={total_disputes}, pending={pending_disputes}, resolved={resolved_disputes}")
+            logger.info(f"DEBUG DISPUTE COUNTS: total={total_disputes}, open={open_disputes}, in_review={in_review_disputes}, resolved={resolved_disputes}")
         except Exception as e:
             # Fallback if Dispute model doesn't exist
             logger.warning(f"Dispute query error: {str(e)}")
@@ -145,6 +185,9 @@ def dashboard_stats(request):
             pending_disputes = 0
             resolved_disputes = 0
             recent_disputes = 0
+            open_disputes = 0
+            in_review_disputes = 0
+            closed_disputes = 0
         
         # Revenue statistics (simplified) - Using proper enum constants
         try:
@@ -178,10 +221,14 @@ def dashboard_stats(request):
             'database_info': db_info,
             'raw_sql_counts': raw_counts,  # CRITICAL: Show raw SQL counts
             'all_users_found': user_details,  # CRITICAL: Show ALL user accounts
-            # User metrics
-            'total_users': max(total_users, raw_counts.get('total_from_sql', 0)),  # Use higher count
+            
+            # User metrics - COMPREHENSIVE
+            'total_users': max(total_users, all_users_unfiltered, raw_counts.get('total_from_sql', 0)),
             'active_users': active_users,
+            'inactive_users': inactive_users,
             'verified_users': verified_users,
+            'superusers': superusers,
+            'staff_users': staff_users,
             'recent_signups': recent_signups,
             'monthly_signups': monthly_signups,
             
@@ -192,18 +239,22 @@ def dashboard_stats(request):
             'completed_bookings': completed_bookings,
             'recent_bookings': recent_bookings,
             
-            # Listing metrics (frontend expects these names)
-            'total_listings': total_listings,
+            # Listing metrics - COMPREHENSIVE (frontend expects these names)
+            'total_listings': max(total_listings, all_listings_unfiltered, raw_counts.get('total_listings_sql', 0)),
             'active_listings': active_listings,
-            'pending_listings': max(pending_listings, raw_counts.get('pending_listings_sql', 0)),
-            'approved_listings': ParkingListing.objects.filter(approval_status=ParkingListing.ApprovalStatus.APPROVED).count(),
+            'inactive_listings': inactive_listings,
+            'pending_listings': max(pending_listings_orm, raw_counts.get('pending_listings_PENDING', 0), raw_counts.get('pending_listings_pending', 0)),
+            'approved_listings': approved_listings,
+            'rejected_listings': rejected_listings,
             'recent_listings': recent_listings,
             
-            # Dispute metrics (frontend expects these names)
-            'total_disputes': total_disputes,
-            'open_disputes': pending_disputes,  # Frontend expects 'open_disputes'
+            # Dispute metrics - COMPREHENSIVE (frontend expects these names)
+            'total_disputes': max(total_disputes, all_disputes_unfiltered, raw_counts.get('total_disputes_sql', 0)),
+            'open_disputes': max(pending_disputes, open_disputes),  # Frontend expects 'open_disputes'
             'pending_disputes': pending_disputes,
+            'in_review_disputes': in_review_disputes,
             'resolved_disputes': resolved_disputes,
+            'closed_disputes': closed_disputes,
             'recent_disputes': recent_disputes,
             
             # Verification metrics (get from VerificationRequest model)
