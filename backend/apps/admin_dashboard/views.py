@@ -39,15 +39,37 @@ def dashboard_stats(request):
         one_week_ago = now - timedelta(days=7)
         one_month_ago = now - timedelta(days=30)
         
-        # User statistics
+        # User statistics - Try both ORM and raw SQL
         total_users = User.objects.count()
         active_users = User.objects.filter(is_active=True).count()
         verified_users = User.objects.filter(is_email_verified=True).count()
         recent_signups = User.objects.filter(created_at__gte=one_week_ago).count()
         monthly_signups = User.objects.filter(created_at__gte=one_month_ago).count()
         
-        # Debug: Log actual counts
-        logger.info(f"DEBUG USER COUNTS: total={total_users}, active={active_users}, verified={verified_users}")
+        # CRITICAL: Also try raw SQL to bypass any ORM issues
+        from django.db import connection
+        raw_counts = {}
+        try:
+            with connection.cursor() as cursor:
+                # Get raw count from users table
+                cursor.execute("SELECT COUNT(*) FROM users_user")
+                raw_counts['total_from_sql'] = cursor.fetchone()[0]
+                
+                # Get count by different methods
+                cursor.execute("SELECT COUNT(*) FROM auth_user")
+                raw_counts['auth_user_table'] = cursor.fetchone()[0]
+        except Exception as e:
+            raw_counts['error'] = str(e)
+            # Try alternate table names
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute("SELECT COUNT(*) FROM users")
+                    raw_counts['users_table'] = cursor.fetchone()[0]
+            except:
+                pass
+        
+        # Debug: Log ALL counts
+        logger.info(f"DEBUG USER COUNTS: ORM={total_users}, active={active_users}, RAW SQL={raw_counts}")
         
         # Booking statistics - Using proper enum constants
         total_bookings = Booking.objects.count()
@@ -56,14 +78,25 @@ def dashboard_stats(request):
         completed_bookings = Booking.objects.filter(status=BookingStatus.COMPLETED).count()
         recent_bookings = Booking.objects.filter(created_at__gte=one_week_ago).count()
         
-        # Listing statistics - Using proper enum constants
+        # Listing statistics - Using proper enum constants + raw SQL
         total_listings = ParkingListing.objects.count()
         active_listings = ParkingListing.objects.filter(is_active=True).count()
         pending_listings = ParkingListing.objects.filter(approval_status=ParkingListing.ApprovalStatus.PENDING).count()
         recent_listings = ParkingListing.objects.filter(created_at__gte=one_week_ago).count()
         
+        # Try raw SQL for listings
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT COUNT(*) FROM parking_listings")
+                raw_counts['total_listings_sql'] = cursor.fetchone()[0]
+                
+                cursor.execute("SELECT COUNT(*) FROM parking_listings WHERE approval_status = 'PENDING'")
+                raw_counts['pending_listings_sql'] = cursor.fetchone()[0]
+        except Exception as e:
+            raw_counts['listings_error'] = str(e)
+        
         # Debug: Log actual counts
-        logger.info(f"DEBUG LISTING COUNTS: total={total_listings}, pending={pending_listings}, active={active_listings}")
+        logger.info(f"DEBUG LISTING COUNTS: ORM total={total_listings}, pending={pending_listings}, SQL={raw_counts.get('total_listings_sql', 'N/A')}")
         
         # Dispute statistics - Using proper enum constants
         try:
@@ -112,8 +145,9 @@ def dashboard_stats(request):
         dashboard_stats = {
             # Database debug info
             'database_info': db_info,
+            'raw_sql_counts': raw_counts,  # CRITICAL: Show raw SQL counts
             # User metrics
-            'total_users': total_users,
+            'total_users': max(total_users, raw_counts.get('total_from_sql', 0)),  # Use higher count
             'active_users': active_users,
             'verified_users': verified_users,
             'recent_signups': recent_signups,
@@ -129,7 +163,7 @@ def dashboard_stats(request):
             # Listing metrics (frontend expects these names)
             'total_listings': total_listings,
             'active_listings': active_listings,
-            'pending_listings': pending_listings,
+            'pending_listings': max(pending_listings, raw_counts.get('pending_listings_sql', 0)),
             'approved_listings': ParkingListing.objects.filter(approval_status=ParkingListing.ApprovalStatus.APPROVED).count(),
             'recent_listings': recent_listings,
             
