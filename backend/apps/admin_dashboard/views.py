@@ -49,15 +49,46 @@ def dashboard_stats(request):
         # CRITICAL: Also try raw SQL to bypass any ORM issues
         from django.db import connection
         raw_counts = {}
+        user_details = []
         try:
             with connection.cursor() as cursor:
                 # Get raw count from users table
                 cursor.execute("SELECT COUNT(*) FROM users_user")
                 raw_counts['total_from_sql'] = cursor.fetchone()[0]
                 
-                # Get count by different methods
-                cursor.execute("SELECT COUNT(*) FROM auth_user")
-                raw_counts['auth_user_table'] = cursor.fetchone()[0]
+                # Get ALL user details to see what accounts exist
+                cursor.execute("""
+                    SELECT id, email, is_active, is_superuser, date_joined, last_login 
+                    FROM users_user 
+                    ORDER BY id
+                """)
+                all_users = cursor.fetchall()
+                user_details = [
+                    {
+                        'id': u[0], 
+                        'email': u[1], 
+                        'is_active': u[2], 
+                        'is_superuser': u[3],
+                        'date_joined': str(u[4]) if u[4] else None,
+                        'last_login': str(u[5]) if u[5] else None
+                    } 
+                    for u in all_users
+                ]
+                
+                # Count by different filters
+                cursor.execute("SELECT COUNT(*) FROM users_user WHERE is_active = true")
+                raw_counts['active_users_sql'] = cursor.fetchone()[0]
+                
+                cursor.execute("SELECT COUNT(*) FROM users_user WHERE is_active = false")
+                raw_counts['inactive_users_sql'] = cursor.fetchone()[0]
+                
+                # Check if there's an auth_user table too (Django default)
+                try:
+                    cursor.execute("SELECT COUNT(*) FROM auth_user")
+                    raw_counts['auth_user_table'] = cursor.fetchone()[0]
+                except:
+                    raw_counts['auth_user_table'] = 'not_found'
+                    
         except Exception as e:
             raw_counts['error'] = str(e)
             # Try alternate table names
@@ -146,6 +177,7 @@ def dashboard_stats(request):
             # Database debug info
             'database_info': db_info,
             'raw_sql_counts': raw_counts,  # CRITICAL: Show raw SQL counts
+            'all_users_found': user_details,  # CRITICAL: Show ALL user accounts
             # User metrics
             'total_users': max(total_users, raw_counts.get('total_from_sql', 0)),  # Use higher count
             'active_users': active_users,
