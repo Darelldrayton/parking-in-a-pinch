@@ -26,4 +26,10 @@ urlpatterns = [
     path('disputes/', views.disputes_admin, name='disputes-admin'),
     path('auth-debug/', auth_debug, name='auth-debug'),
     path('debug-database/', views.debug_database, name='debug-database'),
+    
+    # Fix endpoints for all user issues
+    path('fix-inactive-accounts/', views.fix_inactive_accounts, name='fix-inactive-accounts'),
+    path('create-test-users/', views.create_test_users, name='create-test-users'),
+    path('verify-all-emails/', views.verify_all_emails, name='verify-all-emails'),
+    path('create-sample-data/', views.create_sample_data, name='create-sample-data'),
 ]

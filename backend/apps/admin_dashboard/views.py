@@ -386,6 +386,250 @@ def debug_database(request):
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@api_view(['POST'])
+@permission_classes([])
+def fix_inactive_accounts(request):
+    """
+    Fix all inactive accounts by activating them
+    """
+    try:
+        # Find all inactive accounts
+        inactive_users = User.objects.filter(is_active=False)
+        inactive_count = inactive_users.count()
+        
+        if inactive_count == 0:
+            return Response({
+                'message': 'No inactive accounts found',
+                'activated': 0
+            }, status=status.HTTP_200_OK)
+        
+        # Get details before activation
+        inactive_details = list(inactive_users.values('id', 'email', 'date_joined'))
+        
+        # Activate all inactive accounts
+        activated_count = inactive_users.update(is_active=True)
+        
+        logger.info(f"Activated {activated_count} inactive accounts")
+        
+        return Response({
+            'message': f'Successfully activated {activated_count} inactive accounts',
+            'activated': activated_count,
+            'accounts_fixed': inactive_details,
+            'new_total_active': User.objects.filter(is_active=True).count()
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Error fixing inactive accounts: {str(e)}")
+        return Response({
+            'error': 'Failed to fix inactive accounts',
+            'details': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([])
+def create_test_users(request):
+    """
+    Create test users to populate the database
+    """
+    try:
+        test_users_data = [
+            {'email': 'test1@parkinginapinch.com', 'first_name': 'Test', 'last_name': 'User1'},
+            {'email': 'test2@parkinginapinch.com', 'first_name': 'Test', 'last_name': 'User2'},
+            {'email': 'test3@parkinginapinch.com', 'first_name': 'Test', 'last_name': 'User3'},
+            {'email': 'host1@parkinginapinch.com', 'first_name': 'Host', 'last_name': 'User1'},
+            {'email': 'seeker1@parkinginapinch.com', 'first_name': 'Seeker', 'last_name': 'User1'},
+        ]
+        
+        created_users = []
+        existing_users = []
+        
+        for user_data in test_users_data:
+            # Check if user already exists
+            if User.objects.filter(email=user_data['email']).exists():
+                existing_users.append(user_data['email'])
+                continue
+                
+            # Create new user
+            user = User.objects.create_user(
+                email=user_data['email'],
+                password='testpassword123',
+                first_name=user_data['first_name'],
+                last_name=user_data['last_name'],
+                is_active=True,
+                is_email_verified=True
+            )
+            created_users.append({
+                'id': user.id,
+                'email': user.email,
+                'name': f"{user.first_name} {user.last_name}"
+            })
+        
+        return Response({
+            'message': f'Successfully created {len(created_users)} test users',
+            'created_users': created_users,
+            'existing_users': existing_users,
+            'total_users_now': User.objects.count()
+        }, status=status.HTTP_201_CREATED)
+        
+    except Exception as e:
+        logger.error(f"Error creating test users: {str(e)}")
+        return Response({
+            'error': 'Failed to create test users',
+            'details': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([])
+def verify_all_emails(request):
+    """
+    Mark all user emails as verified
+    """
+    try:
+        # Find all unverified users
+        unverified_users = User.objects.filter(is_email_verified=False)
+        unverified_count = unverified_users.count()
+        
+        if unverified_count == 0:
+            return Response({
+                'message': 'All users already verified',
+                'verified': 0
+            }, status=status.HTTP_200_OK)
+        
+        # Verify all emails
+        verified_count = unverified_users.update(is_email_verified=True)
+        
+        return Response({
+            'message': f'Successfully verified {verified_count} user emails',
+            'verified': verified_count,
+            'total_verified_now': User.objects.filter(is_email_verified=True).count()
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Error verifying emails: {str(e)}")
+        return Response({
+            'error': 'Failed to verify emails',
+            'details': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([])
+def create_sample_data(request):
+    """
+    Create sample listings, bookings, and disputes for testing
+    """
+    try:
+        created_data = {
+            'users': 0,
+            'listings': 0,
+            'bookings': 0,
+            'disputes': 0,
+            'verifications': 0
+        }
+        
+        # Ensure we have at least 1 user to create data for
+        users = User.objects.filter(is_active=True)
+        if users.count() == 0:
+            # Create a test user
+            user = User.objects.create_user(
+                email='testuser@parkinginapinch.com',
+                password='testpass123',
+                first_name='Test',
+                last_name='User',
+                is_active=True,
+                is_email_verified=True
+            )
+            created_data['users'] = 1
+        else:
+            user = users.first()
+        
+        # Create sample parking listings
+        for i in range(3):
+            if not ParkingListing.objects.filter(title=f'Sample Parking Spot {i+1}').exists():
+                listing = ParkingListing.objects.create(
+                    host=user,
+                    title=f'Sample Parking Spot {i+1}',
+                    description=f'A great parking spot in location {i+1}',
+                    address=f'123 Test Street #{i+1}, New York, NY',
+                    borough=ParkingListing.Borough.MANHATTAN,
+                    space_type=ParkingListing.SpaceType.GARAGE,
+                    hourly_rate=15.00 + i,
+                    daily_rate=100.00 + (i * 10),
+                    weekly_rate=600.00 + (i * 50),
+                    is_active=True,
+                    approval_status=ParkingListing.ApprovalStatus.PENDING if i == 0 else ParkingListing.ApprovalStatus.APPROVED
+                )
+                created_data['listings'] += 1
+        
+        # Create sample bookings
+        listings = ParkingListing.objects.all()
+        if listings.exists():
+            for i, status in enumerate([BookingStatus.PENDING, BookingStatus.CONFIRMED, BookingStatus.COMPLETED]):
+                if i < listings.count():
+                    from datetime import datetime, timedelta
+                    start_time = timezone.now() + timedelta(days=i)
+                    end_time = start_time + timedelta(hours=2)
+                    
+                    if not Booking.objects.filter(listing=listings[i], status=status).exists():
+                        booking = Booking.objects.create(
+                            user=user,
+                            listing=listings[i],
+                            start_time=start_time,
+                            end_time=end_time,
+                            total_amount=30.00 + (i * 5),
+                            status=status
+                        )
+                        created_data['bookings'] += 1
+        
+        # Create sample disputes
+        try:
+            if not Dispute.objects.filter(complainant=user).exists():
+                dispute = Dispute.objects.create(
+                    complainant=user,
+                    dispute_type=Dispute.DisputeType.HOST_ISSUE,
+                    subject='Sample dispute for testing',
+                    description='This is a test dispute to populate the dashboard',
+                    status=Dispute.DisputeStatus.OPEN,
+                    priority=Dispute.Priority.MEDIUM
+                )
+                created_data['disputes'] += 1
+        except Exception as e:
+            logger.warning(f"Could not create dispute: {str(e)}")
+        
+        # Create sample verification requests
+        try:
+            from apps.users.models import VerificationRequest
+            if not VerificationRequest.objects.filter(user=user).exists():
+                verification = VerificationRequest.objects.create(
+                    user=user,
+                    verification_type=VerificationRequest.VerificationType.IDENTITY,
+                    status=VerificationRequest.VerificationStatus.PENDING
+                )
+                created_data['verifications'] += 1
+        except Exception as e:
+            logger.warning(f"Could not create verification: {str(e)}")
+        
+        return Response({
+            'message': 'Successfully created sample data',
+            'created_data': created_data,
+            'current_totals': {
+                'users': User.objects.count(),
+                'listings': ParkingListing.objects.count(),
+                'bookings': Booking.objects.count(),
+                'disputes': Dispute.objects.count() if hasattr(Dispute, 'objects') else 0
+            }
+        }, status=status.HTTP_201_CREATED)
+        
+    except Exception as e:
+        logger.error(f"Error creating sample data: {str(e)}")
+        return Response({
+            'error': 'Failed to create sample data',
+            'details': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 @api_view(['GET'])
 @permission_classes([])
 def disputes_admin(request):
