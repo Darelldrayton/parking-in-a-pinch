@@ -25,4 +25,5 @@ urlpatterns = [
     path('dashboard-stats/', views.dashboard_stats, name='dashboard-stats'),
     path('disputes/', views.disputes_admin, name='disputes-admin'),
     path('auth-debug/', auth_debug, name='auth-debug'),
+    path('debug-database/', views.debug_database, name='debug-database'),
 ]

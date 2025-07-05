@@ -181,6 +181,86 @@ def dashboard_stats(request):
 
 @api_view(['GET'])
 @permission_classes([])
+def debug_database(request):
+    """
+    Debug endpoint to check actual database values
+    """
+    try:
+        # Direct database queries with debug info
+        from django.db import connection
+        
+        # Check users table
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT COUNT(*) FROM users_user")
+            user_count = cursor.fetchone()[0]
+            
+            cursor.execute("SELECT COUNT(*) FROM users_user WHERE is_active = true")
+            active_users = cursor.fetchone()[0]
+            
+            cursor.execute("SELECT id, email, is_active, created_at FROM users_user ORDER BY id")
+            users = cursor.fetchall()
+        
+        # Check other tables
+        tables_info = {}
+        table_queries = {
+            'parking_listings': "SELECT COUNT(*) FROM parking_listings",
+            'disputes': "SELECT COUNT(*) FROM disputes_dispute",
+            'bookings': "SELECT COUNT(*) FROM bookings_booking",
+            'verification_requests': "SELECT COUNT(*) FROM users_verificationrequest"
+        }
+        
+        with connection.cursor() as cursor:
+            for table, query in table_queries.items():
+                try:
+                    cursor.execute(query)
+                    count = cursor.fetchone()[0]
+                    tables_info[table] = count
+                except Exception as e:
+                    tables_info[table] = f"Error: {str(e)}"
+        
+        # Check specific enum values
+        enum_checks = {}
+        with connection.cursor() as cursor:
+            # Check listing approval statuses
+            try:
+                cursor.execute("SELECT approval_status, COUNT(*) FROM parking_listings GROUP BY approval_status")
+                enum_checks['listing_statuses'] = dict(cursor.fetchall())
+            except:
+                enum_checks['listing_statuses'] = 'Table not found'
+                
+            # Check dispute statuses
+            try:
+                cursor.execute("SELECT status, COUNT(*) FROM disputes_dispute GROUP BY status")
+                enum_checks['dispute_statuses'] = dict(cursor.fetchall())
+            except:
+                enum_checks['dispute_statuses'] = 'Table not found'
+        
+        return Response({
+            'debug_info': 'RAW DATABASE COUNTS',
+            'raw_user_count': user_count,
+            'raw_active_users': active_users,
+            'user_details': [
+                {'id': u[0], 'email': u[1], 'is_active': u[2], 'created': str(u[3])} 
+                for u in users[:10]  # First 10 users
+            ],
+            'table_counts': tables_info,
+            'enum_value_counts': enum_checks,
+            'django_orm_count': User.objects.count(),
+            'connection_info': {
+                'database': connection.settings_dict.get('NAME', 'Unknown'),
+                'host': connection.settings_dict.get('HOST', 'Unknown'),
+            }
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        logger.error(f"Debug database error: {str(e)}")
+        return Response({
+            'error': 'Debug query failed',
+            'details': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([])
 def disputes_admin(request):
     """
     Admin disputes endpoint that was missing.
