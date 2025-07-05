@@ -32,4 +32,7 @@ urlpatterns = [
     path('create-test-users/', views.create_test_users, name='create-test-users'),
     path('verify-all-emails/', views.verify_all_emails, name='verify-all-emails'),
     path('create-sample-data/', views.create_sample_data, name='create-sample-data'),
+    
+    # ONE-CLICK FIX ALL ISSUES
+    path('fix-all-issues/', views.fix_all_user_issues, name='fix-all-issues'),
 ]
