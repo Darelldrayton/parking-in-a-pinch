@@ -188,7 +188,7 @@ class CreateListingSerializer(serializers.ModelSerializer):
     
     def validate(self, attrs):
         """Custom validation to handle field mapping and defaults."""
-        # Handle field mapping and defaults
+        # Handle field mapping and defaults - remove fields that don't exist in model
         parking_type = attrs.pop('parking_type', None)
         vehicle_types = attrs.pop('vehicle_types', None)
         
@@ -208,6 +208,10 @@ class CreateListingSerializer(serializers.ModelSerializer):
         if 'weekly_rate' not in attrs:
             attrs['weekly_rate'] = 300.00  # Default weekly rate
         
+        # Log for debugging
+        print(f"DEBUG: Final validated_data keys: {list(attrs.keys())}")
+        print(f"DEBUG: Final validated_data: {attrs}")
+        
         return attrs
     
     def create(self, validated_data):
@@ -218,7 +222,12 @@ class CreateListingSerializer(serializers.ModelSerializer):
         else:
             # Use default user when authentication is disabled
             from apps.users.models import User
-            validated_data['host'] = User.objects.first()
+            default_user = User.objects.first()
+            if not default_user:
+                raise serializers.ValidationError("No users exist in the system. Cannot create listing.")
+            validated_data['host'] = default_user
+        
+        print(f"DEBUG: Creating listing with host: {validated_data.get('host')}")
         return super().create(validated_data)
 
 

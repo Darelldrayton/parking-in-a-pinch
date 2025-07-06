@@ -83,6 +83,10 @@ class ParkingListingViewSet(viewsets.ModelViewSet):
             # Use default user when authentication is disabled
             from apps.users.models import User
             host = User.objects.first()
+            if not host:
+                from rest_framework.exceptions import ValidationError
+                raise ValidationError("No users exist in the system. Cannot create listing.")
+        print(f"DEBUG: perform_create with host: {host}")
         serializer.save(host=host)
     
     def perform_update(self, serializer):
