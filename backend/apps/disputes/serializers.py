@@ -62,6 +62,12 @@ class DisputeSerializer(serializers.ModelSerializer):
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     priority_display = serializers.CharField(source='get_priority_display', read_only=True)
     
+    # Admin-friendly aliases
+    filed_by = serializers.IntegerField(source='complainant.id', read_only=True)
+    filed_by_username = serializers.CharField(source='complainant.username', read_only=True)
+    filed_by_email = serializers.CharField(source='complainant.email', read_only=True)
+    filed_at = serializers.DateTimeField(source='created_at', read_only=True)
+    
     class Meta:
         model = Dispute
         fields = [
@@ -71,7 +77,8 @@ class DisputeSerializer(serializers.ModelSerializer):
             'status', 'status_display', 'priority', 'priority_display', 'disputed_amount',
             'refund_requested', 'refund_amount', 'assigned_to', 'assigned_to_name',
             'admin_notes', 'resolution', 'created_at', 'updated_at', 'resolved_at',
-            'messages', 'attachments', 'is_open', 'is_resolved'
+            'messages', 'attachments', 'is_open', 'is_resolved',
+            'filed_by', 'filed_by_username', 'filed_by_email', 'filed_at'
         ]
         read_only_fields = [
             'id', 'dispute_id', 'complainant', 'created_at', 'updated_at', 

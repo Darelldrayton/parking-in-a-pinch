@@ -92,6 +92,50 @@ class DisputeViewSet(viewsets.ModelViewSet):
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=False, methods=['get'], url_path='admin/all')
+    def admin_all_disputes(self, request):
+        """Get all disputes for admin review"""
+        # Return all disputes since auth is disabled for admin dashboard compatibility
+        disputes = Dispute.objects.all().select_related(
+            'complainant', 'respondent', 'booking', 'assigned_to'
+        ).prefetch_related(
+            'messages__sender', 'attachments__uploaded_by'
+        ).order_by('-created_at')
+        
+        serializer = self.get_serializer(disputes, many=True)
+        return Response({
+            'count': disputes.count(),
+            'results': serializer.data
+        })
+    
+    @action(detail=True, methods=['post'], url_path='resolve')
+    def resolve_dispute(self, request, pk=None):
+        """Resolve a dispute with admin decision"""
+        dispute = self.get_object()
+        
+        decision = request.data.get('decision')  # 'accepted' or 'rejected'
+        resolution_notes = request.data.get('resolution_notes', '')
+        
+        if decision not in ['accepted', 'rejected']:
+            return Response(
+                {'error': 'Decision must be either "accepted" or "rejected"'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Map decisions to status
+        if decision == 'accepted':
+            dispute.status = 'resolved'
+        else:
+            dispute.status = 'closed'
+            
+        dispute.admin_notes = resolution_notes
+        dispute.resolution = f"Decision: {decision}. Notes: {resolution_notes}"
+        dispute.resolved_at = timezone.now()
+        dispute.save()
+        
+        serializer = self.get_serializer(dispute)
+        return Response(serializer.data)
 
 
 class AdminDisputeViewSet(viewsets.ModelViewSet):
