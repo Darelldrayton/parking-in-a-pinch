@@ -2,6 +2,8 @@
 URL patterns for payments app.
 """
 from django.urls import path, include
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.routers import DefaultRouter
 from .views import (
     PaymentMethodViewSet,
@@ -19,6 +21,29 @@ from .admin_dashboard import refund_dashboard
 
 app_name = 'payments'
 
+@csrf_exempt
+def admin_refund_stats(request):
+    """Refund stats endpoint that frontend expects"""
+    try:
+        from .models import RefundRequest
+        from decimal import Decimal
+        
+        stats = {
+            'pending_requests': RefundRequest.objects.filter(status=RefundRequest.RequestStatus.PENDING).count(),
+            'total_requests': RefundRequest.objects.count(),
+            'approved_requests': RefundRequest.objects.filter(status=RefundRequest.RequestStatus.APPROVED).count(),
+            'rejected_requests': RefundRequest.objects.filter(status=RefundRequest.RequestStatus.REJECTED).count(),
+            'total_requested_amount': float(sum(
+                refund.requested_amount for refund in RefundRequest.objects.filter(status=RefundRequest.RequestStatus.PENDING)
+                if refund.requested_amount
+            ) or Decimal('0.00')),
+        }
+        
+        return JsonResponse(stats)
+        
+    except Exception as e:
+        return JsonResponse({'error': f'Refund stats error: {str(e)}'}, status=500)
+
 # Router for ViewSets
 router = DefaultRouter()
 router.register(r'payment-methods', PaymentMethodViewSet, basename='payment-methods')
@@ -29,6 +54,8 @@ router.register(r'payouts', PayoutViewSet, basename='payouts')
 router.register(r'admin/refund-requests', RefundRequestViewSet, basename='admin-refund-requests')
 
 urlpatterns = [
+    # Stats endpoint that frontend expects as fallback
+    path('admin/refund-requests/stats/', admin_refund_stats, name='admin-refund-stats'),
     # Include router URLs
     path('', include(router.urls)),
     

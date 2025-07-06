@@ -185,7 +185,53 @@ def pure_django_test(request):
     except Exception as e:
         return JsonResponse({'error': f'Pure Django test error: {str(e)}'}, status=500)
 
+@csrf_exempt
+def admin_users_stats(request):
+    """Stats endpoint that frontend expects"""
+    from django.contrib.auth import get_user_model
+    from django.utils import timezone
+    from datetime import timedelta
+    
+    try:
+        User = get_user_model()
+        now = timezone.now()
+        one_week_ago = now - timedelta(days=7)
+        one_month_ago = now - timedelta(days=30)
+        
+        stats = {
+            'total_users': User.objects.count(),
+            'active_users': User.objects.filter(is_active=True).count(),
+            'verified_users': User.objects.filter(is_email_verified=True).count(),
+            'recent_signups': User.objects.filter(created_at__gte=one_week_ago).count(),
+            'monthly_signups': User.objects.filter(created_at__gte=one_month_ago).count(),
+        }
+        
+        return JsonResponse(stats)
+        
+    except Exception as e:
+        return JsonResponse({'error': f'User stats error: {str(e)}'}, status=500)
+
+@csrf_exempt
+def admin_verification_stats(request):
+    """Verification stats endpoint that frontend expects"""
+    try:
+        from .models import VerificationRequest
+        
+        stats = {
+            'pending_requests': VerificationRequest.objects.filter(status=VerificationRequest.VerificationStatus.PENDING).count(),
+            'total_requests': VerificationRequest.objects.count(),
+            'approved_requests': VerificationRequest.objects.filter(status=VerificationRequest.VerificationStatus.APPROVED).count(),
+        }
+        
+        return JsonResponse(stats)
+        
+    except Exception as e:
+        return JsonResponse({'error': f'Verification stats error: {str(e)}'}, status=500)
+
 urlpatterns = [
+    # Stats endpoints that frontend expects as fallbacks
+    path('admin/users/stats/', admin_users_stats, name='admin-users-stats'),
+    path('admin/verification-requests/stats/', admin_verification_stats, name='admin-verification-stats'),
     # Pure Django test endpoint (no DRF decorators)
     path('pure-test/', pure_django_test, name='pure-test'),
     # Admin dashboard bypass endpoint

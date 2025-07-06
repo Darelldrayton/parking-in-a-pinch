@@ -2,6 +2,8 @@
 URLs for parking listings.
 """
 from django.urls import path, include
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.routers import DefaultRouter
 from rest_framework_nested import routers
 from .views import ParkingListingViewSet, ListingImageViewSet, MyListingsView
@@ -9,12 +11,39 @@ from .admin_views import AdminListingViewSet
 
 app_name = 'listings'
 
+@csrf_exempt
+def admin_listings_stats(request):
+    """Listings stats endpoint that frontend expects"""
+    try:
+        from .models import ParkingListing
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        now = timezone.now()
+        one_week_ago = now - timedelta(days=7)
+        
+        stats = {
+            'total_listings': ParkingListing.objects.count(),
+            'pending_listings': ParkingListing.objects.filter(approval_status=ParkingListing.ApprovalStatus.PENDING).count(),
+            'approved_listings': ParkingListing.objects.filter(approval_status=ParkingListing.ApprovalStatus.APPROVED).count(),
+            'rejected_listings': ParkingListing.objects.filter(approval_status=ParkingListing.ApprovalStatus.REJECTED).count(),
+            'recent_listings': ParkingListing.objects.filter(created_at__gte=one_week_ago).count(),
+            'active_listings': ParkingListing.objects.filter(is_active=True).count(),
+        }
+        
+        return JsonResponse(stats)
+        
+    except Exception as e:
+        return JsonResponse({'error': f'Listings stats error: {str(e)}'}, status=500)
+
 # Admin router
 admin_router = DefaultRouter()
 admin_router.register(r'', AdminListingViewSet, basename='admin-listings')
 
 # Manual URL patterns for the viewset to avoid API root conflicts
 urlpatterns = [
+    # Stats endpoint that frontend expects as fallback
+    path('admin/stats/', admin_listings_stats, name='admin-listings-stats'),
     # Admin endpoints
     path('admin/', include(admin_router.urls)),
     
