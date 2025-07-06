@@ -119,6 +119,9 @@ class ParkingListingViewSet(viewsets.ModelViewSet):
             # Use default user when authentication is disabled
             from apps.users.models import User
             host = User.objects.first()
+            if not host:
+                # No users exist, return empty result
+                return Response({'results': [], 'count': 0})
         queryset = ParkingListing.objects.filter(host=host).order_by('-created_at')
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -263,4 +266,8 @@ class MyListingsView(generics.ListAPIView):
             # Use default user when authentication is disabled
             from apps.users.models import User
             default_user = User.objects.first()
-            return ParkingListing.objects.filter(host=default_user)
+            if default_user:
+                return ParkingListing.objects.filter(host=default_user)
+            else:
+                # No users exist, return empty queryset
+                return ParkingListing.objects.none()
