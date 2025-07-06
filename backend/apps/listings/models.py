@@ -21,7 +21,6 @@ class ParkingListing(models.Model):
     
     class SpaceType(models.TextChoices):
         GARAGE = 'garage', _('Garage')
-        STREET = 'street', _('Street parking')
         LOT = 'lot', _('Parking lot')
         COVERED = 'covered', _('Covered space')
         DRIVEWAY = 'driveway', _('Driveway')

@@ -208,27 +208,29 @@ class CreateListingSerializer(serializers.ModelSerializer):
         if 'weekly_rate' not in attrs:
             attrs['weekly_rate'] = 300.00  # Default weekly rate
         
-        # Log for debugging
-        print(f"DEBUG: Final validated_data keys: {list(attrs.keys())}")
-        print(f"DEBUG: Final validated_data: {attrs}")
-        
         return attrs
     
     def create(self, validated_data):
         """Create a new parking listing with the current user as host."""
-        # Handle case where authentication is disabled
-        if self.context['request'].user.is_authenticated:
-            validated_data['host'] = self.context['request'].user
-        else:
-            # Use default user when authentication is disabled
-            from apps.users.models import User
-            default_user = User.objects.first()
-            if not default_user:
-                raise serializers.ValidationError("No users exist in the system. Cannot create listing.")
-            validated_data['host'] = default_user
-        
-        print(f"DEBUG: Creating listing with host: {validated_data.get('host')}")
-        return super().create(validated_data)
+        try:
+            # Handle case where authentication is disabled
+            if self.context['request'].user.is_authenticated:
+                validated_data['host'] = self.context['request'].user
+            else:
+                # Use default user when authentication is disabled
+                from apps.users.models import User
+                default_user = User.objects.first()
+                if not default_user:
+                    raise serializers.ValidationError("No users exist in the system. Cannot create listing.")
+                validated_data['host'] = default_user
+            
+            return super().create(validated_data)
+        except Exception as e:
+            import traceback
+            print(f"ERROR in serializer create: {str(e)}")
+            print(f"TRACEBACK: {traceback.format_exc()}")
+            print(f"validated_data keys: {list(validated_data.keys())}")
+            raise
 
 
 class UpdateListingSerializer(serializers.ModelSerializer):

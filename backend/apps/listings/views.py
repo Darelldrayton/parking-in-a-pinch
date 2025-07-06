@@ -76,18 +76,23 @@ class ParkingListingViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         """Create listing with current user as host."""
-        # Handle case where authentication is disabled
-        if self.request.user.is_authenticated:
-            host = self.request.user
-        else:
-            # Use default user when authentication is disabled
-            from apps.users.models import User
-            host = User.objects.first()
-            if not host:
-                from rest_framework.exceptions import ValidationError
-                raise ValidationError("No users exist in the system. Cannot create listing.")
-        print(f"DEBUG: perform_create with host: {host}")
-        serializer.save(host=host)
+        try:
+            # Handle case where authentication is disabled
+            if self.request.user.is_authenticated:
+                host = self.request.user
+            else:
+                # Use default user when authentication is disabled
+                from apps.users.models import User
+                host = User.objects.first()
+                if not host:
+                    from rest_framework.exceptions import ValidationError
+                    raise ValidationError("No users exist in the system. Cannot create listing.")
+            serializer.save(host=host)
+        except Exception as e:
+            import traceback
+            print(f"ERROR in perform_create: {str(e)}")
+            print(f"TRACEBACK: {traceback.format_exc()}")
+            raise
     
     def perform_update(self, serializer):
         """Update listing only if user is the host."""
