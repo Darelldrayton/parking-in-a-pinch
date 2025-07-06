@@ -54,20 +54,13 @@ class DisputeViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         # Handle authentication-disabled state
-        from django.contrib.auth.models import AnonymousUser
         from apps.users.models import User
         
-        print(f"DEBUG: user type: {type(self.request.user)}")
-        print(f"DEBUG: is_authenticated: {self.request.user.is_authenticated}")
-        print(f"DEBUG: is AnonymousUser: {isinstance(self.request.user, AnonymousUser)}")
-        
-        if self.request.user.is_authenticated and not isinstance(self.request.user, AnonymousUser):
+        if self.request.user.is_authenticated:
             complainant = self.request.user
-            print(f"DEBUG: Using authenticated user: {complainant}")
         else:
             # Use first user as fallback when authentication is disabled
             complainant = User.objects.first()
-            print(f"DEBUG: Using fallback user: {complainant}")
             if not complainant:
                 raise ValidationError("No users exist in the system.")
         serializer.save(complainant=complainant)

@@ -119,8 +119,8 @@ class CreateDisputeSerializer(serializers.ModelSerializer):
         booking_id = validated_data.pop('booking_id', None)
         respondent_email = validated_data.pop('respondent_email', None)
         
-        # Set complainant to current user
-        validated_data['complainant'] = self.context['request'].user
+        # Note: complainant will be set in the view's perform_create method
+        # to handle authentication-disabled state
         
         # Find booking if provided
         if booking_id:
