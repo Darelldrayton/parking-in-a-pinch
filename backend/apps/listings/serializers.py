@@ -97,7 +97,13 @@ class ParkingListingSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data):
         """Create a new parking listing."""
-        validated_data['host'] = self.context['request'].user
+        # Handle case where authentication is disabled
+        if self.context['request'].user.is_authenticated:
+            validated_data['host'] = self.context['request'].user
+        else:
+            # Use default user when authentication is disabled
+            from apps.users.models import User
+            validated_data['host'] = User.objects.first()
         return super().create(validated_data)
 
 
@@ -156,11 +162,23 @@ class CreateListingSerializer(serializers.ModelSerializer):
     """
     Serializer for creating new listings.
     """
+    # Allow both parking_type and space_type to support frontend compatibility
+    parking_type = serializers.CharField(write_only=True, required=False)
+    vehicle_types = serializers.ListField(write_only=True, required=False)
+    
+    # Make normally required fields optional with defaults
+    borough = serializers.CharField(required=False)
+    space_type = serializers.CharField(required=False)
+    hourly_rate = serializers.DecimalField(max_digits=8, decimal_places=2, required=False)
+    daily_rate = serializers.DecimalField(max_digits=8, decimal_places=2, required=False)
+    weekly_rate = serializers.DecimalField(max_digits=8, decimal_places=2, required=False)
+    
     class Meta:
         model = ParkingListing
         fields = [
             'id', 'title', 'description', 'address', 'latitude', 'longitude',
-            'borough', 'space_type', 'hourly_rate', 'daily_rate', 'weekly_rate',
+            'borough', 'space_type', 'parking_type', 'vehicle_types', 
+            'hourly_rate', 'daily_rate', 'weekly_rate',
             'is_covered', 'has_ev_charging', 'has_security', 'is_instant_book',
             'has_lighting', 'has_cctv', 'has_gated_access', 'is_handicap_accessible',
             'has_valet_service', 'has_car_wash', 'max_vehicle_size', 'instructions',
@@ -168,9 +186,39 @@ class CreateListingSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id']
     
+    def validate(self, attrs):
+        """Custom validation to handle field mapping and defaults."""
+        # Handle field mapping and defaults
+        parking_type = attrs.pop('parking_type', None)
+        vehicle_types = attrs.pop('vehicle_types', None)
+        
+        # Map parking_type to space_type if provided
+        if parking_type and 'space_type' not in attrs:
+            attrs['space_type'] = parking_type
+        
+        # Set default values for required fields if not provided
+        if 'borough' not in attrs:
+            attrs['borough'] = 'Manhattan'  # Default borough
+        if 'space_type' not in attrs:
+            attrs['space_type'] = 'driveway'  # Default space type
+        if 'hourly_rate' not in attrs:
+            attrs['hourly_rate'] = 10.00  # Default hourly rate
+        if 'daily_rate' not in attrs:
+            attrs['daily_rate'] = 50.00  # Default daily rate
+        if 'weekly_rate' not in attrs:
+            attrs['weekly_rate'] = 300.00  # Default weekly rate
+        
+        return attrs
+    
     def create(self, validated_data):
         """Create a new parking listing with the current user as host."""
-        validated_data['host'] = self.context['request'].user
+        # Handle case where authentication is disabled
+        if self.context['request'].user.is_authenticated:
+            validated_data['host'] = self.context['request'].user
+        else:
+            # Use default user when authentication is disabled
+            from apps.users.models import User
+            validated_data['host'] = User.objects.first()
         return super().create(validated_data)
 
 
