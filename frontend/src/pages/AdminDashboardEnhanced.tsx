@@ -610,7 +610,7 @@ const AdminDashboardEnhanced: React.FC = () => {
         host_email: listing.host?.email || 'N/A',
         borough: listing.borough || 'N/A',
         space_type: listing.space_type || 'N/A',
-        hourly_rate: listing.price_per_hour || '0.00',
+        hourly_rate: listing.hourly_rate || '0.00',
         images_count: listing.images?.length || 0,
         can_be_reviewed: true
       }));
@@ -633,7 +633,7 @@ const AdminDashboardEnhanced: React.FC = () => {
         return;
       }
 
-      const response = await fetch('http://localhost:8000/api/v1/users/', {
+      const response = await fetch('/api/v1/users/admin/users/', {
         headers: { 
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -3130,7 +3130,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                         variant="outlined"
                         size="small"
                         startIcon={<OpenInNew />}
-                        onClick={() => window.open(`http://localhost:8000${selectedItem.admin_url}`, '_blank')}
+                        onClick={() => window.open(`${selectedItem.admin_url}`, '_blank')}
                       >
                         Edit in Django Admin
                       </Button>

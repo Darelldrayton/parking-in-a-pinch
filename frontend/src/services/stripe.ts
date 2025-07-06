@@ -27,12 +27,12 @@ export interface PaymentIntent {
   status: string;
 }
 
-// Get API base URL from environment or use relative path
+// Get API base URL - always use relative path for production compatibility
 const getApiUrl = () => {
   if (import.meta.env.VITE_API_BASE_URL) {
     return `${import.meta.env.VITE_API_BASE_URL}/${import.meta.env.VITE_API_VERSION || 'v1'}`;
   }
-  return import.meta.env.PROD ? '/api/v1' : 'http://localhost:8000/api/v1';
+  return '/api/v1';  // Always use relative path - works in both dev and production
 };
 
 export const createPaymentIntent = async (paymentData: PaymentData): Promise<PaymentIntent> => {

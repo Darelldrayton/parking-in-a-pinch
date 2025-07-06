@@ -72,10 +72,10 @@ const DigitalWalletPayment: React.FC<DigitalWalletPaymentProps> = ({
       setError(null);
 
       try {
-        // Get API base URL
+        // Get API base URL - always use relative path for production compatibility
         const apiUrl = import.meta.env.VITE_API_BASE_URL 
           ? `${import.meta.env.VITE_API_BASE_URL}/${import.meta.env.VITE_API_VERSION || 'v1'}`
-          : import.meta.env.PROD ? '/api/v1' : 'http://localhost:8000/api/v1';
+          : '/api/v1';  // Always use relative path - works in both dev and production
 
         // Create payment intent on backend
         const response = await fetch(`${apiUrl}/payments/v2/create-payment-intent/`, {
