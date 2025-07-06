@@ -289,8 +289,8 @@ def dashboard_stats(request):
             dashboard_stats['pending_refunds'] = RefundRequest.objects.filter(status=RefundRequest.RequestStatus.PENDING).count()
             dashboard_stats['total_refunds'] = RefundRequest.objects.count()
             total_refund_amount = sum(
-                refund.amount for refund in RefundRequest.objects.filter(status=RefundRequest.RequestStatus.PENDING)
-                if refund.amount
+                refund.requested_amount for refund in RefundRequest.objects.filter(status=RefundRequest.RequestStatus.PENDING)
+                if refund.requested_amount
             )
             dashboard_stats['total_refund_amount'] = float(total_refund_amount) if total_refund_amount else 0.0
         except Exception as e:
