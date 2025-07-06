@@ -32,6 +32,10 @@ class BookingViewSet(viewsets.ModelViewSet):
         """Filter bookings based on user role"""
         user = self.request.user
         
+        # Handle unauthenticated users
+        if not user or not user.is_authenticated:
+            return Booking.objects.none()
+        
         # If user is a host, show bookings for their parking spaces
         if hasattr(user, 'parking_listings') and user.parking_listings.exists():
             host_bookings = Booking.objects.filter(parking_space__host=user)

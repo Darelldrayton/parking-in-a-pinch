@@ -33,6 +33,16 @@ def get_notifications(request):
         page = int(request.GET.get('page', 1))
         unread_only = request.GET.get('unread_only', 'false').lower() == 'true'
         
+        # Handle case where user is not authenticated
+        if not request.user or not request.user.is_authenticated:
+            return Response({
+                'notifications': [],
+                'total_count': 0,
+                'page': page,
+                'page_size': page_size,
+                'has_more': False
+            })
+        
         notifications = Notification.objects.filter(user=request.user)
         
         if unread_only:
@@ -112,6 +122,12 @@ def mark_all_read(request):
 def notification_preferences(request):
     """Get or update notification preferences"""
     try:
+        # Handle case where user is not authenticated
+        if not request.user or not request.user.is_authenticated:
+            return Response({
+                'error': 'Authentication required for notification preferences'
+            }, status=status.HTTP_401_UNAUTHORIZED)
+        
         prefs, created = NotificationPreference.objects.get_or_create(
             user=request.user
         )
@@ -383,14 +399,21 @@ def send_test_notification(request):
 def notification_stats(request):
     """Get notification statistics"""
     try:
-        from django.db.models import Count
+        from django.db.models import Count, Q
+        
+        # Handle case where user is not authenticated
+        if not request.user or not request.user.is_authenticated:
+            return Response({
+                'total_stats': {'total': 0, 'sent': 0, 'delivered': 0, 'read': 0, 'failed': 0},
+                'channel_breakdown': []
+            })
         
         stats = Notification.objects.filter(user=request.user).aggregate(
             total=Count('id'),
-            sent=Count('id', filter=models.Q(status='sent')),
-            delivered=Count('id', filter=models.Q(status='delivered')),
-            read=Count('id', filter=models.Q(status='read')),
-            failed=Count('id', filter=models.Q(status='failed'))
+            sent=Count('id', filter=Q(status='sent')),
+            delivered=Count('id', filter=Q(status='delivered')),
+            read=Count('id', filter=Q(status='read')),
+            failed=Count('id', filter=Q(status='failed'))
         )
         
         # Channel breakdown

@@ -149,7 +149,7 @@ def dashboard_stats(request):
             raw_counts['listings_error'] = str(e)
         
         # Debug: Log actual counts
-        logger.info(f"DEBUG LISTING COUNTS: ORM total={total_listings}, pending={pending_listings}, SQL={raw_counts.get('total_listings_sql', 'N/A')}")
+        logger.info(f"DEBUG LISTING COUNTS: ORM total={total_listings}, pending={pending_listings_orm}, SQL={raw_counts.get('total_listings_sql', 'N/A')}")
         
         # Dispute statistics - COMPREHENSIVE: Count ALL disputes with multiple methods
         try:
@@ -758,11 +758,13 @@ def fix_all_user_issues(request):
                     
                     booking = Booking.objects.create(
                         user=user,
-                        listing=listing,
+                        parking_space=listing,
                         start_time=start_time,
                         end_time=end_time,
                         total_amount=45.00 + (i * 15),
-                        status=[BookingStatus.PENDING, BookingStatus.CONFIRMED, BookingStatus.COMPLETED][i]
+                        status=[BookingStatus.PENDING, BookingStatus.CONFIRMED, BookingStatus.COMPLETED][i],
+                        hourly_rate=15.00,
+                        vehicle_license_plate='TEST123'
                     )
                     bookings_created.append(f"Booking #{booking.id}")
                 
