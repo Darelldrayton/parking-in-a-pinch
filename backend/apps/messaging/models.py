@@ -160,14 +160,16 @@ class Conversation(models.Model):
     
     def get_unread_count(self, user):
         """Get the number of unread messages for a specific user."""
-        return self.messages.filter(
-            read_by__isnull=True
-        ).exclude(sender=user).count()
+        return self.messages.exclude(
+            sender=user
+        ).exclude(
+            id__in=MessageReadStatus.objects.filter(user=user).values_list('message_id', flat=True)
+        ).count()
     
     def mark_as_read(self, user):
         """Mark all messages in conversation as read by user."""
         unread_messages = self.messages.exclude(sender=user).exclude(
-            read_by__user=user
+            id__in=MessageReadStatus.objects.filter(user=user).values_list('message_id', flat=True)
         )
         for message in unread_messages:
             MessageReadStatus.objects.get_or_create(
