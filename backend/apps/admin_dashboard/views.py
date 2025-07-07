@@ -212,8 +212,8 @@ def dashboard_stats(request):
         from django.db import connection
         db_info = {
             'engine': connection.vendor,
-            'database_name': connection.settings_dict.get('NAME', 'Unknown'),
-            'host': connection.settings_dict.get('HOST', 'localhost'),
+            'database_name': str(connection.settings_dict.get('NAME', 'Unknown')),
+            'host': str(connection.settings_dict.get('HOST', 'localhost')),
         }
         
         dashboard_stats = {
