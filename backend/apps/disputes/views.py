@@ -30,7 +30,11 @@ class DisputeViewSet(viewsets.ModelViewSet):
         from django.contrib.auth.models import AnonymousUser
         from apps.users.models import User
         
-        if self.request.user.is_authenticated and not isinstance(self.request.user, AnonymousUser):
+        # Check if we have a valid authenticated user
+        if (hasattr(self.request, 'user') and 
+            self.request.user.is_authenticated and 
+            not isinstance(self.request.user, AnonymousUser) and
+            hasattr(self.request.user, 'id')):
             user = self.request.user
         else:
             # Use first user as fallback when authentication is disabled
@@ -57,7 +61,11 @@ class DisputeViewSet(viewsets.ModelViewSet):
         from django.contrib.auth.models import AnonymousUser
         from apps.users.models import User
         
-        if self.request.user.is_authenticated and not isinstance(self.request.user, AnonymousUser):
+        # Check if we have a valid authenticated user
+        if (hasattr(self.request, 'user') and 
+            self.request.user.is_authenticated and 
+            not isinstance(self.request.user, AnonymousUser) and
+            hasattr(self.request.user, 'id')):
             complainant = self.request.user
         else:
             # Use first user as fallback when authentication is disabled
@@ -109,7 +117,11 @@ class DisputeViewSet(viewsets.ModelViewSet):
         from django.contrib.auth.models import AnonymousUser
         from apps.users.models import User
         
-        if request.user.is_authenticated and not isinstance(request.user, AnonymousUser):
+        # Check if we have a valid authenticated user
+        if (hasattr(request, 'user') and 
+            request.user.is_authenticated and 
+            not isinstance(request.user, AnonymousUser) and
+            hasattr(request.user, 'id')):
             sender = request.user
         else:
             sender = User.objects.first()
@@ -137,7 +149,11 @@ class DisputeViewSet(viewsets.ModelViewSet):
         from django.contrib.auth.models import AnonymousUser
         from apps.users.models import User
         
-        if request.user.is_authenticated and not isinstance(request.user, AnonymousUser):
+        # Check if we have a valid authenticated user
+        if (hasattr(request, 'user') and 
+            request.user.is_authenticated and 
+            not isinstance(request.user, AnonymousUser) and
+            hasattr(request.user, 'id')):
             uploader = request.user
         else:
             uploader = User.objects.first()
@@ -220,8 +236,14 @@ class AdminDisputeViewSet(viewsets.ModelViewSet):
         dispute = self.get_object()
         
         # Handle authentication-disabled state
+        from django.contrib.auth.models import AnonymousUser
         from apps.users.models import User
-        if request.user.is_authenticated:
+        
+        # Check if we have a valid authenticated user
+        if (hasattr(request, 'user') and 
+            request.user.is_authenticated and 
+            not isinstance(request.user, AnonymousUser) and
+            hasattr(request.user, 'id')):
             admin_user = request.user
         else:
             admin_user = User.objects.first()
@@ -258,8 +280,14 @@ class AdminDisputeViewSet(viewsets.ModelViewSet):
             )
         
         # Handle authentication-disabled state
+        from django.contrib.auth.models import AnonymousUser
         from apps.users.models import User
-        if request.user.is_authenticated:
+        
+        # Check if we have a valid authenticated user
+        if (hasattr(request, 'user') and 
+            request.user.is_authenticated and 
+            not isinstance(request.user, AnonymousUser) and
+            hasattr(request.user, 'id')):
             admin_user = request.user
         else:
             admin_user = User.objects.first()
@@ -304,7 +332,12 @@ class AdminDisputeViewSet(viewsets.ModelViewSet):
         # Handle authentication-disabled state
         from django.contrib.auth.models import AnonymousUser
         from apps.users.models import User
-        if request.user.is_authenticated and not isinstance(request.user, AnonymousUser):
+        
+        # Check if we have a valid authenticated user
+        if (hasattr(request, 'user') and 
+            request.user.is_authenticated and 
+            not isinstance(request.user, AnonymousUser) and
+            hasattr(request.user, 'id')):
             admin_user = request.user
         else:
             admin_user = User.objects.first()
@@ -381,8 +414,14 @@ class AdminDisputeViewSet(viewsets.ModelViewSet):
             )
         
         # Handle authentication-disabled state
+        from django.contrib.auth.models import AnonymousUser
         from apps.users.models import User
-        if request.user.is_authenticated:
+        
+        # Check if we have a valid authenticated user
+        if (hasattr(request, 'user') and 
+            request.user.is_authenticated and 
+            not isinstance(request.user, AnonymousUser) and
+            hasattr(request.user, 'id')):
             admin_user = request.user
         else:
             admin_user = User.objects.first()
