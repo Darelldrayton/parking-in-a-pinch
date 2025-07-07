@@ -362,11 +362,17 @@ class ConversationViewSet(viewsets.ModelViewSet):
     def unread_count(self, request):
         """Get total unread message count across all conversations."""
         # Handle authentication-disabled state
-        if request.user.is_authenticated:
+        from django.contrib.auth.models import AnonymousUser
+        from apps.users.models import User
+        
+        # Use the same robust authentication check as other endpoints
+        if (hasattr(request, 'user') and 
+            request.user.is_authenticated and 
+            not isinstance(request.user, AnonymousUser) and
+            hasattr(request.user, 'id')):
             user = request.user
         else:
-            # Return zero count for unauthenticated users
-            from apps.users.models import User
+            # Use first user as fallback when authentication is disabled
             user = User.objects.first()
             if not user:
                 return Response({
