@@ -68,6 +68,10 @@ class DisputeSerializer(serializers.ModelSerializer):
     filed_by_email = serializers.CharField(source='complainant.email', read_only=True)
     filed_at = serializers.DateTimeField(source='created_at', read_only=True)
     
+    # Conversation integration for in-app messaging
+    conversation_id = serializers.CharField(source='conversation.conversation_id', read_only=True)
+    has_conversation = serializers.SerializerMethodField()
+    
     class Meta:
         model = Dispute
         fields = [
@@ -78,7 +82,8 @@ class DisputeSerializer(serializers.ModelSerializer):
             'refund_requested', 'refund_amount', 'assigned_to', 'assigned_to_name',
             'admin_notes', 'resolution', 'created_at', 'updated_at', 'resolved_at',
             'messages', 'attachments', 'is_open', 'is_resolved',
-            'filed_by', 'filed_by_username', 'filed_by_email', 'filed_at'
+            'filed_by', 'filed_by_username', 'filed_by_email', 'filed_at',
+            'conversation_id', 'has_conversation'
         ]
         read_only_fields = [
             'id', 'dispute_id', 'complainant', 'created_at', 'updated_at', 
@@ -97,6 +102,10 @@ class DisputeSerializer(serializers.ModelSerializer):
                 'parking_space_title': obj.booking.parking_space.title if obj.booking.parking_space else None
             }
         return None
+    
+    def get_has_conversation(self, obj):
+        """Check if dispute has an associated conversation for in-app messaging."""
+        return obj.conversation is not None
 
 
 class CreateDisputeSerializer(serializers.ModelSerializer):

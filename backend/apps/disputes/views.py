@@ -64,7 +64,40 @@ class DisputeViewSet(viewsets.ModelViewSet):
             complainant = User.objects.first()
             if not complainant:
                 raise ValidationError("No users exist in the system.")
-        serializer.save(complainant=complainant)
+        
+        # Create the dispute
+        dispute = serializer.save(complainant=complainant)
+        
+        # Automatically create conversation for in-app messaging
+        conversation = dispute.get_or_create_conversation()
+        
+        # Send initial message to the conversation
+        from apps.messaging.models import Message
+        initial_message = Message.objects.create(
+            conversation=conversation,
+            sender=complainant,
+            content=f"Dispute filed: {dispute.description}"
+        )
+        
+        # Send notification to admins about new dispute
+        from apps.notifications.services import NotificationService
+        notification_service = NotificationService()
+        
+        # Get admin users (you may want to adjust this query based on your admin structure)
+        admin_users = User.objects.filter(is_staff=True)
+        for admin in admin_users:
+            notification_service.send_notification(
+                user=admin,
+                template_type='new_dispute',
+                context={
+                    'dispute_id': dispute.dispute_id,
+                    'user_name': complainant.get_full_name(),
+                    'dispute_type': dispute.get_dispute_type_display().lower(),
+                    'dispute_subject': dispute.subject,
+                    'conversation_id': str(conversation.conversation_id)
+                },
+                channels=['IN_APP', 'EMAIL']
+            )
     
     @action(detail=True, methods=['post'])
     def add_message(self, request, pk=None):
@@ -257,7 +290,7 @@ class AdminDisputeViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['post'])
     def add_admin_message(self, request, pk=None):
-        """Add an admin message to the dispute."""
+        """Add an admin message to the dispute using the in-app messaging system."""
         dispute = self.get_object()
         message_text = request.data.get('message')
         is_internal = request.data.get('is_internal', False)
@@ -269,8 +302,9 @@ class AdminDisputeViewSet(viewsets.ModelViewSet):
             )
         
         # Handle authentication-disabled state
+        from django.contrib.auth.models import AnonymousUser
         from apps.users.models import User
-        if request.user.is_authenticated:
+        if request.user.is_authenticated and not isinstance(request.user, AnonymousUser):
             admin_user = request.user
         else:
             admin_user = User.objects.first()
@@ -280,15 +314,57 @@ class AdminDisputeViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
         
-        message = DisputeMessage.objects.create(
-            dispute=dispute,
+        # Get or create conversation for this dispute
+        conversation = dispute.get_or_create_conversation()
+        
+        # Add admin to conversation if not already a participant
+        if admin_user not in conversation.participants.all():
+            conversation.participants.add(admin_user)
+        
+        # Create message in the main messaging system
+        from apps.messaging.models import Message
+        message = Message.objects.create(
+            conversation=conversation,
             sender=admin_user,
-            message=message_text,
-            is_internal=is_internal
+            content=message_text
         )
         
-        serializer = DisputeMessageSerializer(message)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # Send notification to users (if not internal)
+        if not is_internal:
+            from apps.notifications.services import NotificationService
+            notification_service = NotificationService()
+            
+            # Notify complainant and respondent (but not the admin who sent it)
+            recipients = [dispute.complainant]
+            if dispute.respondent and dispute.respondent != admin_user:
+                recipients.append(dispute.respondent)
+            
+            for recipient in recipients:
+                if recipient != admin_user:  # Don't notify the sender
+                    notification_service.send_notification(
+                        user=recipient,
+                        template_type='dispute_reply',
+                        context={
+                            'dispute_id': dispute.dispute_id,
+                            'dispute_subject': dispute.subject,
+                            'conversation_id': str(conversation.conversation_id),
+                            'message_id': message.id,
+                            'admin_name': admin_user.get_full_name()
+                        },
+                        channels=['IN_APP', 'EMAIL']
+                    )
+        
+        # Return message data in expected format
+        return Response({
+            'id': message.id,
+            'message': message.content,
+            'sender': admin_user.id,
+            'sender_name': admin_user.get_full_name(),
+            'sender_email': admin_user.email,
+            'is_internal': is_internal,
+            'created_at': message.created_at,
+            'conversation_id': str(conversation.conversation_id)
+        }, status=status.HTTP_201_CREATED)
     
     @action(detail=True, methods=['post'], url_path='resolve')
     def resolve_dispute(self, request, pk=None):

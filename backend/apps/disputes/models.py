@@ -82,6 +82,16 @@ class Dispute(models.Model):
         help_text=_('Related booking (if applicable)')
     )
     
+    # Link to messaging conversation for in-app inbox integration
+    conversation = models.ForeignKey(
+        'messaging.Conversation',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='disputes',
+        help_text=_('Associated conversation for dispute messages')
+    )
+    
     # Status and priority
     status = models.CharField(
         _('status'),
@@ -179,6 +189,37 @@ class Dispute(models.Model):
     @property
     def is_resolved(self):
         return self.status in [self.DisputeStatus.RESOLVED, self.DisputeStatus.CLOSED]
+    
+    def get_or_create_conversation(self):
+        """
+        Get or create a conversation for this dispute to integrate with the in-app messaging system.
+        """
+        if self.conversation:
+            return self.conversation
+            
+        from apps.messaging.models import Conversation, ConversationType
+        
+        # Create conversation with dispute context
+        conversation = Conversation.objects.create(
+            conversation_type=ConversationType.SUPPORT,
+            title=f"Dispute #{self.dispute_id}: {self.subject}",
+            booking=self.booking  # Link to booking if available
+        )
+        
+        # Add participants: complainant, respondent (if exists), and assigned admin (if exists)
+        participants = [self.complainant]
+        if self.respondent:
+            participants.append(self.respondent)
+        if self.assigned_to:
+            participants.append(self.assigned_to)
+            
+        conversation.participants.set(participants)
+        
+        # Link the conversation to this dispute
+        self.conversation = conversation
+        self.save(update_fields=['conversation'])
+        
+        return conversation
 
 
 class DisputeMessage(models.Model):
