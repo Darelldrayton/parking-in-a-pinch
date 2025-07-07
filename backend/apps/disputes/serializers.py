@@ -92,15 +92,18 @@ class DisputeSerializer(serializers.ModelSerializer):
     
     def get_booking_details(self, obj):
         if obj.booking:
-            return {
-                'id': obj.booking.id,
-                'booking_id': obj.booking.booking_id,
-                'start_time': obj.booking.start_time,
-                'end_time': obj.booking.end_time,
-                'total_amount': str(obj.booking.total_amount),
-                'status': obj.booking.status,
-                'parking_space_title': obj.booking.parking_space.title if obj.booking.parking_space else None
-            }
+            try:
+                return {
+                    'id': obj.booking.id,
+                    'booking_id': obj.booking.booking_id,
+                    'start_time': obj.booking.start_time,
+                    'end_time': obj.booking.end_time,
+                    'total_amount': str(obj.booking.total_amount) if hasattr(obj.booking, 'total_amount') else None,
+                    'status': obj.booking.status,
+                    'parking_space_title': obj.booking.parking_space.title if hasattr(obj.booking, 'parking_space') and obj.booking.parking_space else None
+                }
+            except Exception as e:
+                return {'error': str(e)}
         return None
     
     def get_has_conversation(self, obj):
@@ -170,12 +173,14 @@ class AdminDisputeSerializer(serializers.ModelSerializer):
     """
     complainant_name = serializers.CharField(source='complainant.get_full_name', read_only=True)
     complainant_email = serializers.CharField(source='complainant.email', read_only=True)
-    respondent_name = serializers.CharField(source='respondent.get_full_name', read_only=True)
-    respondent_email = serializers.CharField(source='respondent.email', read_only=True)
+    respondent_name = serializers.SerializerMethodField()
+    respondent_email = serializers.SerializerMethodField()
     booking_details = serializers.SerializerMethodField()
     dispute_type_display = serializers.CharField(source='get_dispute_type_display', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     priority_display = serializers.CharField(source='get_priority_display', read_only=True)
+    conversation_id = serializers.SerializerMethodField()
+    has_conversation = serializers.SerializerMethodField()
     
     class Meta:
         model = Dispute
@@ -185,22 +190,48 @@ class AdminDisputeSerializer(serializers.ModelSerializer):
             'dispute_type_display', 'subject', 'description', 'booking', 'booking_details',
             'status', 'status_display', 'priority', 'priority_display', 'disputed_amount',
             'refund_requested', 'refund_amount', 'assigned_to', 'admin_notes', 
-            'resolution', 'created_at', 'updated_at', 'resolved_at'
+            'resolution', 'created_at', 'updated_at', 'resolved_at',
+            'conversation_id', 'has_conversation'
         ]
         read_only_fields = ['id', 'dispute_id', 'complainant', 'created_at', 'updated_at']
     
+    def get_respondent_name(self, obj):
+        """Get respondent name safely."""
+        if obj.respondent:
+            return obj.respondent.get_full_name()
+        return None
+    
+    def get_respondent_email(self, obj):
+        """Get respondent email safely."""
+        if obj.respondent:
+            return obj.respondent.email
+        return None
+    
     def get_booking_details(self, obj):
         if obj.booking:
-            return {
-                'id': obj.booking.id,
-                'booking_id': obj.booking.booking_id,
-                'start_time': obj.booking.start_time,
-                'end_time': obj.booking.end_time,
-                'total_amount': str(obj.booking.total_amount),
-                'status': obj.booking.status,
-                'parking_space_title': obj.booking.parking_space.title if obj.booking.parking_space else None
-            }
+            try:
+                return {
+                    'id': obj.booking.id,
+                    'booking_id': obj.booking.booking_id,
+                    'start_time': obj.booking.start_time,
+                    'end_time': obj.booking.end_time,
+                    'total_amount': str(obj.booking.total_amount) if hasattr(obj.booking, 'total_amount') else None,
+                    'status': obj.booking.status,
+                    'parking_space_title': obj.booking.parking_space.title if hasattr(obj.booking, 'parking_space') and obj.booking.parking_space else None
+                }
+            except Exception as e:
+                return {'error': str(e)}
         return None
+    
+    def get_conversation_id(self, obj):
+        """Get conversation ID if exists."""
+        if hasattr(obj, 'conversation') and obj.conversation:
+            return str(obj.conversation.conversation_id)
+        return None
+    
+    def get_has_conversation(self, obj):
+        """Check if dispute has an associated conversation."""
+        return hasattr(obj, 'conversation') and obj.conversation is not None
     
     def get_can_be_resolved(self, obj):
         """Check if dispute can be resolved (is open or in review)."""
