@@ -156,14 +156,27 @@ class AdminDisputeViewSet(viewsets.ModelViewSet):
     def assign_to_me(self, request, pk=None):
         """Assign dispute to current admin user."""
         dispute = self.get_object()
-        dispute.assigned_to = request.user
+        
+        # Handle authentication-disabled state
+        from apps.users.models import User
+        if request.user.is_authenticated:
+            admin_user = request.user
+        else:
+            admin_user = User.objects.first()
+            if not admin_user:
+                return Response(
+                    {'error': 'No users available for assignment'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        dispute.assigned_to = admin_user
         dispute.save()
         
         # Add internal message
         DisputeMessage.objects.create(
             dispute=dispute,
-            sender=request.user,
-            message=f"Dispute assigned to {request.user.get_full_name()}",
+            sender=admin_user,
+            message=f"Dispute assigned to {admin_user.get_full_name()}",
             is_internal=True
         )
         
@@ -182,6 +195,18 @@ class AdminDisputeViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
+        # Handle authentication-disabled state
+        from apps.users.models import User
+        if request.user.is_authenticated:
+            admin_user = request.user
+        else:
+            admin_user = User.objects.first()
+            if not admin_user:
+                return Response(
+                    {'error': 'No users available for action'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
         old_status = dispute.status
         dispute.status = new_status
         
@@ -193,7 +218,7 @@ class AdminDisputeViewSet(viewsets.ModelViewSet):
         # Add internal message
         DisputeMessage.objects.create(
             dispute=dispute,
-            sender=request.user,
+            sender=admin_user,
             message=f"Status changed from {old_status} to {new_status}",
             is_internal=True
         )
@@ -214,15 +239,75 @@ class AdminDisputeViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
+        # Handle authentication-disabled state
+        from apps.users.models import User
+        if request.user.is_authenticated:
+            admin_user = request.user
+        else:
+            admin_user = User.objects.first()
+            if not admin_user:
+                return Response(
+                    {'error': 'No users available for action'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
         message = DisputeMessage.objects.create(
             dispute=dispute,
-            sender=request.user,
+            sender=admin_user,
             message=message_text,
             is_internal=is_internal
         )
         
         serializer = DisputeMessageSerializer(message)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    @action(detail=True, methods=['post'], url_path='resolve')
+    def resolve_dispute(self, request, pk=None):
+        """Resolve a dispute with admin decision (admin version)"""
+        dispute = self.get_object()
+        
+        decision = request.data.get('decision')  # 'accepted' or 'rejected'
+        resolution_notes = request.data.get('resolution_notes', '')
+        
+        if decision not in ['accepted', 'rejected']:
+            return Response(
+                {'error': 'Decision must be either "accepted" or "rejected"'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Handle authentication-disabled state
+        from apps.users.models import User
+        if request.user.is_authenticated:
+            admin_user = request.user
+        else:
+            admin_user = User.objects.first()
+            if not admin_user:
+                return Response(
+                    {'error': 'No users available for action'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        # Map decisions to status
+        if decision == 'accepted':
+            dispute.status = 'resolved'
+        else:
+            dispute.status = 'closed'
+            
+        dispute.admin_notes = resolution_notes
+        dispute.resolution = f"Decision: {decision}. Notes: {resolution_notes}"
+        dispute.resolved_at = timezone.now()
+        dispute.save()
+        
+        # Add internal message
+        DisputeMessage.objects.create(
+            dispute=dispute,
+            sender=admin_user,
+            message=f"Dispute {decision} by admin. Resolution: {resolution_notes}",
+            is_internal=True
+        )
+        
+        serializer = self.get_serializer(dispute)
+        return Response(serializer.data)
     
     @action(detail=False, methods=['get'])
     def stats(self, request):
