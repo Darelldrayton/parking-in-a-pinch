@@ -54,9 +54,10 @@ class DisputeViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         # Handle authentication-disabled state
+        from django.contrib.auth.models import AnonymousUser
         from apps.users.models import User
         
-        if self.request.user.is_authenticated:
+        if self.request.user.is_authenticated and not isinstance(self.request.user, AnonymousUser):
             complainant = self.request.user
         else:
             # Use first user as fallback when authentication is disabled
@@ -71,10 +72,24 @@ class DisputeViewSet(viewsets.ModelViewSet):
         dispute = self.get_object()
         serializer = DisputeMessageSerializer(data=request.data)
         
+        # Handle authentication-disabled state
+        from django.contrib.auth.models import AnonymousUser
+        from apps.users.models import User
+        
+        if request.user.is_authenticated and not isinstance(request.user, AnonymousUser):
+            sender = request.user
+        else:
+            sender = User.objects.first()
+            if not sender:
+                return Response(
+                    {'error': 'No users available for action'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
         if serializer.is_valid():
             serializer.save(
                 dispute=dispute,
-                sender=request.user
+                sender=sender
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -85,10 +100,24 @@ class DisputeViewSet(viewsets.ModelViewSet):
         dispute = self.get_object()
         serializer = DisputeAttachmentSerializer(data=request.data)
         
+        # Handle authentication-disabled state
+        from django.contrib.auth.models import AnonymousUser
+        from apps.users.models import User
+        
+        if request.user.is_authenticated and not isinstance(request.user, AnonymousUser):
+            uploader = request.user
+        else:
+            uploader = User.objects.first()
+            if not uploader:
+                return Response(
+                    {'error': 'No users available for action'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
         if serializer.is_valid():
             serializer.save(
                 dispute=dispute,
-                uploaded_by=request.user
+                uploaded_by=uploader
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
