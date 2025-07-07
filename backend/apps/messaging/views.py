@@ -156,8 +156,26 @@ class ConversationViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def mark_as_read(self, request, pk=None):
         """Mark all messages in conversation as read."""
+        # Handle authentication-disabled state
+        from django.contrib.auth.models import AnonymousUser
+        from apps.users.models import User
+        
+        if (hasattr(request, 'user') and 
+            request.user.is_authenticated and 
+            not isinstance(request.user, AnonymousUser) and
+            hasattr(request.user, 'id')):
+            user = request.user
+        else:
+            # Use first user as fallback when authentication is disabled
+            user = User.objects.first()
+            if not user:
+                return Response(
+                    {'error': 'No users available'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
         conversation = self.get_object()
-        conversation.mark_as_read(request.user)
+        conversation.mark_as_read(user)
         
         return Response({'status': 'marked_as_read'}, status=status.HTTP_200_OK)
     
@@ -254,28 +272,64 @@ class ConversationViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def archive(self, request, pk=None):
         """Archive conversation for the current user."""
+        # Handle authentication-disabled state
+        from django.contrib.auth.models import AnonymousUser
+        from apps.users.models import User
+        
+        if (hasattr(request, 'user') and 
+            request.user.is_authenticated and 
+            not isinstance(request.user, AnonymousUser) and
+            hasattr(request.user, 'id')):
+            user = request.user
+        else:
+            # Use first user as fallback when authentication is disabled
+            user = User.objects.first()
+            if not user:
+                return Response(
+                    {'error': 'No users available'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
         conversation = self.get_object()
         participant_settings, created = ConversationParticipant.objects.get_or_create(
             conversation=conversation,
-            user=request.user
+            user=user
         )
         
         participant_settings.is_archived = True
         participant_settings.save()
         
         # Mark all messages as read when archiving
-        conversation.mark_as_read(request.user)
+        conversation.mark_as_read(user)
         
         return Response({'status': 'archived'}, status=status.HTTP_200_OK)
     
     @action(detail=True, methods=['post'])
     def unarchive(self, request, pk=None):
         """Unarchive conversation for the current user."""
+        # Handle authentication-disabled state
+        from django.contrib.auth.models import AnonymousUser
+        from apps.users.models import User
+        
+        if (hasattr(request, 'user') and 
+            request.user.is_authenticated and 
+            not isinstance(request.user, AnonymousUser) and
+            hasattr(request.user, 'id')):
+            user = request.user
+        else:
+            # Use first user as fallback when authentication is disabled
+            user = User.objects.first()
+            if not user:
+                return Response(
+                    {'error': 'No users available'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
         conversation = self.get_object()
         participant_settings = get_object_or_404(
             ConversationParticipant,
             conversation=conversation,
-            user=request.user
+            user=user
         )
         
         participant_settings.is_archived = False
