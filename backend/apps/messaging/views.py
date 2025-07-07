@@ -48,35 +48,39 @@ class ConversationViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         """Get conversations for the current user."""
-        user = self.request.user
-        
-        # Handle case where authentication is disabled
-        if not user.is_authenticated:
-            from apps.users.models import User
-            user = User.objects.first()
-            if not user:
-                return Conversation.objects.none()
-        
-        queryset = Conversation.objects.filter(
-            participants=user
-        ).select_related(
-            'booking', 'listing'
-        ).prefetch_related(
-            'participants',
-            'participant_settings',
-            Prefetch(
-                'messages',
-                queryset=Message.objects.select_related('sender').order_by('-created_at')[:1],
-                to_attr='latest_messages'
-            )
-        ).distinct()
-        
-        # Filter by booking if provided
-        booking_id = self.request.query_params.get('booking')
-        if booking_id:
-            queryset = queryset.filter(booking_id=booking_id)
-        
-        return queryset
+        try:
+            user = self.request.user
+            
+            # Handle case where authentication is disabled
+            if not user.is_authenticated:
+                from apps.users.models import User
+                user = User.objects.first()
+                if not user:
+                    return Conversation.objects.none()
+            
+            queryset = Conversation.objects.filter(
+                participants=user
+            ).select_related(
+                'booking', 'listing'
+            ).prefetch_related(
+                'participants',
+                'participant_settings',
+                Prefetch(
+                    'messages',
+                    queryset=Message.objects.select_related('sender').order_by('-created_at')[:1],
+                    to_attr='latest_messages'
+                )
+            ).distinct()
+            
+            # Filter by booking if provided
+            booking_id = self.request.query_params.get('booking')
+            if booking_id:
+                queryset = queryset.filter(booking_id=booking_id)
+            
+            return queryset
+        except Exception as e:
+            logger.error(f"Error in get_queryset: {str(e)}")
+            return Conversation.objects.none()
     
     def get_serializer_class(self):
         """Return appropriate serializer based on action."""
@@ -91,8 +95,13 @@ class ConversationViewSet(viewsets.ModelViewSet):
         conversation = serializer.save()
         
         # Ensure current user is a participant
-        if not conversation.participants.filter(id=self.request.user.id).exists():
-            conversation.participants.add(self.request.user)
+        user = self.request.user
+        if not user.is_authenticated:
+            from apps.users.models import User
+            user = User.objects.first()
+        
+        if user and not conversation.participants.filter(id=user.id).exists():
+            conversation.participants.add(user)
     
     def list(self, request, *args, **kwargs):
         """List conversations with proper error handling."""
