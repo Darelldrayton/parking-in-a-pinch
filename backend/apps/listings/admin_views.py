@@ -65,8 +65,17 @@ class AdminListingViewSet(viewsets.ModelViewSet):
             with transaction.atomic():
                 admin_notes = request.data.get('admin_notes', '')
                 
+                # Handle the case where authentication is disabled
+                admin_user = request.user
+                if not admin_user.is_authenticated:
+                    # Use a default admin user when authentication is disabled
+                    from apps.users.models import User
+                    admin_user = User.objects.filter(is_superuser=True).first()
+                    if not admin_user:
+                        admin_user = User.objects.first()
+                
                 # Approve the listing
-                listing.approve(request.user, admin_notes)
+                listing.approve(admin_user, admin_notes)
                 
                 # Send notification to host about approval
                 try:
@@ -89,7 +98,7 @@ class AdminListingViewSet(viewsets.ModelViewSet):
                 except Exception as e:
                     logger.warning(f"Failed to send approval notification: {str(e)}")
                 
-                logger.info(f"Listing {listing.id} approved by {request.user.email}")
+                logger.info(f"Listing {listing.id} approved by {admin_user.email if admin_user else 'anonymous'}")
                 
                 # Return updated listing
                 serializer = ParkingListingDetailSerializer(listing)
@@ -135,8 +144,17 @@ class AdminListingViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
+            # Handle the case where authentication is disabled
+            admin_user = request.user
+            if not admin_user.is_authenticated:
+                # Use a default admin user when authentication is disabled
+                from apps.users.models import User
+                admin_user = User.objects.filter(is_superuser=True).first()
+                if not admin_user:
+                    admin_user = User.objects.first()
+            
             # Reject the listing
-            listing.reject(request.user, rejection_reason, admin_notes)
+            listing.reject(admin_user, rejection_reason, admin_notes)
             
             # Send notification to host about rejection
             try:
@@ -160,7 +178,7 @@ class AdminListingViewSet(viewsets.ModelViewSet):
             except Exception as e:
                 logger.warning(f"Failed to send rejection notification: {str(e)}")
             
-            logger.info(f"Listing {listing.id} rejected by {request.user.email}")
+            logger.info(f"Listing {listing.id} rejected by {admin_user.email if admin_user else 'anonymous'}")
             
             # Return updated listing
             serializer = ParkingListingDetailSerializer(listing)
@@ -206,8 +224,17 @@ class AdminListingViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
+            # Handle the case where authentication is disabled
+            admin_user = request.user
+            if not admin_user.is_authenticated:
+                # Use a default admin user when authentication is disabled
+                from apps.users.models import User
+                admin_user = User.objects.filter(is_superuser=True).first()
+                if not admin_user:
+                    admin_user = User.objects.first()
+            
             # Request revision for the listing
-            listing.request_revision(request.user, revision_reason, admin_notes)
+            listing.request_revision(admin_user, revision_reason, admin_notes)
             
             # Send notification to host about revision request
             try:
@@ -231,7 +258,7 @@ class AdminListingViewSet(viewsets.ModelViewSet):
             except Exception as e:
                 logger.warning(f"Failed to send revision notification: {str(e)}")
             
-            logger.info(f"Listing {listing.id} revision requested by {request.user.email}")
+            logger.info(f"Listing {listing.id} revision requested by {admin_user.email if admin_user else 'anonymous'}")
             
             # Return updated listing
             serializer = ParkingListingDetailSerializer(listing)
