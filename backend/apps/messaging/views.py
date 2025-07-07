@@ -46,6 +46,14 @@ class ConversationViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Get conversations for the current user."""
         user = self.request.user
+        
+        # Handle case where authentication is disabled
+        if not user.is_authenticated:
+            from apps.users.models import User
+            user = User.objects.first()
+            if not user:
+                return Conversation.objects.none()
+        
         queryset = Conversation.objects.filter(
             participants=user
         ).select_related(

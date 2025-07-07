@@ -392,7 +392,7 @@ class ConversationListSerializer(serializers.ModelSerializer):
     def get_unread_count(self, obj):
         """Get unread message count."""
         request = self.context.get('request')
-        if request and request.user:
+        if request and request.user and request.user.is_authenticated:
             return obj.get_unread_count(request.user)
         return 0
 
