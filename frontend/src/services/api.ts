@@ -1,8 +1,8 @@
 import axios, { type AxiosResponse, type AxiosError } from 'axios'
 import toast from 'react-hot-toast'
 
-// AGGRESSIVE API FIX - FORCE DIGITALOCEAN URL v5.0 + TOKEN AUTH FIX
-console.log('🚀 API Configuration Loading - FORCE DigitalOcean v5.0 + Token Auth Fix')
+// AGGRESSIVE API FIX - FORCE DIGITALOCEAN URL v6.0 + TOKEN AUTH FIX
+console.log('🚀 API Configuration Loading - FORCE DigitalOcean v6.0 + Token Auth Fix')
 
 // USE VERCEL PROXY TO BYPASS HTTPS/HTTP MIXED CONTENT
 const API_BASE_URL = '/api/v1'
@@ -35,7 +35,7 @@ api.interceptors.request.use(
     
     // ALWAYS use Token format for DRF compatibility  
     config.headers.Authorization = `Token ${drf_token}`
-    console.log('✅ FORCED Token authentication:', drf_token.substring(0, 8) + '...')
+    console.log('✅ FORCED Token authentication format (v6.0):', drf_token.substring(0, 8) + '...')
     
     // Ensure production token is cached for future requests
     if (!localStorage.getItem('token')) {
