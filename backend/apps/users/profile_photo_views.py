@@ -19,7 +19,7 @@ User = get_user_model()
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([])  # Use AllowAny to match global settings
 @parser_classes([MultiPartParser, FormParser])
 def upload_profile_photo(request):
     """
@@ -27,7 +27,23 @@ def upload_profile_photo(request):
     Handles image validation, resizing, and storage.
     """
     try:
-        user = request.user
+        # Handle case when authentication is disabled
+        if not request.user.is_authenticated:
+            # Try to get user from token manually  
+            auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+            if auth_header.startswith('Bearer '):
+                token = auth_header.split(' ')[1]
+                try:
+                    from rest_framework_simplejwt.tokens import AccessToken
+                    access_token = AccessToken(token)
+                    user_id = access_token['user_id']
+                    user = User.objects.get(id=user_id)
+                except Exception as e:
+                    return Response({'error': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
+            else:
+                return Response({'error': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            user = request.user
         
         if 'profile_picture' not in request.FILES:
             return Response({
@@ -109,13 +125,29 @@ def upload_profile_photo(request):
 
 
 @api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
+@permission_classes([])  # Use AllowAny to match global settings  
 def delete_profile_photo(request):
     """
     Delete user's profile photo.
     """
     try:
-        user = request.user
+        # Handle case when authentication is disabled
+        if not request.user.is_authenticated:
+            # Try to get user from token manually  
+            auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+            if auth_header.startswith('Bearer '):
+                token = auth_header.split(' ')[1]
+                try:
+                    from rest_framework_simplejwt.tokens import AccessToken
+                    access_token = AccessToken(token)
+                    user_id = access_token['user_id']
+                    user = User.objects.get(id=user_id)
+                except Exception as e:
+                    return Response({'error': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
+            else:
+                return Response({'error': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            user = request.user
         
         if not user.profile_picture:
             return Response({
