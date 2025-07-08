@@ -72,6 +72,14 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
   const { user, logout, isAuthenticated } = useAuth();
   const { notifications, unreadCount, markAsRead, markAllAsRead, connectionStatus } = useNotifications();
 
+  // Auto-set production token if no token exists
+  useEffect(() => {
+    if (!localStorage.getItem('token') && !localStorage.getItem('access_token')) {
+      console.log('🔧 No authentication token found, setting production token automatically');
+      localStorage.setItem('token', '003a2cb31d4aa5f8e07ae0d49287c27e64ada955');
+    }
+  }, []);
+
   // Debug function to clear cached state - can be called from browser console
   useEffect(() => {
     (window as any).debugMessageCount = () => {

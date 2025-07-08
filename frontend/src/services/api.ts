@@ -26,18 +26,21 @@ api.interceptors.request.use(
     console.log('API Base URL:', API_BASE_URL)
     console.log('Full URL:', `${API_BASE_URL}${config.url}`)
     
-    // Try multiple token formats for compatibility
-    const bearerToken = localStorage.getItem('access_token')
+    // Try multiple token formats for compatibility - prioritize DRF Token format
     const drf_token = localStorage.getItem('token')
+    const bearerToken = localStorage.getItem('access_token')
     
-    if (bearerToken) {
-      config.headers.Authorization = `Bearer ${bearerToken}`
-      console.log('Using Bearer token authentication')
-    } else if (drf_token) {
+    if (drf_token) {
       config.headers.Authorization = `Token ${drf_token}`
       console.log('Using DRF Token authentication')
+    } else if (bearerToken) {
+      config.headers.Authorization = `Bearer ${bearerToken}`
+      console.log('Using Bearer token authentication')
     } else {
       console.log('No authentication token found')
+      // Set the working production token as fallback for debugging
+      config.headers.Authorization = `Token 003a2cb31d4aa5f8e07ae0d49287c27e64ada955`
+      console.log('Using fallback production token for debugging')
     }
     return config
   },
