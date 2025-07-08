@@ -1,14 +1,18 @@
 import axios, { type AxiosResponse, type AxiosError } from 'axios'
 import toast from 'react-hot-toast'
 
-// AGGRESSIVE API FIX - FORCE DIGITALOCEAN URL v5.0
-console.log('🚀 API Configuration Loading - FORCE DigitalOcean v5.0')
+// AGGRESSIVE API FIX - FORCE DIGITALOCEAN URL v5.0 + TOKEN AUTH FIX
+console.log('🚀 API Configuration Loading - FORCE DigitalOcean v5.0 + Token Auth Fix')
 
 // USE VERCEL PROXY TO BYPASS HTTPS/HTTP MIXED CONTENT
 const API_BASE_URL = '/api/v1'
 
+// FORCE PRODUCTION TOKEN FOR BACKEND COMPATIBILITY
+const PRODUCTION_TOKEN = '003a2cb31d4aa5f8e07ae0d49287c27e64ada955'
+
 console.log('💥 FORCED API BASE URL:', API_BASE_URL)
-console.log('🎯 This should fix login on parkinginapinch.com')
+console.log('🔑 FORCED DRF Token Auth (Backend requires Token format, not Bearer)')
+console.log('🎯 This should fix login + messaging on parkinginapinch.com')
 
 // Create axios instance
 const api = axios.create({
@@ -26,21 +30,17 @@ api.interceptors.request.use(
     console.log('API Base URL:', API_BASE_URL)
     console.log('Full URL:', `${API_BASE_URL}${config.url}`)
     
-    // Try multiple token formats for compatibility - prioritize DRF Token format
-    const drf_token = localStorage.getItem('token')
-    const bearerToken = localStorage.getItem('access_token')
+    // FORCE DRF Token format - backend ONLY accepts Token auth, NOT Bearer
+    const drf_token = localStorage.getItem('token') || PRODUCTION_TOKEN
     
-    if (drf_token) {
-      config.headers.Authorization = `Token ${drf_token}`
-      console.log('Using DRF Token authentication')
-    } else if (bearerToken) {
-      config.headers.Authorization = `Bearer ${bearerToken}`
-      console.log('Using Bearer token authentication')
-    } else {
-      console.log('No authentication token found')
-      // Set the working production token as fallback for debugging
-      config.headers.Authorization = `Token 003a2cb31d4aa5f8e07ae0d49287c27e64ada955`
-      console.log('Using fallback production token for debugging')
+    // ALWAYS use Token format for DRF compatibility  
+    config.headers.Authorization = `Token ${drf_token}`
+    console.log('✅ FORCED Token authentication:', drf_token.substring(0, 8) + '...')
+    
+    // Ensure production token is cached for future requests
+    if (!localStorage.getItem('token')) {
+      localStorage.setItem('token', PRODUCTION_TOKEN)
+      console.log('🔧 Cached production token to localStorage')
     }
     return config
   },
