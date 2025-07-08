@@ -82,7 +82,16 @@ class UserViewSet(ModelViewSet):
         if not request.user.is_authenticated:
             # Try to get user from token manually
             auth_header = request.META.get('HTTP_AUTHORIZATION', '')
-            if auth_header.startswith('Bearer '):
+            if auth_header.startswith('Token '):
+                token = auth_header.split(' ')[1]
+                try:
+                    # Use DRF Token authentication
+                    from rest_framework.authtoken.models import Token
+                    token_obj = Token.objects.get(key=token)
+                    user = token_obj.user
+                except Exception as e:
+                    return Response({'error': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
+            elif auth_header.startswith('Bearer '):
                 token = auth_header.split(' ')[1]
                 try:
                     from rest_framework_simplejwt.tokens import AccessToken
