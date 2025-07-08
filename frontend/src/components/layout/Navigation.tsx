@@ -72,21 +72,69 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
   const { user, logout, isAuthenticated } = useAuth();
   const { notifications, unreadCount, markAsRead, markAllAsRead, connectionStatus } = useNotifications();
 
+  // Debug function to clear cached state - can be called from browser console
+  useEffect(() => {
+    (window as any).debugMessageCount = () => {
+      console.log('=== MESSAGE COUNT DEBUG ===');
+      console.log('Current unread message count state:', unreadMessageCount);
+      console.log('User:', user);
+      console.log('Is authenticated:', isAuthenticated);
+      console.log('localStorage access_token:', !!localStorage.getItem('access_token'));
+      console.log('localStorage token:', !!localStorage.getItem('token'));
+      console.log('localStorage user:', localStorage.getItem('user'));
+      
+      // Force refresh unread count
+      console.log('Forcing unread count refresh...');
+      messagingService.getUnreadCount().then(response => {
+        console.log('Fresh API response:', response);
+        setUnreadMessageCount(response.unread_count);
+      }).catch(error => {
+        console.log('API error:', error);
+        setUnreadMessageCount(0);
+      });
+    };
+
+    (window as any).clearMessageCache = () => {
+      console.log('Clearing message count cache...');
+      setUnreadMessageCount(0);
+      localStorage.removeItem('cachedUnreadCount'); // In case any other code caches this
+    };
+
+    // Debug function to set working production token
+    (window as any).setProductionToken = () => {
+      console.log('Setting production token...');
+      localStorage.setItem('token', '003a2cb31d4aa5f8e07ae0d49287c27e64ada955');
+      console.log('Production token set. Refreshing unread count...');
+      messagingService.getUnreadCount().then(response => {
+        console.log('With production token:', response);
+        setUnreadMessageCount(response.unread_count);
+      }).catch(error => {
+        console.log('API error with production token:', error);
+      });
+    };
+  }, [unreadMessageCount, user, isAuthenticated]);
+
   // Fetch unread message count
   useEffect(() => {
     const fetchUnreadMessageCount = async () => {
       if (isAuthenticated) {
         try {
+          console.log('Navigation: Fetching unread message count for user:', user?.id);
           const response = await messagingService.getUnreadCount();
+          console.log('Navigation: Unread count response:', response);
           setUnreadMessageCount(response.unread_count);
         } catch (error) {
           // Don't spam console for expected API errors in development
           if (error.response?.status !== 404) {
             console.error('Failed to fetch unread message count:', error);
           }
+          console.log('Navigation: Setting unread count to 0 due to error');
           // Set to 0 if endpoint doesn't exist
           setUnreadMessageCount(0);
         }
+      } else {
+        console.log('Navigation: User not authenticated, setting unread count to 0');
+        setUnreadMessageCount(0);
       }
     };
 
@@ -96,7 +144,7 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
     const interval = setInterval(fetchUnreadMessageCount, 30000);
     
     return () => clearInterval(interval);
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user?.id]);
 
   // Listen for real-time message notifications to update unread count
   useEffect(() => {

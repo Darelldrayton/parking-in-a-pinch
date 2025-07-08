@@ -293,6 +293,12 @@ const Messages: React.FC = React.memo(() => {
       
       // Use the conversations API endpoint
       console.log('Messages: Loading conversations from API for user:', user.id, user.email);
+      console.log('Messages: Auth tokens available:', {
+        access_token: !!localStorage.getItem('access_token'),
+        token: !!localStorage.getItem('token'),
+        refresh_token: !!localStorage.getItem('refresh_token')
+      });
+      
       const response = await api.get('/messages/conversations/');
       console.log('Messages: Raw API response:', response.data);
       const apiConversations = response.data.results || response.data || [];
@@ -528,9 +534,22 @@ const Messages: React.FC = React.memo(() => {
     console.log('🎯 Filtering conversations by role:', conversationFilter, 'from', allConversations.length);
     if (conversationFilter === 'all') {
       return allConversations;
-    } else {
-      return allConversations.filter(conv => conv.user_role === conversationFilter);
+    } else if (conversationFilter === 'renter') {
+      // Show booking conversations where user is renter + support conversations
+      return allConversations.filter(conv => 
+        conv.user_role === 'renter' || 
+        conv.conversation_type === 'support' ||
+        conv.conversation_type === 'inquiry'
+      );
+    } else if (conversationFilter === 'host') {
+      // Show booking conversations where user is host + support conversations  
+      return allConversations.filter(conv => 
+        conv.user_role === 'host' || 
+        conv.conversation_type === 'support' ||
+        conv.conversation_type === 'inquiry'
+      );
     }
+    return allConversations;
   }, [conversationFilter, allConversations]);
   
   const sendMessage = useCallback(async (messageContent: string) => {
@@ -724,6 +743,23 @@ const Messages: React.FC = React.memo(() => {
   const getConversationAvatar = useCallback((conversation: Conversation) => {
     return conversationAvatars.get(conversation.id) || 'C';
   }, [conversationAvatars]);
+
+  // Get conversation type information for display
+  const getConversationTypeInfo = useCallback((conversation: Conversation) => {
+    switch (conversation.conversation_type) {
+      case 'booking':
+        return { label: 'Booking', color: 'primary' as const, icon: '🅿️' };
+      case 'support':
+        return { label: 'Support', color: 'secondary' as const, icon: '🛡️' };
+      case 'inquiry':
+      case 'listing_inquiry':
+        return { label: 'Inquiry', color: 'info' as const, icon: '❓' };
+      case 'direct':
+        return { label: 'Direct', color: 'default' as const, icon: '💬' };
+      default:
+        return { label: 'Chat', color: 'default' as const, icon: '💬' };
+    }
+  }, []);
   
   if (!user) {
     return (
@@ -797,7 +833,7 @@ const Messages: React.FC = React.memo(() => {
             onClick={() => setConversationFilter('renter')}
             sx={{ minWidth: 'auto', px: 2 }}
           >
-            My Bookings
+            Bookings
           </Button>
           <Button
             variant={conversationFilter === 'host' ? 'contained' : 'outlined'}
@@ -805,7 +841,7 @@ const Messages: React.FC = React.memo(() => {
             onClick={() => setConversationFilter('host')}
             sx={{ minWidth: 'auto', px: 2 }}
           >
-            My Listings
+            Listings
           </Button>
         </Stack>
       </Box>
@@ -903,13 +939,27 @@ const Messages: React.FC = React.memo(() => {
                   </ListItemAvatar>
                   <ListItemText
                     primary={
-                      <Typography 
-                        variant="subtitle2" 
-                        fontWeight={conversation.unread_count > 0 ? 600 : 400}
-                        noWrap
-                      >
-                        {getConversationTitle(conversation)}
-                      </Typography>
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <Typography 
+                          variant="subtitle2" 
+                          fontWeight={conversation.unread_count > 0 ? 600 : 400}
+                          noWrap
+                          sx={{ flex: 1 }}
+                        >
+                          {getConversationTitle(conversation)}
+                        </Typography>
+                        <Chip 
+                          label={getConversationTypeInfo(conversation).label}
+                          size="small"
+                          color={getConversationTypeInfo(conversation).color}
+                          variant="outlined"
+                          sx={{ 
+                            height: 20, 
+                            fontSize: '0.7rem',
+                            '& .MuiChip-label': { px: 1 }
+                          }}
+                        />
+                      </Stack>
                     }
                     secondary={
                       <React.Fragment>

@@ -15,7 +15,9 @@ class MessagingService {
    * Get unread message count for current user
    */
   async getUnreadCount(): Promise<UnreadCountResponse> {
-    const response = await api.get('/messages/conversations/unread_count/')
+    // Add cache-busting timestamp to prevent stale data
+    const timestamp = Date.now()
+    const response = await api.get(`/messages/conversations/unread_count/?_t=${timestamp}`)
     return response.data
   }
 
