@@ -179,7 +179,29 @@ MessageInput.displayName = 'MessageInput';
 const MessageItem = React.memo(({ message, formatMessageTime }: { 
   message: Message; 
   formatMessageTime: (timestamp: string) => string; 
-}) => (
+}) => {
+  // Get message status indicator
+  const getStatusIndicator = (message: Message) => {
+    if (!message.is_own_message) return '';
+    
+    switch (message.status) {
+      case 'sent':
+        return '✓';
+      case 'delivered':
+        return '✓✓';
+      case 'read':
+        return '✓✓';
+      default:
+        return '✓';
+    }
+  };
+
+  const getStatusColor = (message: Message) => {
+    if (!message.is_own_message) return 'inherit';
+    return message.status === 'read' ? '#1976d2' : 'inherit';
+  };
+
+  return (
   <Box
     sx={{
       display: 'flex',
@@ -206,18 +228,36 @@ const MessageItem = React.memo(({ message, formatMessageTime }: {
       <Typography variant="body2">
         {message.content}
       </Typography>
-      <Typography 
-        variant="caption" 
-        sx={{ 
-          display: 'block', 
-          mt: 0.5, 
-          opacity: 0.7,
-          textAlign: message.is_own_message ? 'right' : 'left'
-        }}
+      <Stack 
+        direction="row" 
+        alignItems="center" 
+        justifyContent={message.is_own_message ? 'flex-end' : 'flex-start'}
+        spacing={0.5}
+        sx={{ mt: 0.5 }}
       >
-        {formatMessageTime(message.created_at)}
-        {message.is_edited && ' (edited)'}
-      </Typography>
+        <Typography 
+          variant="caption" 
+          sx={{ 
+            opacity: 0.7
+          }}
+        >
+          {formatMessageTime(message.created_at)}
+          {message.is_edited && ' (edited)'}
+        </Typography>
+        {message.is_own_message && (
+          <Typography
+            variant="caption"
+            sx={{
+              color: getStatusColor(message),
+              fontSize: '0.7rem',
+              opacity: 0.8,
+              fontWeight: 500
+            }}
+          >
+            {getStatusIndicator(message)}
+          </Typography>
+        )}
+      </Stack>
     </Paper>
   </Box>
 ));
@@ -748,16 +788,46 @@ const Messages: React.FC = React.memo(() => {
   const getConversationTypeInfo = useCallback((conversation: Conversation) => {
     switch (conversation.conversation_type) {
       case 'booking':
-        return { label: 'Booking', color: 'primary' as const, icon: '🅿️' };
+        return { 
+          label: 'Booking', 
+          color: 'primary' as const, 
+          icon: '🅿️',
+          statusIcon: '🟢',
+          bgColor: '#e3f2fd' 
+        };
       case 'support':
-        return { label: 'Support', color: 'secondary' as const, icon: '🛡️' };
+        return { 
+          label: 'Support', 
+          color: 'secondary' as const, 
+          icon: '🛡️',
+          statusIcon: '🔵',
+          bgColor: '#f3e5f5'
+        };
       case 'inquiry':
       case 'listing_inquiry':
-        return { label: 'Inquiry', color: 'info' as const, icon: '❓' };
+        return { 
+          label: 'Inquiry', 
+          color: 'info' as const, 
+          icon: '❓',
+          statusIcon: '🟡',
+          bgColor: '#fff3e0'
+        };
       case 'direct':
-        return { label: 'Direct', color: 'default' as const, icon: '💬' };
+        return { 
+          label: 'Direct', 
+          color: 'default' as const, 
+          icon: '💬',
+          statusIcon: '🟢',
+          bgColor: '#f5f5f5'
+        };
       default:
-        return { label: 'Chat', color: 'default' as const, icon: '💬' };
+        return { 
+          label: 'Chat', 
+          color: 'default' as const, 
+          icon: '💬',
+          statusIcon: '🟢',
+          bgColor: '#f5f5f5'
+        };
     }
   }, []);
   
@@ -917,68 +987,118 @@ const Messages: React.FC = React.memo(() => {
                     py: 2,
                     borderBottom: 1,
                     borderColor: 'divider',
+                    backgroundColor: conversation.unread_count > 0 ? 
+                      alpha(getConversationTypeInfo(conversation).bgColor, 0.3) : 
+                      'transparent',
+                    '&:hover': {
+                      backgroundColor: conversation.unread_count > 0 ? 
+                        alpha(getConversationTypeInfo(conversation).bgColor, 0.5) :
+                        alpha(theme.palette.action.hover, 0.04),
+                    },
                     '&.Mui-selected': {
                       bgcolor: alpha(theme.palette.primary.main, 0.08),
                       borderRight: `3px solid ${theme.palette.primary.main}`,
-                    }
+                    },
+                    borderLeft: conversation.unread_count > 0 ? 
+                      `4px solid ${theme.palette.primary.main}` : 
+                      '4px solid transparent',
                   }}
                 >
                   <ListItemAvatar>
-                    <Badge
-                      badgeContent={conversation.unread_count}
-                      color="error"
-                      invisible={conversation.unread_count === 0}
-                    >
-                      <Avatar
-                        src={typeof getConversationAvatar(conversation) === 'string' && getConversationAvatar(conversation).startsWith('http') ? getConversationAvatar(conversation) as string : undefined}
-                        sx={{}}
+                    <Stack direction="row" alignItems="center" spacing={0.5}>
+                      <Typography variant="h6" sx={{ fontSize: '1.2rem' }}>
+                        {getConversationTypeInfo(conversation).statusIcon}
+                      </Typography>
+                      <Badge
+                        badgeContent={conversation.unread_count}
+                        color="error"
+                        invisible={conversation.unread_count === 0}
+                        sx={{
+                          '& .MuiBadge-badge': {
+                            fontSize: '0.75rem',
+                            height: 20,
+                            minWidth: 20,
+                            fontWeight: 'bold'
+                          }
+                        }}
                       >
-                        {typeof getConversationAvatar(conversation) === 'string' && !getConversationAvatar(conversation).startsWith('http') ? getConversationAvatar(conversation) : ''}
-                      </Avatar>
-                    </Badge>
+                        <Avatar
+                          src={typeof getConversationAvatar(conversation) === 'string' && getConversationAvatar(conversation).startsWith('http') ? getConversationAvatar(conversation) as string : undefined}
+                          sx={{
+                            bgcolor: conversation.unread_count > 0 ? 'primary.main' : 'grey.400',
+                            color: 'white',
+                            fontWeight: 600
+                          }}
+                        >
+                          {typeof getConversationAvatar(conversation) === 'string' && !getConversationAvatar(conversation).startsWith('http') ? getConversationAvatar(conversation) : ''}
+                        </Avatar>
+                      </Badge>
+                    </Stack>
                   </ListItemAvatar>
                   <ListItemText
                     primary={
                       <Stack direction="row" alignItems="center" spacing={1}>
                         <Typography 
                           variant="subtitle2" 
-                          fontWeight={conversation.unread_count > 0 ? 600 : 400}
+                          fontWeight={conversation.unread_count > 0 ? 700 : 500}
                           noWrap
-                          sx={{ flex: 1 }}
+                          sx={{ 
+                            flex: 1,
+                            color: conversation.unread_count > 0 ? 'text.primary' : 'text.secondary'
+                          }}
                         >
                           {getConversationTitle(conversation)}
                         </Typography>
-                        <Chip 
-                          label={getConversationTypeInfo(conversation).label}
-                          size="small"
-                          color={getConversationTypeInfo(conversation).color}
-                          variant="outlined"
-                          sx={{ 
-                            height: 20, 
-                            fontSize: '0.7rem',
-                            '& .MuiChip-label': { px: 1 }
-                          }}
-                        />
+                        <Stack direction="row" alignItems="center" spacing={0.5}>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                            {conversation.last_message_preview ? formatMessageTime(conversation.last_message_preview.created_at) : ''}
+                          </Typography>
+                          <Chip 
+                            label={getConversationTypeInfo(conversation).label}
+                            size="small"
+                            color={getConversationTypeInfo(conversation).color}
+                            variant={conversation.unread_count > 0 ? "filled" : "outlined"}
+                            sx={{ 
+                              height: 18, 
+                              fontSize: '0.65rem',
+                              '& .MuiChip-label': { px: 0.8 },
+                              fontWeight: conversation.unread_count > 0 ? 600 : 400
+                            }}
+                          />
+                        </Stack>
                       </Stack>
                     }
                     secondary={
                       <React.Fragment>
-                        <Typography 
-                          variant="body2" 
-                          color="text.secondary"
-                          noWrap
-                          component="span"
-                          sx={{ 
-                            fontWeight: conversation.unread_count > 0 ? 500 : 400,
-                            color: conversation.unread_count > 0 ? 'text.primary' : 'text.secondary',
-                            display: 'block'
-                          }}
-                        >
-                          {conversation.last_message_preview?.content || 'No messages yet'}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary" component="span" sx={{ display: 'block' }}>
-                          {conversation.last_message_preview ? formatMessageTime(conversation.last_message_preview.created_at) : ''}
-                        </Typography>
+                        <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 0.5 }}>
+                          <Typography 
+                            variant="body2" 
+                            color="text.secondary"
+                            noWrap
+                            component="span"
+                            sx={{ 
+                              fontWeight: conversation.unread_count > 0 ? 600 : 400,
+                              color: conversation.unread_count > 0 ? 'text.primary' : 'text.secondary',
+                              flex: 1
+                            }}
+                          >
+                            {conversation.last_message_preview?.content || 'No messages yet'}
+                          </Typography>
+                          {conversation.unread_count > 0 && (
+                            <Chip
+                              label={`${conversation.unread_count} new`}
+                              size="small"
+                              color="error"
+                              variant="filled"
+                              sx={{ 
+                                height: 16,
+                                fontSize: '0.6rem',
+                                '& .MuiChip-label': { px: 0.5 },
+                                fontWeight: 'bold'
+                              }}
+                            />
+                          )}
+                        </Stack>
                       </React.Fragment>
                     }
                   />
