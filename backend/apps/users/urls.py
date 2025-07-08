@@ -229,6 +229,9 @@ def admin_verification_stats(request):
         return JsonResponse({'error': f'Verification stats error: {str(e)}'}, status=500)
 
 urlpatterns = [
+    # Profile photo upload endpoints
+    path('upload-profile-photo/', upload_profile_photo, name='upload-profile-photo'),
+    path('delete-profile-photo/', delete_profile_photo, name='delete-profile-photo'),
     # Stats endpoints that frontend expects as fallbacks
     path('admin/users/stats/', admin_users_stats, name='admin-users-stats'),
     path('admin/verification-requests/stats/', admin_verification_stats, name='admin-verification-stats'),
