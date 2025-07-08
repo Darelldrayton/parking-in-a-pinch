@@ -181,7 +181,7 @@ class AuthService {
     formData.append('profile_picture', file)
     
     try {
-      const response = await api.post('/users/upload-profile-photo/', formData, {
+      const response = await api.post('/users/photo/upload/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -200,7 +200,7 @@ class AuthService {
 
   async deleteProfilePhoto(): Promise<User> {
     try {
-      await api.delete('/users/delete-profile-photo/')
+      await api.delete('/users/photo/delete/')
       
       // Get updated user data
       const updatedUser = await this.getCurrentUser()
