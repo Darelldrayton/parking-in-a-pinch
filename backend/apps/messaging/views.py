@@ -55,7 +55,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
             # Handle case where authentication is disabled
             if not user.is_authenticated:
                 from apps.users.models import User
-                user = User.objects.first()
+                # Fallback disabled - return None instead
                 if not user:
                     return Conversation.objects.none()
             
@@ -99,7 +99,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if not user.is_authenticated:
             from apps.users.models import User
-            user = User.objects.first()
+            # Fallback disabled - return None instead
         
         if user and not conversation.participants.filter(id=user.id).exists():
             conversation.participants.add(user)
@@ -113,7 +113,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
             # Handle case where authentication is disabled  
             if not user.is_authenticated:
                 from apps.users.models import User
-                user = User.objects.first()
+                # Fallback disabled - return None instead
                 if not user:
                     logger.warning("No users found in database")
                     return Response({'count': 0, 'results': []})
@@ -167,7 +167,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
             user = request.user
         else:
             # Use first user as fallback when authentication is disabled
-            user = User.objects.first()
+            # Fallback disabled - return None instead
             if not user:
                 return Response(
                     {'error': 'No users available'},
@@ -283,7 +283,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
             user = request.user
         else:
             # Use first user as fallback when authentication is disabled
-            user = User.objects.first()
+            # Fallback disabled - return None instead
             if not user:
                 return Response(
                     {'error': 'No users available'},
@@ -318,7 +318,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
             user = request.user
         else:
             # Use first user as fallback when authentication is disabled
-            user = User.objects.first()
+            # Fallback disabled - return None instead
             if not user:
                 return Response(
                     {'error': 'No users available'},
@@ -338,67 +338,72 @@ class ConversationViewSet(viewsets.ModelViewSet):
         return Response({'status': 'unarchived'}, status=status.HTTP_200_OK)
     
     @action(detail=False, methods=['get'])
-    def archived(self, request):
-        """Get archived conversations for the current user."""
-        user = request.user
-        conversations = self.get_queryset().filter(
-            participant_settings__user=user,
-            participant_settings__is_archived=True
-        )
-        
-        page = self.paginate_queryset(conversations)
-        if page is not None:
-            serializer = ConversationListSerializer(
-                page, many=True, context={'request': request}
-            )
-            return self.get_paginated_response(serializer.data)
-        
-        serializer = ConversationListSerializer(
-            conversations, many=True, context={'request': request}
-        )
-        return Response(serializer.data)
-    
-    @action(detail=False, methods=['get'])
     def unread_count(self, request):
         """Get total unread message count across all conversations."""
-        # Handle authentication-disabled state
+        from rest_framework.authtoken.models import Token
         from django.contrib.auth.models import AnonymousUser
-        from apps.users.models import User
         
-        # Use the same robust authentication check as other endpoints
-        if (hasattr(request, 'user') and 
-            request.user.is_authenticated and 
-            not isinstance(request.user, AnonymousUser) and
-            hasattr(request.user, 'id')):
-            user = request.user
-        else:
-            # Use first user as fallback when authentication is disabled
-            user = User.objects.first()
-            if not user:
-                return Response({
-                    'unread_count': 0,
-                    'user_id': None
-                })
+        # Initialize user variable
+        user = None
         
-        # More efficient query using aggregation
+        # First check if user is already authenticated via session/request
+        if hasattr(request, 'user') and request.user and not isinstance(request.user, AnonymousUser):
+            if hasattr(request.user, 'is_authenticated') and request.user.is_authenticated:
+                user = request.user
+        
+        # If no user yet, check for token in Authorization header
+        if not user:
+            auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+            
+            # Check for Token format
+            if auth_header.startswith('Token '):
+                token_key = auth_header.split(' ')[1]
+                try:
+                    token = Token.objects.get(key=token_key)
+                    user = token.user
+                except Token.DoesNotExist:
+                    pass
+            
+            # Check for Bearer format
+            elif auth_header.startswith('Bearer '):
+                token_key = auth_header.split(' ')[1]
+                try:
+                    token = Token.objects.get(key=token_key)
+                    user = token.user
+                except Token.DoesNotExist:
+                    pass
+        
+        # If still no authenticated user, return 0
+        if not user:
+            return Response({
+                'unread_count': 0,
+                'user_id': None
+            })
+        
+        # Count unread messages using MessageReadStatus
         from django.db.models import Count, Q
+        from apps.messaging.models import MessageReadStatus, Message
         
-        # Count unread messages across all conversations user participates in using MessageReadStatus
-        from apps.messaging.models import MessageReadStatus
-        
-        unread_count = Message.objects.filter(
+        # Get all messages in user's conversations that aren't from the user
+        user_messages = Message.objects.filter(
             conversation__participants=user,
             is_deleted=False
-        ).exclude(
-            sender=user
-        ).exclude(
-            id__in=MessageReadStatus.objects.filter(user=user).values_list('message_id', flat=True)
-        ).count()
+        ).exclude(sender=user)
+        
+        # Get messages that have been read (have read_at timestamp)
+        read_messages = MessageReadStatus.objects.filter(
+            user=user
+        ).exclude(read_at=None).values_list('message_id', flat=True)
+        
+        # Count unread messages
+        unread_count = user_messages.exclude(id__in=read_messages).count()
         
         return Response({
             'unread_count': unread_count,
             'user_id': user.id
         })
+
+    
     
     @action(detail=False, methods=['post'])
     def mark_all_as_read(self, request):
@@ -414,7 +419,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
             user = request.user
         else:
             # Use first user as fallback when authentication is disabled
-            user = User.objects.first()
+            # Fallback disabled - return None instead
             if not user:
                 return Response(
                     {'error': 'No users available'},
@@ -475,7 +480,7 @@ class MessageViewSet(viewsets.ModelViewSet):
             user = self.request.user
         else:
             # Use first user as fallback when authentication is disabled
-            user = User.objects.first()
+            # Fallback disabled - return None instead
             if not user:
                 return Message.objects.none()
         
@@ -534,7 +539,7 @@ class MessageViewSet(viewsets.ModelViewSet):
             sender_user = request.user
         else:
             # Use first user as fallback when authentication is disabled
-            sender_user = User.objects.first()
+            sender_# Fallback disabled - return None instead
             if not sender_user:
                 return Response(
                     {'error': 'No users available to send message'},
@@ -635,7 +640,7 @@ class MessageViewSet(viewsets.ModelViewSet):
             user = request.user
         else:
             # Use first user as fallback when authentication is disabled
-            user = User.objects.first()
+            # Fallback disabled - return None instead
             if not user:
                 return Response({'results': []})
         
@@ -680,7 +685,7 @@ class MessageViewSet(viewsets.ModelViewSet):
             user = request.user
         else:
             # Use first user as fallback when authentication is disabled
-            user = User.objects.first()
+            # Fallback disabled - return None instead
             if not user:
                 return Response(
                     {'error': 'No users available'},
