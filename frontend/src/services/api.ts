@@ -7,8 +7,7 @@ console.log('🚀 API Configuration Loading - FORCE DigitalOcean v6.0 + Token Au
 // USE VERCEL PROXY TO BYPASS HTTPS/HTTP MIXED CONTENT
 const API_BASE_URL = '/api/v1'
 
-// FORCE PRODUCTION TOKEN FOR BACKEND COMPATIBILITY
-const PRODUCTION_TOKEN = '003a2cb31d4aa5f8e07ae0d49287c27e64ada955'
+// REMOVED: Hardcoded production token - let users authenticate properly
 
 console.log('💥 FORCED API BASE URL:', API_BASE_URL)
 console.log('🔑 FORCED DRF Token Auth (Backend requires Token format, not Bearer)')
@@ -30,17 +29,14 @@ api.interceptors.request.use(
     console.log('API Base URL:', API_BASE_URL)
     console.log('Full URL:', `${API_BASE_URL}${config.url}`)
     
-    // FORCE DRF Token format - backend ONLY accepts Token auth, NOT Bearer
-    const drf_token = localStorage.getItem('token') || PRODUCTION_TOKEN
+    // Use Token format for DRF compatibility - only if token exists
+    const drf_token = localStorage.getItem('token') || localStorage.getItem('access_token')
     
-    // ALWAYS use Token format for DRF compatibility  
-    config.headers.Authorization = `Token ${drf_token}`
-    console.log('✅ FORCED Token authentication format (v6.0):', drf_token.substring(0, 8) + '...')
-    
-    // Ensure production token is cached for future requests
-    if (!localStorage.getItem('token')) {
-      localStorage.setItem('token', PRODUCTION_TOKEN)
-      console.log('🔧 Cached production token to localStorage')
+    if (drf_token) {
+      config.headers.Authorization = `Token ${drf_token}`
+      console.log('✅ Using Token authentication format (v6.0):', drf_token.substring(0, 8) + '...')
+    } else {
+      console.log('⚠️ No authentication token found - request will be anonymous')
     }
     return config
   },
