@@ -27,6 +27,7 @@ export interface User {
   is_email_verified: boolean;
   phone_number?: string;
   profile_picture?: string;
+  profile_picture_url?: string;
   created_at: string;
 }
 

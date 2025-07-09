@@ -61,6 +61,7 @@ interface User {
   last_name: string;
   display_name: string;
   profile_picture?: string;
+  profile_picture_url?: string;
 }
 
 interface Message {
@@ -462,7 +463,7 @@ const Messages: React.FC = React.memo(() => {
         conversation: conversationId,
         sender: msg.sender?.id || msg.sender,
         sender_display_name: msg.sender?.display_name || msg.sender_display_name || 'Unknown',
-        sender_profile_picture: msg.sender?.profile_picture || msg.sender_profile_picture,
+        sender_profile_picture: msg.sender?.profile_picture_url || msg.sender?.profile_picture || msg.sender_profile_picture,
         content: msg.content,
         message_type: msg.message_type || 'text',
         status: msg.status || 'delivered',
@@ -581,8 +582,11 @@ const Messages: React.FC = React.memo(() => {
     } else if (conversationFilter === 'renter') {
       // Show ONLY booking conversations (not support/dispute) - filter by conversation type, not user role
       return allConversations.filter(conv => {
+        // Accept conversations that are booking-related or have booking_id (excluding support/dispute)
         const isBookingType = conv.conversation_type === 'booking' || 
-                             (conv.booking_id && conv.conversation_type !== 'support' && conv.conversation_type !== 'dispute');
+                             conv.conversation_type === 'inquiry' ||
+                             (conv.booking_id && conv.conversation_type !== 'support' && conv.conversation_type !== 'dispute') ||
+                             (conv.conversation_type !== 'support' && conv.conversation_type !== 'dispute' && conv.user_role === 'renter');
         console.log('🔍 Renter filter - conv:', conv.id, 'type:', conv.conversation_type, 'booking_id:', conv.booking_id, 'user_role:', conv.user_role, 'isBookingType:', isBookingType);
         return isBookingType;
       });
@@ -590,7 +594,8 @@ const Messages: React.FC = React.memo(() => {
       // Show ONLY listing conversations (not support/dispute) - filter by conversation type, not user role  
       return allConversations.filter(conv => {
         const isListingType = conv.conversation_type === 'listing' || 
-                             (conv.conversation_type !== 'support' && conv.conversation_type !== 'dispute' && conv.conversation_type !== 'booking');
+                             (conv.conversation_type !== 'support' && conv.conversation_type !== 'dispute' && conv.conversation_type !== 'booking' && conv.conversation_type !== 'inquiry') ||
+                             (conv.conversation_type !== 'support' && conv.conversation_type !== 'dispute' && conv.user_role === 'host');
         console.log('🔍 Host filter - conv:', conv.id, 'type:', conv.conversation_type, 'booking_id:', conv.booking_id, 'user_role:', conv.user_role, 'isListingType:', isListingType);
         return isListingType;
       });
@@ -622,7 +627,7 @@ const Messages: React.FC = React.memo(() => {
         conversation: selectedConversation.id,
         sender: user?.id,
         sender_display_name: user?.first_name + ' ' + user?.last_name || 'You',
-        sender_profile_picture: user?.profile_picture,
+        sender_profile_picture: user?.profile_picture_url || user?.profile_picture,
         content: messageContent.trim(),
         message_type: 'text',
         status: 'sent',
@@ -764,8 +769,8 @@ const Messages: React.FC = React.memo(() => {
     
     filteredConversationsByRole.forEach(conversation => {
       let avatar = 'C';
-      if (conversation.other_participant?.profile_picture) {
-        avatar = conversation.other_participant.profile_picture;
+      if (conversation.other_participant?.profile_picture_url || conversation.other_participant?.profile_picture) {
+        avatar = conversation.other_participant.profile_picture_url || conversation.other_participant.profile_picture;
       } else if (conversation.other_participant?.display_name) {
         avatar = conversation.other_participant.display_name.charAt(0);
       } else if (conversation.other_participant?.first_name) {
@@ -1149,7 +1154,7 @@ const Messages: React.FC = React.memo(() => {
             </IconButton>
             
             <Avatar
-              src={selectedConversation.other_participant?.profile_picture}
+              src={selectedConversation.other_participant?.profile_picture_url || selectedConversation.other_participant?.profile_picture}
               sx={{ mr: 2 }}
             >
               {getConversationAvatar(selectedConversation)}
