@@ -471,7 +471,19 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
                 <Box sx={{ flexGrow: 0 }}>
                   <Tooltip title="Open settings">
                     <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                      <Avatar alt={user?.name} src={user?.profile_picture_url || undefined} sx={{}}>
+                      <Avatar 
+                        alt={user?.name} 
+                        src={(() => {
+                          console.log('🖼️ Navigation Avatar Debug:', {
+                            hasUser: !!user,
+                            profile_picture_url: user?.profile_picture_url,
+                            profile_picture: user?.profile_picture,
+                            userKeys: user ? Object.keys(user) : []
+                          });
+                          return user?.profile_picture_url || user?.profile_picture || undefined;
+                        })()}
+                        sx={{}}
+                      >
                         {user?.first_name?.charAt(0).toUpperCase() || user?.name?.charAt(0).toUpperCase() || 'U'}
                       </Avatar>
                     </IconButton>

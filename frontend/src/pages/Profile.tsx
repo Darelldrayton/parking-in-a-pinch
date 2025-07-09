@@ -335,7 +335,15 @@ export default function Profile() {
                   <Grid size={12}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
                       <Avatar
-                        src={user?.profile_picture_url ? `${user.profile_picture_url}?t=${Date.now()}` : undefined}
+                        src={(() => {
+                          console.log('🖼️ Profile Avatar Debug:', {
+                            hasUser: !!user,
+                            profile_picture_url: user?.profile_picture_url,
+                            profile_picture: user?.profile_picture,
+                            userKeys: user ? Object.keys(user) : []
+                          });
+                          return user?.profile_picture_url ? `${user.profile_picture_url}?t=${Date.now()}` : undefined;
+                        })()}
                         sx={{
                           width: 100,
                           height: 100,

@@ -285,7 +285,7 @@ const Messages: React.FC = React.memo(() => {
   const [newConversationMessage, setNewConversationMessage] = useState('');
   const [mobileView, setMobileView] = useState<'conversations' | 'chat'>('conversations');
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
-  const [conversationFilter, setConversationFilter] = useState<'all' | 'renter' | 'host'>('all');
+  const [conversationFilter, setConversationFilter] = useState<'all' | 'renter' | 'host' | 'support'>('all');
   const [conversationsLoaded, setConversationsLoaded] = useState(false);
   
   // Refs
@@ -598,6 +598,13 @@ const Messages: React.FC = React.memo(() => {
                              (conv.conversation_type !== 'support' && conv.conversation_type !== 'dispute' && conv.user_role === 'host');
         console.log('🔍 Host filter - conv:', conv.id, 'type:', conv.conversation_type, 'booking_id:', conv.booking_id, 'user_role:', conv.user_role, 'isListingType:', isListingType);
         return isListingType;
+      });
+    } else if (conversationFilter === 'support') {
+      // Show ONLY support/dispute conversations
+      return allConversations.filter(conv => {
+        const isSupportType = conv.conversation_type === 'support' || conv.conversation_type === 'dispute';
+        console.log('🔍 Support filter - conv:', conv.id, 'type:', conv.conversation_type, 'booking_id:', conv.booking_id, 'user_role:', conv.user_role, 'isSupportType:', isSupportType);
+        return isSupportType;
       });
     }
     return allConversations;
@@ -923,6 +930,14 @@ const Messages: React.FC = React.memo(() => {
             sx={{ minWidth: 'auto', px: 2 }}
           >
             Listings
+          </Button>
+          <Button
+            variant={conversationFilter === 'support' ? 'contained' : 'outlined'}
+            size="small"
+            onClick={() => setConversationFilter('support')}
+            sx={{ minWidth: 'auto', px: 2 }}
+          >
+            Support
           </Button>
         </Stack>
       </Box>
