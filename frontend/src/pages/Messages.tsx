@@ -574,20 +574,23 @@ const Messages: React.FC = React.memo(() => {
   const filteredConversationsByRole = useMemo(() => {
     console.log('🎯 Filtering conversations by role:', conversationFilter, 'from', allConversations.length);
     if (conversationFilter === 'all') {
+      // Show ALL conversations including support/dispute
       return allConversations;
     } else if (conversationFilter === 'renter') {
-      // Show booking conversations where user is renter + support conversations
+      // Show ONLY booking conversations where user is renter - EXCLUDE support/dispute
       return allConversations.filter(conv => 
-        conv.user_role === 'renter' || 
-        conv.conversation_type === 'support' ||
-        conv.conversation_type === 'inquiry'
+        conv.user_role === 'renter' && 
+        conv.conversation_type !== 'support' &&
+        conv.conversation_type !== 'dispute' &&
+        conv.conversation_type !== 'inquiry'
       );
     } else if (conversationFilter === 'host') {
-      // Show booking conversations where user is host + support conversations  
+      // Show ONLY listing conversations where user is host - EXCLUDE support/dispute
       return allConversations.filter(conv => 
-        conv.user_role === 'host' || 
-        conv.conversation_type === 'support' ||
-        conv.conversation_type === 'inquiry'
+        conv.user_role === 'host' && 
+        conv.conversation_type !== 'support' &&
+        conv.conversation_type !== 'dispute' &&
+        conv.conversation_type !== 'inquiry'
       );
     }
     return allConversations;

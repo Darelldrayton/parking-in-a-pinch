@@ -72,13 +72,6 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
   const { user, logout, isAuthenticated } = useAuth();
   const { notifications, unreadCount, markAsRead, markAllAsRead, connectionStatus } = useNotifications();
 
-  // Auto-set production token if no token exists
-  useEffect(() => {
-    if (!localStorage.getItem('token') && !localStorage.getItem('access_token')) {
-      console.log('🔧 No authentication token found, setting production token automatically');
-      localStorage.setItem('token', '003a2cb31d4aa5f8e07ae0d49287c27e64ada955');
-    }
-  }, []);
 
   // Debug function to clear cached state - can be called from browser console
   useEffect(() => {
@@ -108,18 +101,6 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
       localStorage.removeItem('cachedUnreadCount'); // In case any other code caches this
     };
 
-    // Debug function to set working production token
-    (window as any).setProductionToken = () => {
-      console.log('Setting production token...');
-      localStorage.setItem('token', '003a2cb31d4aa5f8e07ae0d49287c27e64ada955');
-      console.log('Production token set. Refreshing unread count...');
-      messagingService.getUnreadCount().then(response => {
-        console.log('With production token:', response);
-        setUnreadMessageCount(response.unread_count);
-      }).catch(error => {
-        console.log('API error with production token:', error);
-      });
-    };
   }, [unreadMessageCount, user, isAuthenticated]);
 
   // Fetch unread message count
@@ -490,8 +471,8 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
                 <Box sx={{ flexGrow: 0 }}>
                   <Tooltip title="Open settings">
                     <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                      <Avatar alt={user?.name} src={user?.avatar} sx={{}}>
-                        {user?.name?.charAt(0).toUpperCase()}
+                      <Avatar alt={user?.name} src={user?.profile_picture_url || undefined} sx={{}}>
+                        {user?.first_name?.charAt(0).toUpperCase() || user?.name?.charAt(0).toUpperCase() || 'U'}
                       </Avatar>
                     </IconButton>
                   </Tooltip>

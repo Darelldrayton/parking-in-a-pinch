@@ -334,7 +334,7 @@ export default function Profile() {
                   <Grid size={12}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
                       <Avatar
-                        src={user?.profile_picture || undefined}
+                        src={user?.profile_picture_url ? `${user.profile_picture_url}?t=${Date.now()}` : undefined}
                         sx={{
                           width: 100,
                           height: 100,
@@ -342,7 +342,7 @@ export default function Profile() {
                           fontSize: '2.5rem',
                         }}
                       >
-                        {!user?.profile_picture && (user?.first_name?.charAt(0) || 'U')}
+                        {!user?.profile_picture_url && (user?.first_name?.charAt(0) || 'U')}
                       </Avatar>
                       {isEditing && (
                         <Box>
@@ -364,7 +364,7 @@ export default function Profile() {
                               {photoUploading ? 'Uploading...' : 'Change Photo'}
                             </Button>
                           </label>
-                          {user?.profile_picture && (
+                          {user?.profile_picture_url && (
                             <Button
                               variant="outlined"
                               color="error"
