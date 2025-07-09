@@ -184,7 +184,7 @@ class UserViewSet(ModelViewSet):
         
         return Response(stats)
     
-    @action(detail=False, methods=['post'], parser_classes=[MultiPartParser, FormParser])
+    @action(detail=False, methods=['post'], parser_classes=[MultiPartParser, FormParser], permission_classes=[permissions.IsAuthenticated])
     def upload_profile_photo(self, request):
         """Upload and update user's profile photo."""
         from .profile_photo_views import upload_profile_photo as upload_view
