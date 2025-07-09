@@ -265,6 +265,7 @@ export default function Profile() {
           <CardContent sx={{ p: 4 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
               <Avatar
+                src={user?.profile_picture_url ? `${user.profile_picture_url}?t=${Date.now()}` : undefined}
                 sx={{
                   width: 80,
                   height: 80,
@@ -272,7 +273,7 @@ export default function Profile() {
                   fontSize: '2rem',
                 }}
               >
-                {user?.first_name?.charAt(0) || 'U'}
+                {!user?.profile_picture_url && (user?.first_name?.charAt(0) || 'U')}
               </Avatar>
               <Box sx={{ flex: 1 }}>
                 <Typography variant="h5" fontWeight="bold" gutterBottom color="text.primary">

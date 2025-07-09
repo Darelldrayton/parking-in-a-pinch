@@ -573,25 +573,27 @@ const Messages: React.FC = React.memo(() => {
   // MEMOIZED filtering to prevent excessive re-renders
   const filteredConversationsByRole = useMemo(() => {
     console.log('🎯 Filtering conversations by role:', conversationFilter, 'from', allConversations.length);
+    console.log('🔍 Sample conversation data:', allConversations[0]);
+    
     if (conversationFilter === 'all') {
       // Show ALL conversations including support/dispute
       return allConversations;
     } else if (conversationFilter === 'renter') {
-      // Show ONLY booking conversations where user is renter - EXCLUDE support/dispute
-      return allConversations.filter(conv => 
-        conv.user_role === 'renter' && 
-        conv.conversation_type !== 'support' &&
-        conv.conversation_type !== 'dispute' &&
-        conv.conversation_type !== 'inquiry'
-      );
+      // Show ONLY booking conversations (not support/dispute) - filter by conversation type, not user role
+      return allConversations.filter(conv => {
+        const isBookingType = conv.conversation_type === 'booking' || 
+                             (conv.booking_id && conv.conversation_type !== 'support' && conv.conversation_type !== 'dispute');
+        console.log('🔍 Renter filter - conv:', conv.id, 'type:', conv.conversation_type, 'booking_id:', conv.booking_id, 'user_role:', conv.user_role, 'isBookingType:', isBookingType);
+        return isBookingType;
+      });
     } else if (conversationFilter === 'host') {
-      // Show ONLY listing conversations where user is host - EXCLUDE support/dispute
-      return allConversations.filter(conv => 
-        conv.user_role === 'host' && 
-        conv.conversation_type !== 'support' &&
-        conv.conversation_type !== 'dispute' &&
-        conv.conversation_type !== 'inquiry'
-      );
+      // Show ONLY listing conversations (not support/dispute) - filter by conversation type, not user role  
+      return allConversations.filter(conv => {
+        const isListingType = conv.conversation_type === 'listing' || 
+                             (conv.conversation_type !== 'support' && conv.conversation_type !== 'dispute' && conv.conversation_type !== 'booking');
+        console.log('🔍 Host filter - conv:', conv.id, 'type:', conv.conversation_type, 'booking_id:', conv.booking_id, 'user_role:', conv.user_role, 'isListingType:', isListingType);
+        return isListingType;
+      });
     }
     return allConversations;
   }, [conversationFilter, allConversations]);
