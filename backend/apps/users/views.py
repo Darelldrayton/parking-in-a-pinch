@@ -27,7 +27,7 @@ class UserViewSet(ModelViewSet):
     ViewSet for managing users.
     """
     queryset = User.objects.filter(is_deleted=False)
-    permission_classes = [permissions.AllowAny]  # TEMPORARILY DISABLED FOR 403 FIX
+    permission_classes = [permissions.IsAuthenticated]
     
     def get_serializer_class(self):
         """Return appropriate serializer class based on action."""
@@ -43,8 +43,10 @@ class UserViewSet(ModelViewSet):
     
     def get_permissions(self):
         """Set permissions based on action."""
-        # TEMPORARILY DISABLED FOR 403 FIX - Allow all actions without authentication
-        return [permissions.AllowAny()]
+        if self.action == 'create':
+            # Allow anyone to create an account
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated()]
     
     def get_object(self):
         """Get user object, ensuring users can only access their own data."""
@@ -186,7 +188,7 @@ class UserViewSet(ModelViewSet):
     def upload_profile_photo(self, request):
         """Upload and update user's profile photo."""
         from .profile_photo_views import upload_profile_photo as upload_view
-        return upload_view(request)
+        return upload_view(request._request)
     
     @action(detail=False, methods=['delete'])
     def delete_profile_photo(self, request):
@@ -371,7 +373,7 @@ class AdminUserViewSet(ModelViewSet):
     Admin ViewSet for managing users.
     """
     serializer_class = AdminUserListSerializer
-    permission_classes = [permissions.AllowAny]  # TEMPORARILY DISABLED FOR 403 FIX
+    permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
         """Return all users for admin management."""
