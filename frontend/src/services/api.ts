@@ -72,8 +72,8 @@ api.interceptors.response.use(
           const { access } = response.data
           localStorage.setItem('access_token', access)
           
-          // Retry original request with new token
-          originalRequest.headers.Authorization = `Bearer ${access}`
+          // Retry original request with new token - USE TOKEN FORMAT NOT BEARER
+          originalRequest.headers.Authorization = `Token ${access}`
           return api(originalRequest)
         }
       } catch (refreshError) {
