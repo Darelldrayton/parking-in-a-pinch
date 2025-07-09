@@ -260,7 +260,8 @@ const MessageItem = React.memo(({ message, formatMessageTime }: {
       </Stack>
     </Paper>
   </Box>
-));
+  );
+});
 
 
 const Messages: React.FC = React.memo(() => {

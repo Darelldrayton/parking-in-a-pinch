@@ -40,7 +40,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing conversations.
     """
-    permission_classes = []  # Temporarily disabled for 403 fix
+    permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = ConversationFilter
     search_fields = ['title', 'participants__first_name', 'participants__last_name', 'participants__email']
@@ -49,6 +49,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         """Get conversations for the current user."""
+<<<<<<< HEAD
         try:
             user = self.request.user
             
@@ -82,6 +83,30 @@ class ConversationViewSet(viewsets.ModelViewSet):
         except Exception as e:
             logger.error(f"Error in get_queryset: {str(e)}")
             return Conversation.objects.none()
+=======
+        user = self.request.user
+        
+        queryset = Conversation.objects.filter(
+            participants=user
+        ).select_related(
+            'booking', 'listing'
+        ).prefetch_related(
+            'participants',
+            'participant_settings',
+            Prefetch(
+                'messages',
+                queryset=Message.objects.select_related('sender').order_by('-created_at')[:1],
+                to_attr='latest_messages'
+            )
+        ).distinct()
+        
+        # Filter by booking if provided
+        booking_id = self.request.query_params.get('booking')
+        if booking_id:
+            queryset = queryset.filter(booking_id=booking_id)
+        
+        return queryset
+>>>>>>> e80026deea8aaf4be5adaee36791ef8b8d5a712f
     
     def get_serializer_class(self):
         """Return appropriate serializer based on action."""
@@ -97,17 +122,22 @@ class ConversationViewSet(viewsets.ModelViewSet):
         
         # Ensure current user is a participant
         user = self.request.user
+<<<<<<< HEAD
         if not user.is_authenticated:
             from apps.users.models import User
             # Fallback disabled - return None instead
         
         if user and not conversation.participants.filter(id=user.id).exists():
+=======
+        if not conversation.participants.filter(id=user.id).exists():
+>>>>>>> e80026deea8aaf4be5adaee36791ef8b8d5a712f
             conversation.participants.add(user)
     
     def list(self, request, *args, **kwargs):
         """List conversations with proper error handling."""
         try:
             user = request.user
+<<<<<<< HEAD
             logger.info(f"ConversationViewSet.list called for user: {user} (authenticated: {user.is_authenticated})")
             
             # Handle case where authentication is disabled  
@@ -118,6 +148,9 @@ class ConversationViewSet(viewsets.ModelViewSet):
                     logger.warning("No users found in database")
                     return Response({'count': 0, 'results': []})
                 logger.info(f"Using fallback user: {user}")
+=======
+            logger.info(f"ConversationViewSet.list called for user: {user}")
+>>>>>>> e80026deea8aaf4be5adaee36791ef8b8d5a712f
             
             # Get conversations with proper annotations
             queryset = Conversation.objects.filter(
@@ -156,6 +189,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def mark_as_read(self, request, pk=None):
         """Mark all messages in conversation as read."""
+<<<<<<< HEAD
         # Handle authentication-disabled state
         from django.contrib.auth.models import AnonymousUser
         from apps.users.models import User
@@ -173,6 +207,9 @@ class ConversationViewSet(viewsets.ModelViewSet):
                     {'error': 'No users available'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
+=======
+        user = request.user
+>>>>>>> e80026deea8aaf4be5adaee36791ef8b8d5a712f
         
         conversation = self.get_object()
         conversation.mark_as_read(user)
@@ -272,6 +309,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def archive(self, request, pk=None):
         """Archive conversation for the current user."""
+<<<<<<< HEAD
         # Handle authentication-disabled state
         from django.contrib.auth.models import AnonymousUser
         from apps.users.models import User
@@ -289,6 +327,9 @@ class ConversationViewSet(viewsets.ModelViewSet):
                     {'error': 'No users available'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
+=======
+        user = request.user
+>>>>>>> e80026deea8aaf4be5adaee36791ef8b8d5a712f
         
         conversation = self.get_object()
         participant_settings, created = ConversationParticipant.objects.get_or_create(
@@ -307,6 +348,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def unarchive(self, request, pk=None):
         """Unarchive conversation for the current user."""
+<<<<<<< HEAD
         # Handle authentication-disabled state
         from django.contrib.auth.models import AnonymousUser
         from apps.users.models import User
@@ -324,6 +366,9 @@ class ConversationViewSet(viewsets.ModelViewSet):
                     {'error': 'No users available'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
+=======
+        user = request.user
+>>>>>>> e80026deea8aaf4be5adaee36791ef8b8d5a712f
         
         conversation = self.get_object()
         participant_settings = get_object_or_404(
@@ -340,6 +385,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def unread_count(self, request):
         """Get total unread message count across all conversations."""
+<<<<<<< HEAD
         from rest_framework.authtoken.models import Token
         from django.contrib.auth.models import AnonymousUser
         
@@ -383,6 +429,9 @@ class ConversationViewSet(viewsets.ModelViewSet):
         # Count unread messages using MessageReadStatus
         from django.db.models import Count, Q
         from apps.messaging.models import MessageReadStatus, Message
+=======
+        user = request.user
+>>>>>>> e80026deea8aaf4be5adaee36791ef8b8d5a712f
         
         # Get all messages in user's conversations that aren't from the user
         user_messages = Message.objects.filter(
@@ -408,6 +457,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'])
     def mark_all_as_read(self, request):
         """Mark all messages as read for the current user."""
+<<<<<<< HEAD
         # Handle authentication-disabled state
         from django.contrib.auth.models import AnonymousUser
         from apps.users.models import User
@@ -425,6 +475,9 @@ class ConversationViewSet(viewsets.ModelViewSet):
                     {'error': 'No users available'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
+=======
+        user = request.user
+>>>>>>> e80026deea8aaf4be5adaee36791ef8b8d5a712f
         
         # Find all unread messages for the user using MessageReadStatus
         from apps.messaging.models import MessageReadStatus
@@ -458,7 +511,7 @@ class MessageViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing messages.
     """
-    permission_classes = []  # Temporarily disabled for 403 fix
+    permission_classes = [permissions.IsAuthenticated]
     pagination_class = MessagePagination
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = MessageFilter
@@ -469,6 +522,7 @@ class MessageViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         """Get messages for conversations the user participates in."""
+<<<<<<< HEAD
         # Handle authentication-disabled state
         from django.contrib.auth.models import AnonymousUser
         from apps.users.models import User
@@ -483,6 +537,9 @@ class MessageViewSet(viewsets.ModelViewSet):
             # Fallback disabled - return None instead
             if not user:
                 return Message.objects.none()
+=======
+        user = self.request.user
+>>>>>>> e80026deea8aaf4be5adaee36791ef8b8d5a712f
         
         return Message.objects.filter(
             conversation__participants=user,
@@ -501,20 +558,7 @@ class MessageViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         """Create message and set sender."""
-        # Handle authentication-disabled state
-        from django.contrib.auth.models import AnonymousUser
-        from apps.users.models import User
-        
-        if (hasattr(self.request, 'user') and 
-            self.request.user.is_authenticated and 
-            not isinstance(self.request.user, AnonymousUser) and
-            hasattr(self.request.user, 'id')):
-            sender = self.request.user
-        else:
-            # Use first user as fallback when authentication is disabled
-            sender = User.objects.first()
-            if not sender:
-                raise ValidationError("No users exist in the system.")
+        sender = self.request.user
         
         message = serializer.save(sender=sender)
         
@@ -528,6 +572,7 @@ class MessageViewSet(viewsets.ModelViewSet):
         print(f"MessageViewSet.create called with data: {request.data}")
         data = request.data.copy()
         
+<<<<<<< HEAD
         # Handle authentication-disabled state
         from django.contrib.auth.models import AnonymousUser
         from apps.users.models import User
@@ -545,6 +590,9 @@ class MessageViewSet(viewsets.ModelViewSet):
                     {'error': 'No users available to send message'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
+=======
+        sender_user = request.user
+>>>>>>> e80026deea8aaf4be5adaee36791ef8b8d5a712f
         
         # Check if this is a simple notification message (has recipient_id but no conversation)
         recipient_id = data.get('recipient_id')
@@ -629,6 +677,7 @@ class MessageViewSet(viewsets.ModelViewSet):
     
     def list(self, request, *args, **kwargs):
         """List messages with conversation filtering."""
+<<<<<<< HEAD
         # Handle authentication-disabled state
         from django.contrib.auth.models import AnonymousUser
         from apps.users.models import User
@@ -643,6 +692,9 @@ class MessageViewSet(viewsets.ModelViewSet):
             # Fallback disabled - return None instead
             if not user:
                 return Response({'results': []})
+=======
+        user = request.user
+>>>>>>> e80026deea8aaf4be5adaee36791ef8b8d5a712f
         
         conversation_id = request.query_params.get('conversation')
         if conversation_id:
@@ -674,6 +726,7 @@ class MessageViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def mark_as_read(self, request, pk=None):
         """Mark a specific message as read."""
+<<<<<<< HEAD
         # Handle authentication-disabled state
         from django.contrib.auth.models import AnonymousUser
         from apps.users.models import User
@@ -691,6 +744,9 @@ class MessageViewSet(viewsets.ModelViewSet):
                     {'error': 'No users available'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
+=======
+        user = request.user
+>>>>>>> e80026deea8aaf4be5adaee36791ef8b8d5a712f
         
         message = self.get_object()
         

@@ -28,7 +28,7 @@ export interface User {
   is_verified: boolean
   is_email_verified: boolean
   phone_number?: string
-  profile_image?: string
+  profile_picture?: string
   bio?: string
   created_at?: string
   updated_at?: string
@@ -140,13 +140,13 @@ class AuthService {
   }
 
   async updateProfile(data: Partial<User>): Promise<User> {
-    // Filter out profile_image if it's empty or invalid, and flatten profile data
-    const { profile_image, profile, ...userData } = data
+    // Filter out profile_picture if it's empty or invalid, and flatten profile data
+    const { profile_picture, profile, ...userData } = data
     
-    // Only include profile_image if it's a valid file
+    // Only include profile_picture if it's a valid file
     const updateData: any = { ...userData }
-    if (profile_image && profile_image instanceof File) {
-      updateData.profile_image = profile_image
+    if (profile_picture && profile_picture instanceof File) {
+      updateData.profile_picture = profile_picture
     }
     
     // Flatten profile data into the main update data
@@ -181,7 +181,7 @@ class AuthService {
     formData.append('profile_picture', file)
     
     try {
-      const response = await api.post('/users/upload-profile-photo/', formData, {
+      const response = await api.post('/users/upload_profile_photo/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -200,7 +200,7 @@ class AuthService {
 
   async deleteProfilePhoto(): Promise<User> {
     try {
-      await api.delete('/users/delete-profile-photo/')
+      await api.delete('/users/delete_profile_photo/')
       
       // Get updated user data
       const updatedUser = await this.getCurrentUser()

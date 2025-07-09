@@ -1,14 +1,17 @@
 import axios, { type AxiosResponse, type AxiosError } from 'axios'
 import toast from 'react-hot-toast'
 
-// AGGRESSIVE API FIX - FORCE DIGITALOCEAN URL v5.0
-console.log('🚀 API Configuration Loading - FORCE DigitalOcean v5.0')
+// AGGRESSIVE API FIX - FORCE DIGITALOCEAN URL v6.0 + TOKEN AUTH FIX
+console.log('🚀 API Configuration Loading - FORCE DigitalOcean v6.0 + Token Auth Fix')
 
 // USE VERCEL PROXY TO BYPASS HTTPS/HTTP MIXED CONTENT
 const API_BASE_URL = '/api/v1'
 
+// REMOVED: Hardcoded production token - let users authenticate properly
+
 console.log('💥 FORCED API BASE URL:', API_BASE_URL)
-console.log('🎯 This should fix login on parkinginapinch.com')
+console.log('🔑 FORCED DRF Token Auth (Backend requires Token format, not Bearer)')
+console.log('🎯 This should fix login + messaging on parkinginapinch.com')
 
 // Create axios instance
 const api = axios.create({
@@ -26,21 +29,14 @@ api.interceptors.request.use(
     console.log('API Base URL:', API_BASE_URL)
     console.log('Full URL:', `${API_BASE_URL}${config.url}`)
     
-    // Try multiple token formats for compatibility - prioritize DRF Token format
-    const drf_token = localStorage.getItem('token')
-    const bearerToken = localStorage.getItem('access_token')
+    // Use Token format for DRF compatibility - only if token exists
+    const drf_token = localStorage.getItem('token') || localStorage.getItem('access_token')
     
     if (drf_token) {
       config.headers.Authorization = `Token ${drf_token}`
-      console.log('Using DRF Token authentication')
-    } else if (bearerToken) {
-      config.headers.Authorization = `Bearer ${bearerToken}`
-      console.log('Using Bearer token authentication')
+      console.log('✅ Using Token authentication format (v6.0):', drf_token.substring(0, 8) + '...')
     } else {
-      console.log('No authentication token found')
-      // Set the working production token as fallback for debugging
-      config.headers.Authorization = `Token 003a2cb31d4aa5f8e07ae0d49287c27e64ada955`
-      console.log('Using fallback production token for debugging')
+      console.log('⚠️ No authentication token found - request will be anonymous')
     }
     return config
   },
@@ -72,8 +68,8 @@ api.interceptors.response.use(
           const { access } = response.data
           localStorage.setItem('access_token', access)
           
-          // Retry original request with new token
-          originalRequest.headers.Authorization = `Bearer ${access}`
+          // Retry original request with new token - USE TOKEN FORMAT NOT BEARER
+          originalRequest.headers.Authorization = `Token ${access}`
           return api(originalRequest)
         }
       } catch (refreshError) {

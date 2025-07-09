@@ -27,7 +27,7 @@ class UserViewSet(ModelViewSet):
     ViewSet for managing users.
     """
     queryset = User.objects.filter(is_deleted=False)
-    permission_classes = [permissions.AllowAny]  # TEMPORARILY DISABLED FOR 403 FIX
+    permission_classes = [permissions.IsAuthenticated]
     
     def get_serializer_class(self):
         """Return appropriate serializer class based on action."""
@@ -43,8 +43,10 @@ class UserViewSet(ModelViewSet):
     
     def get_permissions(self):
         """Set permissions based on action."""
-        # TEMPORARILY DISABLED FOR 403 FIX - Allow all actions without authentication
-        return [permissions.AllowAny()]
+        if self.action == 'create':
+            # Allow anyone to create an account
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated()]
     
     def get_object(self):
         """Get user object, ensuring users can only access their own data."""
@@ -82,7 +84,16 @@ class UserViewSet(ModelViewSet):
         if not request.user.is_authenticated:
             # Try to get user from token manually
             auth_header = request.META.get('HTTP_AUTHORIZATION', '')
-            if auth_header.startswith('Bearer '):
+            if auth_header.startswith('Token '):
+                token = auth_header.split(' ')[1]
+                try:
+                    # Use DRF Token authentication
+                    from rest_framework.authtoken.models import Token
+                    token_obj = Token.objects.get(key=token)
+                    user = token_obj.user
+                except Exception as e:
+                    return Response({'error': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
+            elif auth_header.startswith('Bearer '):
                 token = auth_header.split(' ')[1]
                 try:
                     from rest_framework_simplejwt.tokens import AccessToken
@@ -173,11 +184,11 @@ class UserViewSet(ModelViewSet):
         
         return Response(stats)
     
-    @action(detail=False, methods=['post'], parser_classes=[MultiPartParser, FormParser])
+    @action(detail=False, methods=['post'], parser_classes=[MultiPartParser, FormParser], permission_classes=[permissions.IsAuthenticated])
     def upload_profile_photo(self, request):
         """Upload and update user's profile photo."""
         from .profile_photo_views import upload_profile_photo as upload_view
-        return upload_view(request)
+        return upload_view(request._request)
     
     @action(detail=False, methods=['delete'])
     def delete_profile_photo(self, request):
@@ -362,7 +373,7 @@ class AdminUserViewSet(ModelViewSet):
     Admin ViewSet for managing users.
     """
     serializer_class = AdminUserListSerializer
-    permission_classes = [permissions.AllowAny]  # TEMPORARILY DISABLED FOR 403 FIX
+    permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
         """Return all users for admin management."""
