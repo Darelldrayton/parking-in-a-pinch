@@ -137,6 +137,7 @@ class AuthService {
 
   async getCurrentUser(): Promise<User> {
     const response = await api.get('/users/me/')
+    console.log('🔍 getCurrentUser API response:', JSON.stringify(response.data, null, 2))
     return response.data
   }
 
@@ -188,9 +189,13 @@ class AuthService {
         },
       })
       
+      console.log('🔍 Upload response:', JSON.stringify(response.data, null, 2))
+      
       // Get updated user data
       const updatedUser = await this.getCurrentUser()
       localStorage.setItem('user', JSON.stringify(updatedUser))
+      
+      console.log('🔍 Updated user after photo upload:', JSON.stringify(updatedUser, null, 2))
       
       return updatedUser
     } catch (error) {

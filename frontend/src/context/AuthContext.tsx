@@ -8,6 +8,7 @@ interface AuthContextType {
   signup: (data: SignupData) => Promise<void>
   logout: () => Promise<void>
   updateUser: (userData: Partial<User>) => Promise<void>
+  setUserState: (user: User) => void
   isLoading: boolean
   isAuthenticated: boolean
 }
@@ -166,12 +167,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateUser = async (userData: Partial<User>) => {
     try {
       const updatedUser = await authService.updateProfile(userData)
+      console.log('🔍 AuthContext updateUser - before setUser:', JSON.stringify(user, null, 2))
+      console.log('🔍 AuthContext updateUser - setting new user:', JSON.stringify(updatedUser, null, 2))
       setUser(updatedUser)
       console.log('Profile updated successfully!')
     } catch (error: any) {
       const message = error.response?.data?.detail || 'Failed to update profile'
       throw new Error(message)
     }
+  }
+
+  const setUserState = (newUser: User) => {
+    console.log('🔍 AuthContext setUserState - updating user:', JSON.stringify(newUser, null, 2))
+    setUser(newUser)
+    localStorage.setItem('user', JSON.stringify(newUser))
   }
 
   const value = {
@@ -181,6 +190,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signup,
     logout,
     updateUser,
+    setUserState,
     isLoading,
     isAuthenticated: !!token && !!user
   }

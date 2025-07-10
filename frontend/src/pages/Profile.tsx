@@ -103,7 +103,7 @@ function TabPanel(props: TabPanelProps) {
 }
 
 export default function Profile() {
-  const { user, updateUser } = useAuth()
+  const { user, updateUser, setUserState } = useAuth()
   const theme = useTheme()
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -215,7 +215,10 @@ export default function Profile() {
     setPhotoUploading(true)
     try {
       const updatedUser = await authService.uploadProfilePhoto(file)
-      updateUser(updatedUser)
+      console.log('🔍 Profile photo upload - got updated user:', JSON.stringify(updatedUser, null, 2))
+      // CRITICAL FIX: Don't call updateUser() which triggers another API call
+      // Instead, directly update the AuthContext user state  
+      setUserState(updatedUser)
       toast.success('Profile photo updated successfully!')
     } catch (error: any) {
       console.error('Photo upload error:', error)

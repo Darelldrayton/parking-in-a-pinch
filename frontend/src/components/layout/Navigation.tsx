@@ -480,6 +480,7 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
                             profile_picture: user?.profile_picture,
                             userKeys: user ? Object.keys(user) : []
                           });
+                          console.log('🔍 Full user object:', JSON.stringify(user, null, 2));
                           return user?.profile_picture_url || user?.profile_picture || undefined;
                         })()}
                         sx={{}}
