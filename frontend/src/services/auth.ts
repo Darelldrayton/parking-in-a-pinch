@@ -30,6 +30,7 @@ export interface User {
   phone_number?: string
   profile_picture?: string
   profile_picture_url?: string
+  profile_image?: string
   bio?: string
   created_at?: string
   updated_at?: string
