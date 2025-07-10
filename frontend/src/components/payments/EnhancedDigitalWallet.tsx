@@ -45,26 +45,54 @@ const EnhancedDigitalWallet: React.FC<EnhancedDigitalWalletProps> = ({
     webPayments: false,
   });
   const [checking, setChecking] = useState(true);
+  
+  // Check if digital wallets are enabled via environment variables
+  const isApplePayEnabled = import.meta.env.VITE_APPLE_PAY_ENABLED === 'true';
+  const isGooglePayEnabled = import.meta.env.VITE_GOOGLE_PAY_ENABLED === 'true';
+  const hasApplePayCredentials = !!import.meta.env.VITE_APPLE_PAY_MERCHANT_ID;
+  const hasGooglePayCredentials = !!import.meta.env.VITE_GOOGLE_PAY_MERCHANT_ID;
 
   // Check available payment methods
   useEffect(() => {
     const checkPaymentMethods = async () => {
       try {
-        const methods = await mobilePaymentService.getAvailablePaymentMethods();
-        setAvailablePayments(methods);
+        // Only check actual availability if credentials are provided and enabled
+        if (isApplePayEnabled && hasApplePayCredentials && isGooglePayEnabled && hasGooglePayCredentials) {
+          const methods = await mobilePaymentService.getAvailablePaymentMethods();
+          setAvailablePayments(methods);
+        } else {
+          // Show as available for UI purposes, but we'll handle the "coming soon" state
+          setAvailablePayments({
+            applePay: true, // Always show as available for UI
+            googlePay: true, // Always show as available for UI
+            webPayments: !!window.PaymentRequest,
+          });
+        }
         
-        console.log('Available payment methods:', methods);
+        console.log('Payment method check complete');
       } catch (error) {
         console.error('Error checking payment methods:', error);
+        // Fallback to showing options anyway
+        setAvailablePayments({
+          applePay: true,
+          googlePay: true,
+          webPayments: !!window.PaymentRequest,
+        });
       } finally {
         setChecking(false);
       }
     };
 
     checkPaymentMethods();
-  }, []);
+  }, [isApplePayEnabled, hasApplePayCredentials, isGooglePayEnabled, hasGooglePayCredentials]);
 
   const handleApplePay = async () => {
+    // Check if Apple Pay is fully configured
+    if (!isApplePayEnabled || !hasApplePayCredentials) {
+      toast.info('Apple Pay is coming soon! We\'re working on adding this payment option.');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -98,6 +126,12 @@ const EnhancedDigitalWallet: React.FC<EnhancedDigitalWalletProps> = ({
   };
 
   const handleGooglePay = async () => {
+    // Check if Google Pay is fully configured
+    if (!isGooglePayEnabled || !hasGooglePayCredentials) {
+      toast.info('Google Pay is coming soon! We\'re working on adding this payment option.');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -307,15 +341,34 @@ const EnhancedDigitalWallet: React.FC<EnhancedDigitalWalletProps> = ({
                 disabled={loading}
                 startIcon={loading ? <CircularProgress size={20} /> : <Apple />}
                 sx={{
-                  bgcolor: '#000',
+                  bgcolor: isApplePayEnabled && hasApplePayCredentials ? '#000' : '#999',
                   color: 'white',
                   py: 1.5,
-                  '&:hover': { bgcolor: '#333' },
+                  '&:hover': { 
+                    bgcolor: isApplePayEnabled && hasApplePayCredentials ? '#333' : '#777' 
+                  },
                   '&.Mui-disabled': { bgcolor: '#ccc' },
+                  position: 'relative',
                 }}
                 size="large"
               >
-                {loading ? 'Processing...' : 'Pay with Apple Pay'}
+                {loading ? 'Processing...' : 
+                 isApplePayEnabled && hasApplePayCredentials ? 'Pay with Apple Pay' : 'Apple Pay - Coming Soon'}
+                {(!isApplePayEnabled || !hasApplePayCredentials) && (
+                  <Chip
+                    label="Soon"
+                    size="small"
+                    sx={{
+                      position: 'absolute',
+                      right: 8,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      bgcolor: 'warning.main',
+                      color: 'white',
+                      fontSize: '0.7rem',
+                    }}
+                  />
+                )}
               </Button>
             )}
 
@@ -328,15 +381,34 @@ const EnhancedDigitalWallet: React.FC<EnhancedDigitalWalletProps> = ({
                 disabled={loading}
                 startIcon={loading ? <CircularProgress size={20} /> : <Android />}
                 sx={{
-                  bgcolor: '#4285F4',
+                  bgcolor: isGooglePayEnabled && hasGooglePayCredentials ? '#4285F4' : '#999',
                   color: 'white',
                   py: 1.5,
-                  '&:hover': { bgcolor: '#3367D6' },
+                  '&:hover': { 
+                    bgcolor: isGooglePayEnabled && hasGooglePayCredentials ? '#3367D6' : '#777' 
+                  },
                   '&.Mui-disabled': { bgcolor: '#ccc' },
+                  position: 'relative',
                 }}
                 size="large"
               >
-                {loading ? 'Processing...' : 'Pay with Google Pay'}
+                {loading ? 'Processing...' : 
+                 isGooglePayEnabled && hasGooglePayCredentials ? 'Pay with Google Pay' : 'Google Pay - Coming Soon'}
+                {(!isGooglePayEnabled || !hasGooglePayCredentials) && (
+                  <Chip
+                    label="Soon"
+                    size="small"
+                    sx={{
+                      position: 'absolute',
+                      right: 8,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      bgcolor: 'warning.main',
+                      color: 'white',
+                      fontSize: '0.7rem',
+                    }}
+                  />
+                )}
               </Button>
             )}
 
@@ -400,17 +472,19 @@ const EnhancedDigitalWallet: React.FC<EnhancedDigitalWalletProps> = ({
             {availablePayments.applePay && (
               <Chip
                 icon={<Apple sx={{ fontSize: 16 }} />}
-                label="Apple Pay"
+                label={isApplePayEnabled && hasApplePayCredentials ? "Apple Pay" : "Apple Pay (Soon)"}
                 size="small"
                 variant="outlined"
+                color={isApplePayEnabled && hasApplePayCredentials ? "default" : "warning"}
               />
             )}
             {availablePayments.googlePay && (
               <Chip
                 icon={<Android sx={{ fontSize: 16 }} />}
-                label="Google Pay"
+                label={isGooglePayEnabled && hasGooglePayCredentials ? "Google Pay" : "Google Pay (Soon)"}
                 size="small"
                 variant="outlined"
+                color={isGooglePayEnabled && hasGooglePayCredentials ? "default" : "warning"}
               />
             )}
           </Stack>

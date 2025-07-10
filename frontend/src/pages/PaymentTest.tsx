@@ -197,15 +197,15 @@ const PaymentTest: React.FC = () => {
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                   <Chip
-                    label={`Apple Pay ID: ${import.meta.env.VITE_APPLE_PAY_MERCHANT_ID ? '✓ Set' : '✗ Missing'}`}
-                    color={import.meta.env.VITE_APPLE_PAY_MERCHANT_ID ? 'success' : 'error'}
+                    label={`Apple Pay: ${import.meta.env.VITE_APPLE_PAY_ENABLED === 'true' && import.meta.env.VITE_APPLE_PAY_MERCHANT_ID ? '✓ Ready' : '⏳ Coming Soon'}`}
+                    color={import.meta.env.VITE_APPLE_PAY_ENABLED === 'true' && import.meta.env.VITE_APPLE_PAY_MERCHANT_ID ? 'success' : 'warning'}
                     variant="outlined"
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                   <Chip
-                    label={`Google Pay ID: ${import.meta.env.VITE_GOOGLE_PAY_MERCHANT_ID ? '✓ Set' : '✗ Missing'}`}
-                    color={import.meta.env.VITE_GOOGLE_PAY_MERCHANT_ID ? 'success' : 'error'}
+                    label={`Google Pay: ${import.meta.env.VITE_GOOGLE_PAY_ENABLED === 'true' && import.meta.env.VITE_GOOGLE_PAY_MERCHANT_ID ? '✓ Ready' : '⏳ Coming Soon'}`}
+                    color={import.meta.env.VITE_GOOGLE_PAY_ENABLED === 'true' && import.meta.env.VITE_GOOGLE_PAY_MERCHANT_ID ? 'success' : 'warning'}
                     variant="outlined"
                   />
                 </Grid>
@@ -217,6 +217,20 @@ const PaymentTest: React.FC = () => {
                   />
                 </Grid>
               </Grid>
+              
+              {/* Credential Setup Instructions */}
+              <Box sx={{ mt: 3, p: 2, bgcolor: 'info.main', color: 'white', borderRadius: 2 }}>
+                <Typography variant="h6" fontWeight="bold" gutterBottom>
+                  🔧 Ready for Credentials
+                </Typography>
+                <Typography variant="body2">
+                  Digital wallet payments are set to "Coming Soon" mode. When you're ready to enable them, just provide:
+                </Typography>
+                <Box component="ul" sx={{ mt: 1, mb: 0 }}>
+                  <li>Apple Pay: Merchant ID + Set VITE_APPLE_PAY_ENABLED=true</li>
+                  <li>Google Pay: Merchant ID + Set VITE_GOOGLE_PAY_ENABLED=true</li>
+                </Box>
+              </Box>
             </CardContent>
           </Card>
         </Grid>
