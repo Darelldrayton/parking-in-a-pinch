@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { getSecureImageUrl } from '../utils/imageProxy';
 import {
   Box,
   Container,
@@ -1049,14 +1050,14 @@ const Messages: React.FC = React.memo(() => {
                         }}
                       >
                         <Avatar
-                          src={typeof getConversationAvatar(conversation) === 'string' && getConversationAvatar(conversation).startsWith('http') ? getConversationAvatar(conversation) as string : undefined}
+                          src={getSecureImageUrl(conversation.other_participant?.profile_picture)}
                           sx={{
                             bgcolor: conversation.unread_count > 0 ? 'primary.main' : 'grey.400',
                             color: 'white',
                             fontWeight: 600
                           }}
                         >
-                          {typeof getConversationAvatar(conversation) === 'string' && !getConversationAvatar(conversation).startsWith('http') ? getConversationAvatar(conversation) : ''}
+                          {getConversationAvatar(conversation)}
                         </Avatar>
                       </Badge>
                     </Stack>
@@ -1169,7 +1170,7 @@ const Messages: React.FC = React.memo(() => {
             </IconButton>
             
             <Avatar
-              src={selectedConversation.other_participant?.profile_picture_url || selectedConversation.other_participant?.profile_picture}
+              src={getSecureImageUrl(selectedConversation.other_participant?.profile_picture)}
               sx={{ mr: 2 }}
             >
               {getConversationAvatar(selectedConversation)}

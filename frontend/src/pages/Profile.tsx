@@ -3,6 +3,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import toast from 'react-hot-toast'
+import { getSecureImageUrl } from '../utils/imageProxy'
 import {
   Box,
   Container,
@@ -268,14 +269,8 @@ export default function Profile() {
           <CardContent sx={{ p: 4 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
               <Avatar
-                src={(() => {
-                  const imageUrl = user?.profile_image || user?.profile_picture_url || user?.profile_picture;
-                  return imageUrl ? `${imageUrl}?t=${Date.now()}` : undefined;
-                })()}
-                onError={(e) => {
-                  console.log('🚨 Profile Header Avatar image failed to load:', e.currentTarget.src);
-                  e.currentTarget.src = '';
-                }}
+                src={getSecureImageUrl(user?.profile_image)}
+                alt="Profile"
                 sx={{
                   width: 80,
                   height: 80,
@@ -283,7 +278,7 @@ export default function Profile() {
                   fontSize: '2rem',
                 }}
               >
-                {!(user?.profile_image || user?.profile_picture_url || user?.profile_picture) && (user?.first_name?.charAt(0) || 'U')}
+                {!user?.profile_image && (user?.first_name?.charAt(0) || 'U')}
               </Avatar>
               <Box sx={{ flex: 1 }}>
                 <Typography variant="h5" fontWeight="bold" gutterBottom color="text.primary">
@@ -345,21 +340,8 @@ export default function Profile() {
                   <Grid size={12}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
                       <Avatar
-                        src={(() => {
-                          console.log('🖼️ Profile Avatar Debug:', {
-                            hasUser: !!user,
-                            profile_image: user?.profile_image,
-                            profile_picture_url: user?.profile_picture_url,
-                            profile_picture: user?.profile_picture,
-                            userKeys: user ? Object.keys(user) : []
-                          });
-                          const imageUrl = user?.profile_image || user?.profile_picture_url || user?.profile_picture;
-                          return imageUrl ? `${imageUrl}?t=${Date.now()}` : undefined;
-                        })()}
-                        onError={(e) => {
-                          console.log('🚨 Profile Avatar image failed to load:', e.currentTarget.src);
-                          e.currentTarget.src = '';
-                        }}
+                        src={getSecureImageUrl(user?.profile_image)}
+                        alt="Profile"
                         sx={{
                           width: 100,
                           height: 100,
@@ -367,7 +349,7 @@ export default function Profile() {
                           fontSize: '2.5rem',
                         }}
                       >
-                        {!(user?.profile_image || user?.profile_picture_url || user?.profile_picture) && (user?.first_name?.charAt(0) || 'U')}
+                        {!user?.profile_image && (user?.first_name?.charAt(0) || 'U')}
                       </Avatar>
                       {isEditing && (
                         <Box>

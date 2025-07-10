@@ -28,6 +28,7 @@ import {
 } from '@mui/icons-material';
 import stripePromise, { createPaymentIntent, confirmPayment, type PaymentData } from '../../services/stripe';
 import DigitalWalletPayment from './DigitalWalletPayment';
+import EnhancedDigitalWallet from './EnhancedDigitalWallet';
 import toast from 'react-hot-toast';
 
 interface PaymentFormProps {
@@ -145,21 +146,18 @@ const PaymentFormInner: React.FC<PaymentFormProps> = ({
     setError(null);
 
     try {
-      // Simulate payment processing for alternative methods
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      if (method === 'apple') {
-        // Apple Pay integration would go here
-        toast.success('Apple Pay payment successful!');
-      } else if (method === 'google') {
-        // Google Pay integration would go here
-        toast.success('Google Pay payment successful!');
-      } else if (method === 'paypal') {
-        // PayPal integration would go here
-        toast.success('PayPal payment successful!');
+      if (method === 'apple' || method === 'google') {
+        // Use the DigitalWalletPayment component which handles both Apple Pay and Google Pay
+        setPaymentMethod('express');
+        setShowDigitalWallet(true);
+        return;
       }
       
-      onSuccess();
+      if (method === 'paypal') {
+        // PayPal integration would go here
+        toast.success('PayPal payment successful!');
+        onSuccess();
+      }
     } catch (err: any) {
       setError(err.message || 'Payment failed');
       toast.error('Payment failed. Please try again.');
@@ -192,9 +190,9 @@ const PaymentFormInner: React.FC<PaymentFormProps> = ({
             </Typography>
           </Box>
 
-          {/* Show Digital Wallet Option First */}
+          {/* Show Enhanced Digital Wallet Option First */}
           {showDigitalWallet && paymentMethod === 'express' ? (
-            <DigitalWalletPayment
+            <EnhancedDigitalWallet
               amount={amount}
               bookingId={bookingId}
               description={description}

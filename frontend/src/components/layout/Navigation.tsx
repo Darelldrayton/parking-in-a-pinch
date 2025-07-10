@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { getSecureImageUrl } from '../../utils/imageProxy';
 import {
   AppBar,
   Box,
@@ -472,22 +473,8 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
                   <Tooltip title="Open settings">
                     <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                       <Avatar 
-                        alt={user?.name} 
-                        src={(() => {
-                          console.log('🖼️ Navigation Avatar Debug:', {
-                            hasUser: !!user,
-                            profile_image: user?.profile_image,
-                            profile_picture_url: user?.profile_picture_url,
-                            profile_picture: user?.profile_picture,
-                            userKeys: user ? Object.keys(user) : []
-                          });
-                          console.log('🔍 Full user object:', JSON.stringify(user, null, 2));
-                          return user?.profile_image || user?.profile_picture_url || user?.profile_picture || undefined;
-                        })()}
-                        onError={(e) => {
-                          console.log('🚨 Navigation Avatar image failed to load:', e.currentTarget.src);
-                          e.currentTarget.src = '';
-                        }}
+                        src={getSecureImageUrl(user?.profile_image)}
+                        alt={user?.first_name}
                         sx={{}}
                       >
                         {user?.first_name?.charAt(0).toUpperCase() || user?.name?.charAt(0).toUpperCase() || 'U'}

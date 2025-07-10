@@ -61,10 +61,12 @@ import {
   OpenInNew,
   Gavel,
   Send,
-  Reply
+  Reply,
+  AccountBalance
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import api from '../services/api';
+import PayoutManagement from '../components/admin/PayoutManagement';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -169,6 +171,11 @@ interface DashboardStats {
   pending_refunds: number;
   total_refunds: number;
   total_refund_amount: number;
+  
+  // Payout stats
+  pending_payouts: number;
+  total_payouts: number;
+  total_payout_amount: number;
   
   // Dispute stats
   open_disputes: number;
@@ -363,16 +370,19 @@ const AdminDashboardEnhanced: React.FC = () => {
       case 1: // Refund Requests
         if (refundRequests.length === 0) fetchRefundRequests();
         break;
-      case 2: // Listing Approvals
+      case 2: // Payout Management
+        // Payout data is handled by the PayoutManagement component
+        break;
+      case 3: // Listing Approvals
         if (listings.length === 0) fetchListings();
         break;
-      case 3: // Booking Search
+      case 4: // Booking Search
         // Booking search is handled by the search input
         break;
-      case 4: // User Management
+      case 5: // User Management
         if (users.length === 0) fetchUsers();
         break;
-      case 5: // Disputes
+      case 6: // Disputes
         if (disputes.length === 0) fetchDisputes();
         break;
     }
@@ -394,7 +404,7 @@ const AdminDashboardEnhanced: React.FC = () => {
       console.log('📊 Fetching real data from admin APIs...');
       
       // Try admin-specific stats endpoints first, then fallback to individual APIs
-      const [adminStatsRes, usersRes, verificationsRes, listingsRes, refundsRes, disputesRes] = await Promise.all([
+      const [adminStatsRes, usersRes, verificationsRes, listingsRes, refundsRes, payoutsRes, disputesRes] = await Promise.all([
         fetch('/api/v1/admin/dashboard-stats/', { headers }).catch(e => {
           console.warn('Admin stats API not available:', e);
           return { ok: false, status: 503 };
@@ -413,6 +423,10 @@ const AdminDashboardEnhanced: React.FC = () => {
         }),
         fetch('/api/v1/payments/admin/refund-requests/stats/', { headers }).catch(e => {
           console.warn('Refunds stats API not available:', e);
+          return { ok: false, status: 503 };
+        }),
+        fetch('/api/v1/payments/admin/payout-requests/stats/', { headers }).catch(e => {
+          console.warn('Payouts stats API not available:', e);
           return { ok: false, status: 503 };
         }),
         fetch('/api/v1/disputes/admin/stats/', { headers }).catch(e => {
@@ -435,6 +449,7 @@ const AdminDashboardEnhanced: React.FC = () => {
         const verifications = verificationsRes.ok ? await verificationsRes.json() : { pending_requests: 0, total_requests: 0 };
         const listings = listingsRes.ok ? await listingsRes.json() : { pending_listings: 0, total_listings: 0, approved_listings: 0 };
         const refunds = refundsRes.ok ? await refundsRes.json() : { pending_requests: 0, total_requests: 0, total_requested_amount: 0 };
+        const payouts = payoutsRes.ok ? await payoutsRes.json() : { pending_requests: 0, total_requests: 0, total_pending_amount: 0 };
         const disputes = disputesRes.ok ? await disputesRes.json() : { open_disputes: 0, total_disputes: 0, unassigned_disputes: 0 };
 
         realStats = {
@@ -458,6 +473,11 @@ const AdminDashboardEnhanced: React.FC = () => {
           pending_refunds: refunds.pending_requests || 0,
           total_refunds: refunds.total_requests || 0,
           total_refund_amount: refunds.total_requested_amount || 0,
+          
+          // Payout stats
+          pending_payouts: payouts.pending_requests || 0,
+          total_payouts: payouts.total_requests || 0,
+          total_payout_amount: payouts.total_pending_amount || 0,
           
           // Dispute stats
           open_disputes: disputes.open_disputes || 0,
@@ -486,6 +506,9 @@ const AdminDashboardEnhanced: React.FC = () => {
         pending_refunds: 0,
         total_refunds: 0,
         total_refund_amount: 0,
+        pending_payouts: 0,
+        total_payouts: 0,
+        total_payout_amount: 0,
         open_disputes: 0,
         total_disputes: 0
       };
@@ -1660,6 +1683,14 @@ const AdminDashboardEnhanced: React.FC = () => {
               />
               <Tab 
                 label={
+                  <Badge badgeContent={stats?.pending_payouts || 0} color="error">
+                    Payout Management
+                  </Badge>
+                }
+                icon={<AccountBalance />}
+              />
+              <Tab 
+                label={
                   <Badge badgeContent={stats?.pending_listings || 0} color="error">
                     Listing Approvals
                   </Badge>
@@ -1978,8 +2009,13 @@ const AdminDashboardEnhanced: React.FC = () => {
             )}
           </TabPanel>
 
-          {/* Listing Approvals Tab */}
+          {/* Payout Management Tab */}
           <TabPanel value={tabValue} index={2}>
+            <PayoutManagement onRefresh={fetchStats} />
+          </TabPanel>
+
+          {/* Listing Approvals Tab */}
+          <TabPanel value={tabValue} index={3}>
             <Typography variant="h5" gutterBottom>
               Listing Approvals ({listings.length} pending)
             </Typography>
@@ -2133,7 +2169,7 @@ const AdminDashboardEnhanced: React.FC = () => {
           </TabPanel>
 
           {/* Booking Search Tab */}
-          <TabPanel value={tabValue} index={3}>
+          <TabPanel value={tabValue} index={4}>
             <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <BookOnline />
               Booking Search & Management
@@ -2416,7 +2452,7 @@ const AdminDashboardEnhanced: React.FC = () => {
           </TabPanel>
 
           {/* User Management Tab */}
-          <TabPanel value={tabValue} index={4}>
+          <TabPanel value={tabValue} index={5}>
             <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Person />
               User Management & Export
@@ -2592,7 +2628,7 @@ const AdminDashboardEnhanced: React.FC = () => {
           </TabPanel>
 
           {/* Disputes Tab */}
-          <TabPanel value={tabValue} index={5}>
+          <TabPanel value={tabValue} index={6}>
             <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Gavel />
               Disputes Management ({disputes.length} total)

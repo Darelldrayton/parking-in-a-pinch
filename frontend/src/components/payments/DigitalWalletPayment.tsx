@@ -56,6 +56,14 @@ const DigitalWalletPayment: React.FC<DigitalWalletPaymentProps> = ({
       requestPayerName: true,
       requestPayerEmail: true,
       requestPayerPhone: true,
+      // Enable Apple Pay and Google Pay
+      requestShipping: false,
+      displayItems: [
+        {
+          label: 'Subtotal',
+          amount: Math.round(amount * 100),
+        },
+      ],
     });
 
     // Check if the browser supports payment request API
@@ -213,9 +221,9 @@ const DigitalWalletPayment: React.FC<DigitalWalletPaymentProps> = ({
                   paymentRequest,
                   style: {
                     paymentRequestButton: {
-                      type: 'default',
+                      type: 'buy',
                       theme: 'dark',
-                      height: '48px',
+                      height: '56px',
                     },
                   },
                 }}

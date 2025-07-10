@@ -39,6 +39,7 @@ const RecurringBookings = lazy(() => import('./pages/RecurringBookings'));
 const TermsAndConditions = lazy(() => import('./pages/TermsAndConditions'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const PaymentDebug = lazy(() => import('./pages/PaymentDebug'));
+const PaymentTest = lazy(() => import('./pages/PaymentTest'));
 const SystemMonitoring = lazy(() => import('./pages/SystemMonitoring'));
 
 // Footer Pages
@@ -335,6 +336,7 @@ function AppRoutes() {
         {/* Development Helper (only in development) */}
         <Route path="/dev-helper" element={<Layout><DevHelper /></Layout>} />
         <Route path="/payment-debug" element={<Layout><PaymentDebug /></Layout>} />
+        <Route path="/payment-test" element={<Layout><PaymentTest /></Layout>} />
         <Route path="/system-monitoring" element={<Layout><SystemMonitoring /></Layout>} />
         <Route path="/test-deploy" element={<TestDeploy />} />
         
