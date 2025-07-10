@@ -484,6 +484,10 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
                           console.log('🔍 Full user object:', JSON.stringify(user, null, 2));
                           return user?.profile_image || user?.profile_picture_url || user?.profile_picture || undefined;
                         })()}
+                        onError={(e) => {
+                          console.log('🚨 Navigation Avatar image failed to load:', e.currentTarget.src);
+                          e.currentTarget.src = '';
+                        }}
                         sx={{}}
                       >
                         {user?.first_name?.charAt(0).toUpperCase() || user?.name?.charAt(0).toUpperCase() || 'U'}

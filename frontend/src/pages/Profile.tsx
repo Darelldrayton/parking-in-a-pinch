@@ -272,6 +272,10 @@ export default function Profile() {
                   const imageUrl = user?.profile_image || user?.profile_picture_url || user?.profile_picture;
                   return imageUrl ? `${imageUrl}?t=${Date.now()}` : undefined;
                 })()}
+                onError={(e) => {
+                  console.log('🚨 Profile Header Avatar image failed to load:', e.currentTarget.src);
+                  e.currentTarget.src = '';
+                }}
                 sx={{
                   width: 80,
                   height: 80,
@@ -352,6 +356,10 @@ export default function Profile() {
                           const imageUrl = user?.profile_image || user?.profile_picture_url || user?.profile_picture;
                           return imageUrl ? `${imageUrl}?t=${Date.now()}` : undefined;
                         })()}
+                        onError={(e) => {
+                          console.log('🚨 Profile Avatar image failed to load:', e.currentTarget.src);
+                          e.currentTarget.src = '';
+                        }}
                         sx={{
                           width: 100,
                           height: 100,
