@@ -58,6 +58,18 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 
+// Safe date formatting function
+const formatDate = (dateString: string | undefined | null): string => {
+  if (!dateString) {
+    return 'N/A';
+  }
+  try {
+    return new Date(dateString).toLocaleDateString();
+  } catch {
+    return 'Invalid Date';
+  }
+};
+
 interface PrivacySettings {
   marketing_emails: boolean;
   newsletter_subscription: boolean;
@@ -467,7 +479,7 @@ export const PrivacyDashboard: React.FC = () => {
                   />
                   
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Request created: {new Date(exportRequest.created_at).toLocaleDateString()}
+                    Request created: {formatDate(exportRequest.created_at)}
                   </Typography>
                   
                   {exportRequest.status === 'ready' && (
@@ -545,7 +557,7 @@ export const PrivacyDashboard: React.FC = () => {
                 <Alert severity="warning" icon={<WarningIcon />}>
                   <Typography variant="body2">
                     Account deletion request is {deletionRequest.status}. 
-                    Submitted on {new Date(deletionRequest.created_at).toLocaleDateString()}.
+                    Submitted on {formatDate(deletionRequest.created_at)}.
                   </Typography>
                 </Alert>
               ) : (

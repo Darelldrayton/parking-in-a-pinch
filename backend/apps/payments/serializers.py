@@ -9,6 +9,7 @@ from .models import (
     Payment,
     Refund,
     Payout,
+    PayoutRequest,
     WebhookEvent,
     RefundRequest
 )
@@ -503,4 +504,162 @@ class RejectRefundSerializer(serializers.Serializer):
         max_length=1000,
         required=False,
         help_text="Internal admin notes"
+    )
+
+
+class PayoutRequestSerializer(serializers.ModelSerializer):
+    """
+    Serializer for payout requests (list view).
+    """
+    host_name = serializers.SerializerMethodField()
+    host_email = serializers.SerializerMethodField() 
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    payout_method_display = serializers.CharField(source='get_payout_method_display', read_only=True)
+    final_amount = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    masked_account_number = serializers.CharField(read_only=True)
+    payment_count = serializers.SerializerMethodField()
+    can_be_approved = serializers.BooleanField(read_only=True)
+    
+    class Meta:
+        model = PayoutRequest
+        fields = [
+            'id', 'request_id', 'requested_amount', 'approved_amount', 'final_amount',
+            'payout_method', 'payout_method_display', 'status', 'status_display',
+            'host_name', 'host_email', 'bank_name', 'account_holder_name',
+            'masked_account_number', 'routing_number', 'payment_count',
+            'host_notes', 'admin_notes', 'rejection_reason',
+            'can_be_approved', 'created_at', 'updated_at', 'reviewed_at', 'processed_at'
+        ]
+        read_only_fields = [
+            'id', 'request_id', 'created_at', 'updated_at', 'reviewed_at', 'processed_at'
+        ]
+    
+    def get_host_name(self, obj):
+        """Get host's full name."""
+        return f"{obj.host.first_name} {obj.host.last_name}".strip()
+    
+    def get_host_email(self, obj):
+        """Get host's email."""
+        return obj.host.email
+    
+    def get_payment_count(self, obj):
+        """Get number of payments in this payout request."""
+        return obj.payments.count()
+
+
+class PayoutRequestDetailSerializer(PayoutRequestSerializer):
+    """
+    Detailed serializer for payout requests (detail view).
+    """
+    host_details = serializers.SerializerMethodField()
+    reviewed_by_details = serializers.SerializerMethodField()
+    payments_details = serializers.SerializerMethodField()
+    payout_details = serializers.SerializerMethodField()
+    
+    class Meta(PayoutRequestSerializer.Meta):
+        fields = PayoutRequestSerializer.Meta.fields + [
+            'host_details', 'reviewed_by_details', 'payments_details', 'payout_details'
+        ]
+    
+    def get_host_details(self, obj):
+        """Get detailed host information."""
+        host = obj.host
+        return {
+            'id': host.id,
+            'first_name': host.first_name,
+            'last_name': host.last_name,
+            'email': host.email,
+            'phone_number': getattr(host, 'phone_number', ''),
+        }
+    
+    def get_reviewed_by_details(self, obj):
+        """Get admin user who reviewed the request."""
+        if obj.reviewed_by:
+            user = obj.reviewed_by
+            return {
+                'id': user.id,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email,
+            }
+        return None
+    
+    def get_payments_details(self, obj):
+        """Get detailed payment information."""
+        payments = obj.payments.all()
+        return [
+            {
+                'id': payment.id,
+                'payment_id': payment.payment_id,
+                'amount': payment.amount,
+                'host_payout_amount': payment.host_payout_amount,
+                'booking_id': payment.booking.booking_id if payment.booking else None,
+                'created_at': payment.created_at,
+                'processed_at': payment.processed_at,
+            }
+            for payment in payments
+        ]
+    
+    def get_payout_details(self, obj):
+        """Get payout information if processed."""
+        if obj.payout:
+            payout = obj.payout
+            return {
+                'id': payout.id,
+                'payout_id': payout.payout_id,
+                'stripe_payout_id': payout.stripe_payout_id,
+                'amount': payout.amount,
+                'status': payout.status,
+                'status_display': payout.get_status_display(),
+                'processed_at': payout.processed_at,
+                'arrival_date': payout.arrival_date,
+            }
+        return None
+
+
+class ApprovePayoutSerializer(serializers.Serializer):
+    """
+    Serializer for approving payout requests.
+    """
+    approved_amount = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        required=False,
+        help_text="Approved payout amount (uses requested amount if not specified)"
+    )
+    admin_notes = serializers.CharField(
+        max_length=1000,
+        required=False,
+        help_text="Internal admin notes"
+    )
+
+
+class RejectPayoutSerializer(serializers.Serializer):
+    """
+    Serializer for rejecting payout requests.
+    """
+    rejection_reason = serializers.CharField(
+        max_length=500,
+        help_text="Reason for rejecting the payout request"
+    )
+    admin_notes = serializers.CharField(
+        max_length=1000,
+        required=False,
+        help_text="Internal admin notes"
+    )
+
+
+class CompletePayoutSerializer(serializers.Serializer):
+    """
+    Serializer for marking payout as completed.
+    """
+    admin_notes = serializers.CharField(
+        max_length=1000,
+        required=False,
+        help_text="Internal admin notes about completion"
+    )
+    stripe_payout_id = serializers.CharField(
+        max_length=255,
+        required=False,
+        help_text="Stripe payout ID if processed through Stripe"
     )

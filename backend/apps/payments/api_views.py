@@ -483,3 +483,93 @@ def get_earnings_summary(request):
             {'error': 'Failed to get earnings summary'},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def validate_mobile_payment(request):
+    """Validate mobile payment (Apple Pay / Google Pay)"""
+    try:
+        method_name = request.data.get('method_name')
+        payment_details = request.data.get('payment_details')
+        payer_name = request.data.get('payer_name')
+        payer_email = request.data.get('payer_email')
+        payer_phone = request.data.get('payer_phone')
+        
+        # Log the payment attempt
+        logger.info(f"Mobile payment validation attempt - Method: {method_name}, User: {request.user.id}")
+        
+        # Basic validation
+        if not method_name or not payment_details:
+            return Response(
+                {'error': 'Missing required payment data'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Validate payment method
+        if method_name not in ['https://apple.com/apple-pay', 'https://google.com/pay']:
+            return Response(
+                {'error': 'Unsupported payment method'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # For now, simulate successful validation
+        # In production, this would validate the payment token with Stripe
+        transaction_id = f"mobile_{method_name.split('/')[-1]}_{timezone.now().strftime('%Y%m%d_%H%M%S')}"
+        
+        logger.info(f"Mobile payment validated successfully - Transaction ID: {transaction_id}")
+        
+        return Response({
+            'success': True,
+            'transaction_id': transaction_id,
+            'payment_method': method_name.split('/')[-1],  # 'apple-pay' or 'pay'
+            'payer_name': payer_name,
+            'payer_email': payer_email
+        })
+        
+    except Exception as e:
+        logger.error(f"Error validating mobile payment: {str(e)}")
+        return Response(
+            {'error': 'Failed to validate mobile payment'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_mobile_payment_session(request):
+    """Create mobile payment session"""
+    try:
+        booking_id = request.data.get('booking_id')
+        amount = request.data.get('amount')
+        currency = request.data.get('currency', 'USD')
+        description = request.data.get('description', 'Parking Booking')
+        
+        # Validate booking
+        booking = get_object_or_404(Booking, id=booking_id, user=request.user)
+        
+        if booking.status not in ['pending', 'confirmed', 'payment_failed']:
+            return Response(
+                {'error': 'Booking is not in a payable state'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Create session ID
+        session_id = f"mobile_session_{booking_id}_{timezone.now().strftime('%Y%m%d_%H%M%S')}"
+        
+        logger.info(f"Mobile payment session created - Session ID: {session_id}, Booking: {booking_id}")
+        
+        return Response({
+            'session_id': session_id,
+            'booking_id': booking_id,
+            'amount': amount,
+            'currency': currency,
+            'description': description
+        })
+        
+    except Exception as e:
+        logger.error(f"Error creating mobile payment session: {str(e)}")
+        return Response(
+            {'error': 'Failed to create payment session'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

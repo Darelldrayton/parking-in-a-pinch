@@ -44,6 +44,26 @@ import {
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 
+// Safe number formatting function
+const formatCurrency = (amount: number | undefined | null): string => {
+  if (amount === null || amount === undefined || isNaN(amount)) {
+    return '$0';
+  }
+  return `$${amount.toLocaleString()}`;
+};
+
+// Safe date formatting function
+const formatDate = (dateString: string | undefined | null): string => {
+  if (!dateString) {
+    return 'N/A';
+  }
+  try {
+    return new Date(dateString).toLocaleString();
+  } catch {
+    return 'Invalid Date';
+  }
+};
+
 interface PayoutRequest {
   id: number;
   request_id: string;
@@ -306,7 +326,7 @@ const PayoutManagement: React.FC<PayoutManagementProps> = ({ onRefresh }) => {
                 <Box display="flex" alignItems="center">
                   <AccountBalance sx={{ color: 'warning.main', mr: 2 }} />
                   <Box>
-                    <Typography variant="h4">${stats.total_pending_amount.toLocaleString()}</Typography>
+                    <Typography variant="h4">{formatCurrency(stats.total_pending_amount)}</Typography>
                     <Typography variant="body2" color="text.secondary">
                       Pending Amount
                     </Typography>
@@ -336,7 +356,7 @@ const PayoutManagement: React.FC<PayoutManagementProps> = ({ onRefresh }) => {
                 <Box display="flex" alignItems="center">
                   <TrendingUp sx={{ color: 'info.main', mr: 2 }} />
                   <Box>
-                    <Typography variant="h4">${stats.total_completed_amount.toLocaleString()}</Typography>
+                    <Typography variant="h4">{formatCurrency(stats.total_completed_amount)}</Typography>
                     <Typography variant="body2" color="text.secondary">
                       Total Paid Out
                     </Typography>
@@ -413,11 +433,11 @@ const PayoutManagement: React.FC<PayoutManagementProps> = ({ onRefresh }) => {
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2" fontWeight="bold">
-                      ${request.final_amount.toLocaleString()}
+{formatCurrency(request.final_amount)}
                     </Typography>
                     {request.approved_amount && request.approved_amount !== request.requested_amount && (
                       <Typography variant="caption" color="text.secondary">
-                        (Requested: ${request.requested_amount.toLocaleString()})
+                        (Requested: {formatCurrency(request.requested_amount)})
                       </Typography>
                     )}
                   </TableCell>
@@ -515,7 +535,7 @@ const PayoutManagement: React.FC<PayoutManagementProps> = ({ onRefresh }) => {
                 <Typography variant="body2">
                   <strong>Request:</strong> {selectedRequest.request_id}<br />
                   <strong>Host:</strong> {selectedRequest.host_name} ({selectedRequest.host_email})<br />
-                  <strong>Requested Amount:</strong> ${selectedRequest.requested_amount.toLocaleString()}<br />
+                  <strong>Requested Amount:</strong> {formatCurrency(selectedRequest.requested_amount)}<br />
                   <strong>Payment Count:</strong> {selectedRequest.payment_count} payments
                 </Typography>
               </Alert>

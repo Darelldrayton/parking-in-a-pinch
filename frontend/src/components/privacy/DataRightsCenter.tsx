@@ -57,6 +57,18 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 
+// Safe date formatting function
+const formatDate = (dateString: string | undefined | null): string => {
+  if (!dateString) {
+    return 'N/A';
+  }
+  try {
+    return new Date(dateString).toLocaleDateString();
+  } catch {
+    return 'Invalid Date';
+  }
+};
+
 interface DataRequest {
   id: string;
   type: 'access' | 'deletion' | 'rectification' | 'portability' | 'restriction' | 'objection';
@@ -335,7 +347,7 @@ export const DataRightsCenter: React.FC = () => {
                             {request.description}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
-                            Submitted: {new Date(request.created_at).toLocaleDateString()}
+                            Submitted: {formatDate(request.created_at)}
                           </Typography>
                           {request.response && (
                             <Alert severity="info" sx={{ mt: 2 }}>
