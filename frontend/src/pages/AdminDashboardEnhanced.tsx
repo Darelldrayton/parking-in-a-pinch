@@ -1641,50 +1641,52 @@ const AdminDashboardEnhanced: React.FC = () => {
           </>
         )}
 
-        {/* Stats Overview */}
+        {/* Stats Overview - Compact */}
         {stats && (
-          <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <StatCard
-                title="Total Users"
-                value={stats?.total_users || 0}
-                subtitle={`${stats?.recent_signups || 0} new this week`}
-                icon={<Person />}
-                
-              />
+          <Grid container spacing={2} sx={{ mb: 3 }}>
+            <Grid size={{ xs: 6, sm: 3, md: 3 }}>
+              <Box sx={{ p: 2, borderRadius: 2, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
+                <Typography variant="h6" fontWeight={600} color="primary.main">
+                  {stats?.total_users || 0}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" fontSize="0.8rem">
+                  Total Users
+                </Typography>
+              </Box>
             </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <StatCard
-                title="Pending Verifications"
-                value={stats?.pending_verifications || 0}
-                subtitle={`${stats?.total_verifications || 0} total requests`}
-                icon={<CheckCircle />}
-                color="warning"
-                onClick={() => setTabValue(0)}
-              />
+            <Grid size={{ xs: 6, sm: 3, md: 3 }}>
+              <Box sx={{ p: 2, borderRadius: 2, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
+                <Typography variant="h6" fontWeight={600} color="primary.main">
+                  {stats?.total_bookings || 0}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" fontSize="0.8rem">
+                  Total Bookings
+                </Typography>
+              </Box>
             </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <StatCard
-                title="Pending Listings"
-                value={stats?.pending_listings || 0}
-                subtitle={`${stats?.approved_listings || 0} approved`}
-                icon={<Home />}
-                color="info"
-                onClick={() => setTabValue(2)}
-              />
+            <Grid size={{ xs: 6, sm: 3, md: 3 }}>
+              <Box sx={{ p: 2, borderRadius: 2, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
+                <Typography variant="h6" fontWeight={600} color="primary.main">
+                  {stats?.total_listings || 0}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" fontSize="0.8rem">
+                  Total Listings
+                </Typography>
+              </Box>
             </Grid>
-            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-              <StatCard
-                title="Pending Refunds"
-                value={stats?.pending_refunds || 0}
-                subtitle={`$${(stats?.total_refund_amount || 0).toFixed(2)} requested`}
-                icon={<Payment />}
-                color="error"
-                onClick={() => setTabValue(1)}
-              />
+            <Grid size={{ xs: 6, sm: 3, md: 3 }}>
+              <Box sx={{ p: 2, borderRadius: 2, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
+                <Typography variant="h6" fontWeight={600} color="primary.main">
+                  {stats?.active_users || 0}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" fontSize="0.8rem">
+                  Active Users
+                </Typography>
+              </Box>
             </Grid>
           </Grid>
         )}
+
 
         {/* Main Content */}
         <Card sx={{ borderRadius: 3 }}>
@@ -2195,12 +2197,18 @@ const AdminDashboardEnhanced: React.FC = () => {
 
           {/* Booking Search Tab */}
           <TabPanel value={tabValue} index={4}>
-            <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <BookOnline />
+            <Typography variant="h3" fontWeight={700} gutterBottom sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 2,
+              color: 'primary.main',
+              mb: 2
+            }}>
+              <BookOnline sx={{ fontSize: 36 }} />
               Booking Search & Management
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 4 }}>
-              Search, view, and manage all booking reservations in the system.
+            <Typography variant="h6" color="text.secondary" sx={{ mb: 4, fontSize: '1.1rem' }}>
+              Search, view, and manage all booking reservations in the system. Use the advanced search below to find any booking instantly.
             </Typography>
 
             {/* Main Booking Search Interface */}
@@ -2209,6 +2217,10 @@ const AdminDashboardEnhanced: React.FC = () => {
                 borderRadius: 3,
                 border: `2px solid ${theme.palette.primary.main}`,
                 boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.2)}`,
+                width: '95%',
+                maxWidth: '1400px',
+                minHeight: '600px',
+                mx: 'auto',
               }}
             >
               <CardContent sx={{ p: 4 }}>
@@ -2239,27 +2251,30 @@ const AdminDashboardEnhanced: React.FC = () => {
                     size="large"
                     InputProps={{
                       startAdornment: (
-                        <Search sx={{ color: 'action.active', mr: 2, fontSize: 24 }} />
+                        <Search sx={{ color: 'action.active', mr: 2, fontSize: 28 }} />
                       ),
                       sx: {
-                        fontSize: '1.1rem',
+                        fontSize: '1.3rem',
+                        minHeight: '70px',
                         '& .MuiOutlinedInput-notchedOutline': {
-                          borderWidth: 2,
+                          borderWidth: 3,
                         },
                         '&:hover .MuiOutlinedInput-notchedOutline': {
                           borderColor: 'primary.main',
                         },
                         '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                           borderColor: 'primary.main',
-                          borderWidth: 2,
+                          borderWidth: 3,
                         },
                       },
                     }}
                     sx={{
                       '& .MuiInputBase-input': {
-                        padding: '16px 20px',
-                        fontSize: '1.1rem',
-                      }
+                        padding: '20px 24px',
+                        fontSize: '1.3rem',
+                        fontWeight: 500,
+                      },
+                      mb: 2,
                     }}
                   />
 
@@ -2273,7 +2288,8 @@ const AdminDashboardEnhanced: React.FC = () => {
                         left: 0,
                         right: 0,
                         zIndex: 1000,
-                        maxHeight: 500,
+                        minHeight: '500px',
+                        maxHeight: '70vh',
                         overflow: 'auto',
                         borderRadius: 2,
                         mt: 1,
@@ -2292,24 +2308,28 @@ const AdminDashboardEnhanced: React.FC = () => {
                               key={index}
                               onClick={() => handleBookingSelect(booking)}
                               sx={{
-                                p: 3,
+                                p: 4,
                                 cursor: 'pointer',
                                 borderBottom: '1px solid',
                                 borderColor: 'divider',
+                                minHeight: '140px',
+                                transition: 'all 0.2s ease-in-out',
                                 '&:hover': {
-                                  bgcolor: alpha(theme.palette.primary.main, 0.05),
+                                  bgcolor: alpha(theme.palette.primary.main, 0.08),
+                                  transform: 'translateY(-1px)',
+                                  boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
                                 },
                                 '&:last-child': {
                                   borderBottom: 'none',
                                 },
                               }}
                             >
-                              <Grid container spacing={2} alignItems="center">
+                              <Grid container spacing={3} alignItems="center">
                                 <Grid size={{ xs: 12, md: 8 }}>
-                                  <Typography variant="h6" fontWeight={600} color="primary.main" sx={{ mb: 1 }}>
+                                  <Typography variant="h5" fontWeight={700} color="primary.main" sx={{ mb: 2, fontSize: '1.4rem' }}>
                                     Reservation #{booking.booking_id}
                                   </Typography>
-                                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 1 }}>
+                                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 2 }}>
                                     <Box>
                                       <Typography variant="body2" fontWeight={600}>Guest:</Typography>
                                       <Typography variant="body2" color="text.secondary">{booking.user_name}</Typography>
@@ -2334,7 +2354,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                                       )}
                                     </Box>
                                   </Box>
-                                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 1 }}>
+                                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 2 }}>
                                     <Box>
                                       <Typography variant="body2" fontWeight={600}>Location:</Typography>
                                       <Typography variant="body2" color="text.secondary">{booking.parking_space}</Typography>
