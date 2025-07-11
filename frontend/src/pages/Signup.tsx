@@ -42,6 +42,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { useSnackbar } from 'notistack';
+import { LegalDisclaimer } from '../components/legal/LegalDisclaimer';
 
 interface SignupFormData {
   first_name: string;
@@ -463,31 +464,14 @@ const Signup: React.FC = () => {
                         />
                       </Grid>
 
-                      {/* Terms and Conditions */}
+                      {/* Legal Terms Agreement */}
                       <Grid size={12}>
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              {...register('agreeToTerms')}
-                              
-                            />
-                          }
-                          label={
-                            <Typography variant="body2">
-                              I agree to the{' '}
-                              <Link
-                                to="/terms"
-                              >
-                                Terms and Conditions
-                              </Link>{' '}
-                              and{' '}
-                              <Link
-                                to="/privacy"
-                              >
-                                Privacy Policy
-                              </Link>
-                            </Typography>
-                          }
+                        <LegalDisclaimer
+                          type="signup"
+                          required={true}
+                          onAccept={(accepted) => {
+                            setValue('agreeToTerms', accepted);
+                          }}
                         />
                         {errors.agreeToTerms && (
                           <FormHelperText error>{errors.agreeToTerms.message}</FormHelperText>
