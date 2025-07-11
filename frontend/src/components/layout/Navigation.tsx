@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getSecureImageUrl } from '../../utils/imageProxy';
+import { VerifiedAvatar } from '../common/VerifiedBadge';
 import {
   AppBar,
   Box,
@@ -472,13 +473,14 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
                 <Box sx={{ flexGrow: 0 }}>
                   <Tooltip title="Open settings">
                     <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                      <Avatar 
+                      <VerifiedAvatar 
                         src={getSecureImageUrl(user?.profile_image)}
                         alt={user?.first_name}
-                        sx={{}}
+                        isVerified={user?.is_verified || false}
+                        size={40}
                       >
                         {user?.first_name?.charAt(0).toUpperCase() || user?.name?.charAt(0).toUpperCase() || 'U'}
-                      </Avatar>
+                      </VerifiedAvatar>
                     </IconButton>
                   </Tooltip>
                   <Menu

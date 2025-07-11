@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { getSecureImageUrl } from '../utils/imageProxy';
+import { VerifiedAvatar } from '../components/common/VerifiedBadge';
 import {
   Box,
   Container,
@@ -63,6 +64,7 @@ interface User {
   display_name: string;
   profile_picture?: string;
   profile_picture_url?: string;
+  is_verified?: boolean;
 }
 
 interface Message {
@@ -1049,8 +1051,10 @@ const Messages: React.FC = React.memo(() => {
                           }
                         }}
                       >
-                        <Avatar
+                        <VerifiedAvatar
                           src={getSecureImageUrl(conversation.other_participant?.profile_picture)}
+                          isVerified={conversation.other_participant?.is_verified || false}
+                          size={40}
                           sx={{
                             bgcolor: conversation.unread_count > 0 ? 'primary.main' : 'grey.400',
                             color: 'white',
@@ -1058,7 +1062,7 @@ const Messages: React.FC = React.memo(() => {
                           }}
                         >
                           {getConversationAvatar(conversation)}
-                        </Avatar>
+                        </VerifiedAvatar>
                       </Badge>
                     </Stack>
                   </ListItemAvatar>
@@ -1169,12 +1173,14 @@ const Messages: React.FC = React.memo(() => {
               <ArrowBackIcon />
             </IconButton>
             
-            <Avatar
+            <VerifiedAvatar
               src={getSecureImageUrl(selectedConversation.other_participant?.profile_picture)}
+              isVerified={selectedConversation.other_participant?.is_verified || false}
+              size={40}
               sx={{ mr: 2 }}
             >
               {getConversationAvatar(selectedConversation)}
-            </Avatar>
+            </VerifiedAvatar>
             
             <Box sx={{ flex: 1 }}>
               <Typography variant="h6" fontWeight={600} color="text.primary">

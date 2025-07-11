@@ -178,6 +178,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
             'total_users': all_users.count(),
             'active_users': all_users.filter(is_active=True).count(),
             'verified_users': all_users.filter(is_identity_verified=True).count(),
+            'admin_verified_users': all_users.filter(is_verified=True).count(),
             'email_verified_users': all_users.filter(is_email_verified=True).count(),
             'phone_verified_users': all_users.filter(is_phone_verified=True).count(),
             'hosts': all_users.filter(
@@ -276,6 +277,116 @@ class AdminUserViewSet(viewsets.ModelViewSet):
             logger.error(f"Error activating user: {str(e)}")
             return Response(
                 {'error': f'Failed to activate user: {str(e)}'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    @action(detail=True, methods=['post'])
+    def verify_user(self, request, pk=None):
+        """
+        Manually verify a user (admin verification badge)
+        """
+        user = self.get_object()
+        
+        if user.is_verified:
+            return Response(
+                {'error': 'User is already verified'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            admin_notes = request.data.get('admin_notes', '')
+            
+            # Set verification fields
+            user.is_verified = True
+            user.verified_at = timezone.now()
+            user.verified_by = request.user
+            user.save()
+            
+            logger.info(f"User {user.email} manually verified by {request.user.email}")
+            
+            # Send notification to user about verification
+            try:
+                from apps.notifications.services import NotificationService
+                
+                variables = {
+                    'user_name': user.first_name or user.username,
+                }
+                
+                NotificationService.send_notification(
+                    user=user,
+                    template_type='USER_VERIFIED',
+                    context=variables,
+                    channels=['EMAIL']
+                )
+            except Exception as e:
+                logger.warning(f"Failed to send verification notification: {str(e)}")
+            
+            serializer = UserSerializer(user)
+            return Response({
+                'message': 'User verified successfully',
+                'user': serializer.data
+            })
+            
+        except Exception as e:
+            logger.error(f"Error verifying user: {str(e)}")
+            return Response(
+                {'error': f'Failed to verify user: {str(e)}'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    @action(detail=True, methods=['post'])
+    def unverify_user(self, request, pk=None):
+        """
+        Remove verification from a user (admin verification badge)
+        """
+        user = self.get_object()
+        
+        if not user.is_verified:
+            return Response(
+                {'error': 'User is not verified'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            reason = request.data.get('reason', '')
+            admin_notes = request.data.get('admin_notes', '')
+            
+            # Remove verification fields
+            user.is_verified = False
+            user.verified_at = None
+            user.verified_by = None
+            user.save()
+            
+            logger.info(f"User {user.email} verification removed by {request.user.email}. Reason: {reason}")
+            
+            # Send notification to user about verification removal
+            try:
+                from apps.notifications.services import NotificationService
+                
+                variables = {
+                    'user_name': user.first_name or user.username,
+                    'reason': reason or 'Administrative review',
+                }
+                
+                NotificationService.send_notification(
+                    user=user,
+                    template_type='USER_UNVERIFIED',
+                    context=variables,
+                    channels=['EMAIL']
+                )
+            except Exception as e:
+                logger.warning(f"Failed to send unverification notification: {str(e)}")
+            
+            serializer = UserSerializer(user)
+            return Response({
+                'message': 'User verification removed successfully',
+                'user': serializer.data
+            })
+            
+        except Exception as e:
+            logger.error(f"Error removing user verification: {str(e)}")
+            return Response(
+                {'error': f'Failed to remove verification: {str(e)}'}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 

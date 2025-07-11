@@ -42,7 +42,8 @@ class UserSerializer(serializers.ModelSerializer):
         )
         read_only_fields = (
             'id', 'is_email_verified', 'is_phone_verified', 
-            'is_identity_verified', 'stripe_customer_id', 'stripe_account_id',
+            'is_identity_verified', 'is_verified', 'verified_at', 'verified_by',
+            'stripe_customer_id', 'stripe_account_id',
             'average_rating_as_host', 'total_reviews_as_host',
             'average_rating_as_guest', 'total_reviews_as_guest',
             'created_at'
@@ -177,7 +178,7 @@ class FrontendUserSerializer(serializers.ModelSerializer):
     
     # Map backend fields to frontend field names
     user_type = serializers.SerializerMethodField()
-    is_verified = serializers.BooleanField(source='is_identity_verified', read_only=True)
+    is_verified = serializers.BooleanField(read_only=True)  # Use the admin-controlled verification field
     profile_image = serializers.ImageField(source='profile_picture', required=False)
     profile = UserProfileSerializer(read_only=True)
     

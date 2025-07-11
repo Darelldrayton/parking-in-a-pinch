@@ -1102,7 +1102,7 @@ const AdminDashboardEnhanced: React.FC = () => {
   };
 
   // User management functions
-  const handleUserAction = async (userId: number, action: 'suspend' | 'activate') => {
+  const handleUserAction = async (userId: number, action: 'suspend' | 'activate' | 'verify' | 'unverify') => {
     try {
       const token = localStorage.getItem('admin_access_token');
       if (!token) {
@@ -1110,21 +1110,46 @@ const AdminDashboardEnhanced: React.FC = () => {
         return;
       }
 
-      const response = await fetch(`/api/v1/users/admin/${userId}/${action}/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      let response;
+      if (action === 'verify' || action === 'unverify') {
+        // Use the verification endpoints
+        response = await fetch(`/api/v1/users/admin/${userId}/${action}_user/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+      } else {
+        // Use the existing suspend/activate endpoints
+        response = await fetch(`/api/v1/users/admin/${userId}/${action}/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+      }
 
       if (response.ok) {
-        toast.success(`User ${action === 'suspend' ? 'suspended' : 'activated'} successfully`);
+        const actionText = {
+          'suspend': 'suspended',
+          'activate': 'activated',
+          'verify': 'verified',
+          'unverify': 'unverified'
+        }[action];
+        
+        toast.success(`User ${actionText} successfully`);
+        
         // Update the user in the local state
         setUsers(prevUsers => 
           prevUsers.map(user => 
             user.id === userId 
-              ? { ...user, is_active: action === 'activate' }
+              ? { 
+                  ...user, 
+                  is_active: action === 'suspend' ? false : action === 'activate' ? true : user.is_active,
+                  is_verified: action === 'verify' ? true : action === 'unverify' ? false : user.is_verified
+                }
               : user
           )
         );
@@ -2598,6 +2623,27 @@ const AdminDashboardEnhanced: React.FC = () => {
                                       onClick={() => handleUserAction(user.id, 'activate')}
                                     >
                                       <CheckCircle />
+                                    </IconButton>
+                                  </Tooltip>
+                                )}
+                                {user.is_verified ? (
+                                  <Tooltip title="Remove Verification">
+                                    <IconButton
+                                      size="small"
+                                      color="warning"
+                                      onClick={() => handleUserAction(user.id, 'unverify')}
+                                    >
+                                      <Cancel />
+                                    </IconButton>
+                                  </Tooltip>
+                                ) : (
+                                  <Tooltip title="Verify User">
+                                    <IconButton
+                                      size="small"
+                                      color="success"
+                                      onClick={() => handleUserAction(user.id, 'verify')}
+                                    >
+                                      <Verified />
                                     </IconButton>
                                   </Tooltip>
                                 )}
