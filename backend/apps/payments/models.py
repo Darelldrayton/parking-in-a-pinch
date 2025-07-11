@@ -779,10 +779,13 @@ class PayoutRequest(models.Model):
         COMPLETED = 'completed', _('Completed')
     
     class PayoutMethod(models.TextChoices):
-        BANK_TRANSFER = 'bank_transfer', _('Bank Transfer')
-        CHECK = 'check', _('Check')
+        BANK_TRANSFER = 'bank_transfer', _('Bank Transfer (ACH)')
+        WIRE_TRANSFER = 'wire_transfer', _('Wire Transfer')
+        CHECK = 'check', _('Paper Check')
         PAYPAL = 'paypal', _('PayPal')
-        STRIPE = 'stripe', _('Stripe')
+        ZELLE = 'zelle', _('Zelle')
+        VENMO = 'venmo', _('Venmo')
+        CASHAPP = 'cashapp', _('Cash App')
     
     # Relationships
     host = models.ForeignKey(

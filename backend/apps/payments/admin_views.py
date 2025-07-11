@@ -6,7 +6,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
 from django.db import transaction
+from django.http import HttpResponse
 import logging
+import csv
+import io
 
 from .models import RefundRequest, Refund, PayoutRequest, Payout
 from .services import PaymentService
@@ -510,3 +513,72 @@ class PayoutRequestViewSet(viewsets.ModelViewSet):
         }
         
         return Response(stats)
+    
+    @action(detail=False, methods=['get'])
+    def export_approved(self, request):
+        """
+        Export all approved payout requests to Excel/CSV format
+        """
+        # Get approved and completed payout requests
+        approved_requests = self.get_queryset().filter(
+            status__in=[
+                PayoutRequest.RequestStatus.APPROVED,
+                PayoutRequest.RequestStatus.COMPLETED
+            ]
+        ).order_by('-created_at')
+        
+        # Create response
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="approved_payout_requests_{timezone.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+        
+        # Create CSV writer
+        writer = csv.writer(response)
+        
+        # Write header
+        writer.writerow([
+            'Request ID',
+            'Host Name',
+            'Host Email',
+            'Requested Amount',
+            'Approved Amount',
+            'Final Amount',
+            'Payout Method',
+            'Status',
+            'Bank Name',
+            'Account Holder',
+            'Account Number (Masked)',
+            'Routing Number',
+            'Payment Count',
+            'Host Notes',
+            'Admin Notes',
+            'Created Date',
+            'Reviewed Date',
+            'Processed Date',
+            'Reviewed By'
+        ])
+        
+        # Write data rows
+        for request in approved_requests:
+            writer.writerow([
+                request.request_id,
+                request.host.get_full_name() or f"{request.host.first_name} {request.host.last_name}".strip(),
+                request.host.email,
+                f"${float(request.requested_amount):.2f}",
+                f"${float(request.approved_amount or request.requested_amount):.2f}",
+                f"${float(request.final_amount):.2f}",
+                request.get_payout_method_display(),
+                request.get_status_display(),
+                request.bank_name or '',
+                request.account_holder_name or '',
+                f"****{request.account_number[-4:]}" if request.account_number and len(request.account_number) >= 4 else '',
+                request.routing_number or '',
+                request.payments.count(),
+                request.host_notes or '',
+                request.admin_notes or '',
+                request.created_at.strftime('%Y-%m-%d %H:%M:%S') if request.created_at else '',
+                request.reviewed_at.strftime('%Y-%m-%d %H:%M:%S') if request.reviewed_at else '',
+                request.processed_at.strftime('%Y-%m-%d %H:%M:%S') if request.processed_at else '',
+                request.reviewed_by.email if request.reviewed_by else ''
+            ])
+        
+        return response

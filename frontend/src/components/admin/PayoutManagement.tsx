@@ -40,6 +40,7 @@ import {
   TrendingUp,
   FilterList,
   Refresh,
+  GetApp,
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
@@ -287,6 +288,42 @@ const PayoutManagement: React.FC<PayoutManagementProps> = ({ onRefresh }) => {
     }
   };
 
+  const exportApprovedRequests = async () => {
+    try {
+      setLoading(true);
+      
+      // Make request to export endpoint
+      const response = await fetch('/api/v1/payments/admin/payout-requests/export_approved/', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Token ${localStorage.getItem('adminToken')}`,
+        },
+      });
+
+      if (response.ok) {
+        // Create download link
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `approved_payout_requests_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        toast.success('Export completed successfully');
+      } else {
+        toast.error('Failed to export data');
+      }
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      toast.error('Error exporting data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredRequests = payoutRequests.filter(request => {
     if (statusFilter === 'all') return true;
     return request.status.toLowerCase() === statusFilter.toLowerCase();
@@ -388,6 +425,17 @@ const PayoutManagement: React.FC<PayoutManagementProps> = ({ onRefresh }) => {
                   <MenuItem value="rejected">Rejected</MenuItem>
                 </Select>
               </FormControl>
+              <Tooltip title="Export Approved Requests">
+                <Button
+                  variant="outlined"
+                  startIcon={<GetApp />}
+                  onClick={exportApprovedRequests}
+                  disabled={loading}
+                  size="small"
+                >
+                  Export CSV
+                </Button>
+              </Tooltip>
               <Tooltip title="Refresh">
                 <IconButton onClick={() => { fetchPayoutRequests(); fetchPayoutStats(); }}>
                   <Refresh />
