@@ -36,6 +36,9 @@ import {
   CreditCard,
   Info,
   Payment as PaymentIcon,
+  Apple,
+  Google,
+  Speed,
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import PaymentForm from '../payments/PaymentForm';
@@ -262,20 +265,88 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({
                         <Box sx={{ mt: 2, mb: 1 }}>
                           {index === 0 && (
                             <Box>
-                              <Typography variant="body1" sx={{ mb: 2 }}>
+                              <Typography variant="body1" sx={{ mb: 3 }}>
                                 Please review your booking details below and proceed to payment.
                               </Typography>
-                              <Button
-                                variant="contained"
-                                onClick={handleProceedToPayment}
-                                startIcon={<PaymentIcon />}
-                                sx={{ mr: 1 }}
+                              
+                              {/* Express Checkout Options */}
+                              <Paper 
+                                sx={{ 
+                                  p: 3, 
+                                  mb: 3, 
+                                  borderRadius: 2,
+                                  bgcolor: alpha(theme.palette.primary.main, 0.02),
+                                  border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                                }}
                               >
-                                Proceed to Payment
-                              </Button>
-                              <Button onClick={onBack} sx={{ mr: 1 }}>
-                                Back
-                              </Button>
+                                <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+                                  <Speed sx={{ color: 'primary.main' }} />
+                                  <Typography variant="h6" fontWeight={600}>
+                                    Express Checkout
+                                  </Typography>
+                                  <Chip label="Fastest" size="small" color="primary" />
+                                </Stack>
+                                
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                  Complete your booking instantly with your preferred payment method
+                                </Typography>
+                                
+                                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                                  <Button
+                                    variant="outlined"
+                                    fullWidth
+                                    startIcon={<Apple />}
+                                    onClick={() => toast.info('Apple Pay coming soon!')}
+                                    sx={{
+                                      py: 1.5,
+                                      borderColor: 'black',
+                                      color: 'black',
+                                      '&:hover': {
+                                        borderColor: 'black',
+                                        bgcolor: alpha('#000', 0.04),
+                                      },
+                                    }}
+                                  >
+                                    Apple Pay
+                                  </Button>
+                                  <Button
+                                    variant="outlined"
+                                    fullWidth
+                                    startIcon={<Google />}
+                                    onClick={() => toast.info('Google Pay coming soon!')}
+                                    sx={{
+                                      py: 1.5,
+                                      borderColor: '#4285f4',
+                                      color: '#4285f4',
+                                      '&:hover': {
+                                        borderColor: '#4285f4',
+                                        bgcolor: alpha('#4285f4', 0.04),
+                                      },
+                                    }}
+                                  >
+                                    Google Pay
+                                  </Button>
+                                </Stack>
+                              </Paper>
+                              
+                              <Divider sx={{ my: 2 }}>
+                                <Typography variant="body2" color="text.secondary">
+                                  OR
+                                </Typography>
+                              </Divider>
+                              
+                              <Stack direction="row" spacing={2}>
+                                <Button
+                                  variant="contained"
+                                  onClick={handleProceedToPayment}
+                                  startIcon={<CreditCard />}
+                                >
+                                  Pay with Card
+                                </Button>
+                                <Button onClick={onBack}>
+                                  Back
+                                </Button>
+                              </Stack>
                             </Box>
                           )}
                           {index === 1 && (
