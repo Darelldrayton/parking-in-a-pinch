@@ -17,45 +17,48 @@ export const listingsService = {
   async getListings(filters?: SearchFilters): Promise<ListingsResponse> {
     const params = new URLSearchParams()
     
-    // Search query filter
-    if (filters?.search) params.append('search', filters.search)
-    
-    // Basic filters
-    if (filters?.borough) params.append('borough', filters.borough)
-    if (filters?.parking_type?.length) {
-      filters.parking_type.forEach(type => params.append('space_type', type))
+    // If there's a search query, use it as the primary filter
+    if (filters?.search) {
+      params.append('search', filters.search)
+      // Don't include borough when searching - it's already included in the search
+    } else {
+      // Only include other filters when not searching
+      if (filters?.borough) params.append('borough', filters.borough)
+      if (filters?.parking_type?.length) {
+        filters.parking_type.forEach(type => params.append('space_type', type))
+      }
+      if (filters?.vehicle_type) params.append('max_vehicle_size', filters.vehicle_type)
+      
+      // Price filters
+      if (filters?.min_price) params.append('min_price', filters.min_price.toString())
+      if (filters?.max_price) params.append('max_price', filters.max_price.toString())
+      
+      // Amenities filter - send as comma-separated string
+      if (filters?.amenities?.length) {
+        params.append('amenities', filters.amenities.join(','))
+      }
+      
+      // Individual amenity filters for more precise control
+      if (filters?.amenities?.includes('covered')) params.append('is_covered', 'true')
+      if (filters?.amenities?.includes('security')) params.append('has_security', 'true')
+      if (filters?.amenities?.includes('electric_charging')) params.append('has_ev_charging', 'true')
+      if (filters?.amenities?.includes('cctv')) params.append('has_cctv', 'true')
+      if (filters?.amenities?.includes('car_wash')) params.append('has_car_wash', 'true')
+      
+      // Availability filters
+      if (filters?.start_date) params.append('start_date', filters.start_date)
+      if (filters?.end_date) params.append('end_date', filters.end_date)
+      if (filters?.start_time) params.append('start_time', filters.start_time)
+      if (filters?.end_time) params.append('end_time', filters.end_time)
+      
+      // Special filters
+      if (filters?.instant_book_only) params.append('instant_book', 'true')
+      if (filters?.available_now) params.append('available_now', 'true')
+      if (filters?.available_today) params.append('available_today', 'true')
+      if (filters?.available_this_week) params.append('available_this_week', 'true')
+      if (filters?.wheelchair_accessible) params.append('wheelchair_accessible', 'true')
+      if (filters?.min_rating) params.append('min_rating', filters.min_rating.toString())
     }
-    if (filters?.vehicle_type) params.append('max_vehicle_size', filters.vehicle_type)
-    
-    // Price filters
-    if (filters?.min_price) params.append('min_price', filters.min_price.toString())
-    if (filters?.max_price) params.append('max_price', filters.max_price.toString())
-    
-    // Amenities filter - send as comma-separated string
-    if (filters?.amenities?.length) {
-      params.append('amenities', filters.amenities.join(','))
-    }
-    
-    // Individual amenity filters for more precise control
-    if (filters?.amenities?.includes('covered')) params.append('is_covered', 'true')
-    if (filters?.amenities?.includes('security')) params.append('has_security', 'true')
-    if (filters?.amenities?.includes('electric_charging')) params.append('has_ev_charging', 'true')
-    if (filters?.amenities?.includes('cctv')) params.append('has_cctv', 'true')
-    if (filters?.amenities?.includes('car_wash')) params.append('has_car_wash', 'true')
-    
-    // Availability filters
-    if (filters?.start_date) params.append('start_date', filters.start_date)
-    if (filters?.end_date) params.append('end_date', filters.end_date)
-    if (filters?.start_time) params.append('start_time', filters.start_time)
-    if (filters?.end_time) params.append('end_time', filters.end_time)
-    
-    // Special filters
-    if (filters?.instant_book_only) params.append('instant_book', 'true')
-    if (filters?.available_now) params.append('available_now', 'true')
-    if (filters?.available_today) params.append('available_today', 'true')
-    if (filters?.available_this_week) params.append('available_this_week', 'true')
-    if (filters?.wheelchair_accessible) params.append('wheelchair_accessible', 'true')
-    if (filters?.min_rating) params.append('min_rating', filters.min_rating.toString())
 
     const queryString = params.toString()
     const url = `/listings/${queryString ? `?${queryString}` : ''}`

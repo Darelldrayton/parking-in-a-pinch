@@ -687,6 +687,11 @@ export default function Listings() {
                 value={searchQuery}
                 onChange={(value, selectedLocation) => {
                   setSearchQuery(value);
+                  if (value) {
+                    // Clear borough filter when searching to avoid backend conflict
+                    setSelectedBorough('');
+                    setSelectedNeighborhood('');
+                  }
                   if (selectedLocation) {
                     if (selectedLocation.type === 'borough') {
                       setSelectedBorough(selectedLocation.borough || '');
