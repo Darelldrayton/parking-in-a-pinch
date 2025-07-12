@@ -68,6 +68,7 @@ export interface ParkingListing {
 }
 
 export interface SearchFilters {
+  search?: string
   borough?: string
   parking_type?: ParkingType[]
   vehicle_type?: VehicleType

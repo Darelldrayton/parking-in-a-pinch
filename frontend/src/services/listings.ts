@@ -17,6 +17,9 @@ export const listingsService = {
   async getListings(filters?: SearchFilters): Promise<ListingsResponse> {
     const params = new URLSearchParams()
     
+    // Search query filter
+    if (filters?.search) params.append('search', filters.search)
+    
     // Basic filters
     if (filters?.borough) params.append('borough', filters.borough)
     if (filters?.parking_type?.length) {
