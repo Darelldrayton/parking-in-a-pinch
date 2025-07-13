@@ -124,7 +124,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({
   ];
 
   const handleProceedToPayment = async () => {
-    // Create booking first, then proceed to payment
+    // Create booking with pending status, then proceed to payment
     setIsCreatingBooking(true);
     setActiveStep(1);
 
@@ -136,6 +136,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({
         vehicle_license_plate: formData.vehicle_license_plate,
         vehicle_make_model: formData.vehicle_make_model || '',
         special_instructions: formData.special_instructions || '',
+        status: 'pending', // Create with pending status until payment succeeds
       };
 
       const response = await api.post('/bookings/bookings/', bookingPayload);
@@ -180,18 +181,55 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({
     }
   };
 
-  const handlePaymentSuccess = () => {
+  const handlePaymentSuccess = async () => {
     setShowPaymentForm(false);
-    setPaymentCompleted(true);
-    setActiveStep(2);
-    toast.success('Payment successful! Your parking is reserved.');
-    onSuccess();
+    
+    // Update booking status to confirmed after successful payment
+    if (bookingId) {
+      try {
+        await api.patch(`/bookings/bookings/${bookingId}/`, { status: 'confirmed' });
+        setPaymentCompleted(true);
+        setActiveStep(2);
+        toast.success('Payment successful! Your parking is confirmed.');
+        onSuccess();
+      } catch (error) {
+        console.error('Error confirming booking:', error);
+        toast.error('Payment succeeded but booking confirmation failed. Please contact support.');
+      }
+    } else {
+      setPaymentCompleted(true);
+      setActiveStep(2);
+      toast.success('Payment successful! Your parking is reserved.');
+      onSuccess();
+    }
   };
 
-  const handlePaymentCancel = () => {
+  const handlePaymentCancel = async () => {
     setShowPaymentForm(false);
-    // Optionally cancel the booking here
+    
+    // Cancel the pending booking since payment was cancelled
+    if (bookingId) {
+      try {
+        await api.patch(`/bookings/bookings/${bookingId}/`, { status: 'cancelled' });
+        toast.info('Booking cancelled due to payment cancellation.');
+      } catch (error) {
+        console.error('Error cancelling booking:', error);
+        // Continue with cancellation flow even if API call fails
+      }
+    }
+    
     onCancel();
+  };
+
+  const handlePaymentFailure = async (failedBookingId: number) => {
+    // Cancel the booking when payment fails
+    try {
+      await api.patch(`/bookings/bookings/${failedBookingId}/`, { status: 'cancelled' });
+      toast.error('Payment failed. Booking has been cancelled.');
+    } catch (error) {
+      console.error('Error cancelling failed booking:', error);
+      toast.error('Payment failed and booking cancellation failed. Please contact support.');
+    }
   };
 
   // Use mobile checkout for mobile devices
@@ -297,35 +335,61 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({
                                     variant="outlined"
                                     fullWidth
                                     startIcon={<Apple />}
-                                    onClick={() => toast.info('Apple Pay coming soon!')}
+                                    disabled
                                     sx={{
                                       py: 1.5,
-                                      borderColor: 'black',
-                                      color: 'black',
-                                      '&:hover': {
-                                        borderColor: 'black',
-                                        bgcolor: alpha('#000', 0.04),
+                                      borderColor: 'grey.300',
+                                      color: 'grey.500',
+                                      position: 'relative',
+                                      '&.Mui-disabled': {
+                                        borderColor: 'grey.300',
+                                        color: 'grey.500',
                                       },
                                     }}
                                   >
                                     Apple Pay
+                                    <Chip 
+                                      label="Coming Soon" 
+                                      size="small" 
+                                      sx={{ 
+                                        position: 'absolute', 
+                                        right: 8, 
+                                        fontSize: '0.7rem',
+                                        height: 20,
+                                        backgroundColor: 'warning.light',
+                                        color: 'warning.contrastText',
+                                      }} 
+                                    />
                                   </Button>
                                   <Button
                                     variant="outlined"
                                     fullWidth
                                     startIcon={<Google />}
-                                    onClick={() => toast.info('Google Pay coming soon!')}
+                                    disabled
                                     sx={{
                                       py: 1.5,
-                                      borderColor: '#4285f4',
-                                      color: '#4285f4',
-                                      '&:hover': {
-                                        borderColor: '#4285f4',
-                                        bgcolor: alpha('#4285f4', 0.04),
+                                      borderColor: 'grey.300',
+                                      color: 'grey.500',
+                                      position: 'relative',
+                                      '&.Mui-disabled': {
+                                        borderColor: 'grey.300',
+                                        color: 'grey.500',
                                       },
                                     }}
                                   >
                                     Google Pay
+                                    <Chip 
+                                      label="Coming Soon" 
+                                      size="small" 
+                                      sx={{ 
+                                        position: 'absolute', 
+                                        right: 8, 
+                                        fontSize: '0.7rem',
+                                        height: 20,
+                                        backgroundColor: 'warning.light',
+                                        color: 'warning.contrastText',
+                                      }} 
+                                    />
                                   </Button>
                                 </Stack>
                               </Paper>
@@ -620,6 +684,7 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({
             description={`Parking at ${listing.title}`}
             onSuccess={handlePaymentSuccess}
             onCancel={handlePaymentCancel}
+            onFailure={handlePaymentFailure}
           />
         </DialogContent>
       </Dialog>

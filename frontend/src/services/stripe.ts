@@ -41,11 +41,14 @@ export const createPaymentIntent = async (paymentData: PaymentData): Promise<Pay
     booking_id: paymentData.bookingId,
   };
 
+  // Use Token format for DRF compatibility (same as api.ts)
+  const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+
   const response = await fetch(`${getApiUrl()}/payments/v2/create-payment-intent/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+      'Authorization': `Token ${token}`,
     },
     body: JSON.stringify(backendPayload),
   });
@@ -58,11 +61,14 @@ export const createPaymentIntent = async (paymentData: PaymentData): Promise<Pay
 };
 
 export const confirmPayment = async (paymentIntentId: string, bookingId: number) => {
+  // Use Token format for DRF compatibility (same as api.ts)
+  const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+
   const response = await fetch(`${getApiUrl()}/payments/v2/confirm-real-payment/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+      'Authorization': `Token ${token}`,
     },
     body: JSON.stringify({ 
       payment_intent_id: paymentIntentId,

@@ -124,6 +124,7 @@ const MobileCheckout: React.FC<MobileCheckoutProps> = ({
         vehicle_license_plate: formData.vehicle_license_plate,
         vehicle_make_model: formData.vehicle_make_model || '',
         special_instructions: formData.special_instructions || '',
+        status: 'pending', // Create with pending status until payment succeeds
       };
 
       const response = await api.post('/bookings/bookings/', bookingPayload);
@@ -140,17 +141,55 @@ const MobileCheckout: React.FC<MobileCheckoutProps> = ({
     }
   };
 
-  const handlePaymentSuccess = () => {
+  const handlePaymentSuccess = async () => {
     setShowPaymentForm(false);
-    setPaymentCompleted(true);
-    setActiveStep(2);
-    toast.success('Payment successful! Your parking is reserved.');
-    onSuccess();
+    
+    // Update booking status to confirmed after successful payment
+    if (bookingId) {
+      try {
+        await api.patch(`/bookings/bookings/${bookingId}/`, { status: 'confirmed' });
+        setPaymentCompleted(true);
+        setActiveStep(2);
+        toast.success('Payment successful! Your parking is confirmed.');
+        onSuccess();
+      } catch (error) {
+        console.error('Error confirming booking:', error);
+        toast.error('Payment succeeded but booking confirmation failed. Please contact support.');
+      }
+    } else {
+      setPaymentCompleted(true);
+      setActiveStep(2);
+      toast.success('Payment successful! Your parking is reserved.');
+      onSuccess();
+    }
   };
 
-  const handlePaymentCancel = () => {
+  const handlePaymentCancel = async () => {
     setShowPaymentForm(false);
+    
+    // Cancel the pending booking since payment was cancelled
+    if (bookingId) {
+      try {
+        await api.patch(`/bookings/bookings/${bookingId}/`, { status: 'cancelled' });
+        toast.info('Booking cancelled due to payment cancellation.');
+      } catch (error) {
+        console.error('Error cancelling booking:', error);
+        // Continue with cancellation flow even if API call fails
+      }
+    }
+    
     onCancel();
+  };
+
+  const handlePaymentFailure = async (failedBookingId: number) => {
+    // Cancel the booking when payment fails
+    try {
+      await api.patch(`/bookings/bookings/${failedBookingId}/`, { status: 'cancelled' });
+      toast.error('Payment failed. Booking has been cancelled.');
+    } catch (error) {
+      console.error('Error cancelling failed booking:', error);
+      toast.error('Payment failed and booking cancellation failed. Please contact support.');
+    }
   };
 
   const handleCallHost = () => {
@@ -546,6 +585,7 @@ const MobileCheckout: React.FC<MobileCheckoutProps> = ({
             description={`Parking at ${listing.title}`}
             onSuccess={handlePaymentSuccess}
             onCancel={handlePaymentCancel}
+            onFailure={handlePaymentFailure}
             isMobile={isMobile}
           />
         </DialogContent>

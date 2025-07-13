@@ -390,14 +390,14 @@ const AdminDashboardEnhanced: React.FC = () => {
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('admin_access_token');
+      const token = localStorage.getItem('admin_access_token') || localStorage.getItem('access_token');
       if (!token) {
         console.warn('⚠️ No admin token found for stats');
         throw new Error('No admin token');
       }
 
       const headers = { 
-        'Authorization': `Bearer ${token}`,
+        'Authorization': `Token ${token}`,
         'Content-Type': 'application/json'
       };
 
@@ -519,7 +519,7 @@ const AdminDashboardEnhanced: React.FC = () => {
 
   const fetchVerificationRequests = async () => {
     try {
-      const token = localStorage.getItem('admin_access_token');
+      const token = localStorage.getItem('admin_access_token') || localStorage.getItem('access_token');
       if (!token) {
         console.warn('⚠️ No admin token found for verification requests');
         return;
@@ -527,7 +527,7 @@ const AdminDashboardEnhanced: React.FC = () => {
 
       const response = await fetch('/api/v1/users/admin/verification-requests/', {
         headers: { 
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Token ${token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -554,7 +554,7 @@ const AdminDashboardEnhanced: React.FC = () => {
 
   const fetchRefundRequests = async () => {
     try {
-      const token = localStorage.getItem('admin_access_token');
+      const token = localStorage.getItem('admin_access_token') || localStorage.getItem('access_token');
       if (!token) {
         console.warn('⚠️ No admin token found for refund requests');
         return;
@@ -562,7 +562,7 @@ const AdminDashboardEnhanced: React.FC = () => {
 
       const response = await fetch('/api/v1/payments/admin/refund-requests/', {
         headers: { 
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Token ${token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -589,7 +589,7 @@ const AdminDashboardEnhanced: React.FC = () => {
 
   const fetchListings = async () => {
     try {
-      const token = localStorage.getItem('admin_access_token');
+      const token = localStorage.getItem('admin_access_token') || localStorage.getItem('access_token');
       if (!token) {
         console.warn('⚠️ No admin token found for listings');
         return;
@@ -598,7 +598,7 @@ const AdminDashboardEnhanced: React.FC = () => {
       // Try admin endpoint first, fall back to regular listings API
       let response = await fetch('/api/v1/listings/admin/', {
         headers: { 
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Token ${token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -607,7 +607,7 @@ const AdminDashboardEnhanced: React.FC = () => {
         console.warn(`⚠️ Admin listings API not available (${response.status}), trying regular listings API`);
         response = await fetch('/api/v1/listings/', {
           headers: { 
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Token ${token}`,
             'Content-Type': 'application/json'
           }
         });
@@ -649,7 +649,7 @@ const AdminDashboardEnhanced: React.FC = () => {
   const fetchUsers = async () => {
     setUsersLoading(true);
     try {
-      const token = localStorage.getItem('admin_access_token');
+      const token = localStorage.getItem('admin_access_token') || localStorage.getItem('access_token');
       if (!token) {
         setError('No admin token found. Please log in again.');
         window.location.href = '/admin/login';
@@ -658,7 +658,7 @@ const AdminDashboardEnhanced: React.FC = () => {
 
       const response = await fetch('/api/v1/users/admin/users/', {
         headers: { 
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Token ${token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -691,7 +691,7 @@ const AdminDashboardEnhanced: React.FC = () => {
   const fetchDisputes = async () => {
     setDisputesLoading(true);
     try {
-      const token = localStorage.getItem('admin_access_token');
+      const token = localStorage.getItem('admin_access_token') || localStorage.getItem('access_token');
       if (!token) {
         console.warn('⚠️ No admin token found for disputes');
         setDisputes([]);
@@ -703,7 +703,7 @@ const AdminDashboardEnhanced: React.FC = () => {
       
       const response = await fetch('/api/v1/disputes/admin/', {
         headers: { 
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Token ${token}`,
           'Content-Type': 'application/json'
         }
       });
@@ -741,7 +741,7 @@ const AdminDashboardEnhanced: React.FC = () => {
   const exportAllUsers = async () => {
     setExportingUsers(true);
     try {
-      const token = localStorage.getItem('admin_access_token');
+      const token = localStorage.getItem('admin_access_token') || localStorage.getItem('access_token');
       if (!token) {
         toast.error('No admin token found. Please log in again.');
         return;
@@ -849,7 +849,7 @@ const AdminDashboardEnhanced: React.FC = () => {
     try {
       let url = '';
       let payload: any = {};
-      const token = localStorage.getItem('admin_access_token');
+      const token = localStorage.getItem('admin_access_token') || localStorage.getItem('access_token');
 
       if (selectedItem.verification_type) {
         // Identity verification
@@ -880,7 +880,7 @@ const AdminDashboardEnhanced: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Token ${token}`
         },
         body: JSON.stringify(payload)
       });
@@ -971,7 +971,7 @@ const AdminDashboardEnhanced: React.FC = () => {
     }
 
     try {
-      const token = localStorage.getItem('admin_access_token');
+      const token = localStorage.getItem('admin_access_token') || localStorage.getItem('access_token');
       if (!token) {
         toast.error('No admin token found. Please log in again.');
         return;
@@ -981,7 +981,7 @@ const AdminDashboardEnhanced: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Token ${token}`
         },
         body: JSON.stringify({
           message: replyDialog.message,
@@ -1003,7 +1003,7 @@ const AdminDashboardEnhanced: React.FC = () => {
 
   const handleUpdateDisputeStatus = async (dispute: Dispute, newStatus: string) => {
     try {
-      const token = localStorage.getItem('admin_access_token');
+      const token = localStorage.getItem('admin_access_token') || localStorage.getItem('access_token');
       if (!token) {
         toast.error('No admin token found. Please log in again.');
         return;
@@ -1013,7 +1013,7 @@ const AdminDashboardEnhanced: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Token ${token}`
         },
         body: JSON.stringify({ status: newStatus })
       });
@@ -1034,7 +1034,7 @@ const AdminDashboardEnhanced: React.FC = () => {
 
     try {
       setProcessing(true);
-      const token = localStorage.getItem('admin_access_token');
+      const token = localStorage.getItem('admin_access_token') || localStorage.getItem('access_token');
       
       console.log('💾 Saving listing changes:', {
         id: editedListing.id,
@@ -1045,7 +1045,7 @@ const AdminDashboardEnhanced: React.FC = () => {
       const response = await fetch(`/api/v1/listings/admin/${editedListing.id}/`, {
         method: 'PATCH',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Token ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -1104,7 +1104,7 @@ const AdminDashboardEnhanced: React.FC = () => {
   // User management functions
   const handleUserAction = async (userId: number, action: 'suspend' | 'activate' | 'verify' | 'unverify') => {
     try {
-      const token = localStorage.getItem('admin_access_token');
+      const token = localStorage.getItem('admin_access_token') || localStorage.getItem('access_token');
       if (!token) {
         toast.error('No admin token found. Please log in again.');
         return;
@@ -1117,7 +1117,7 @@ const AdminDashboardEnhanced: React.FC = () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Token ${token}`
           }
         });
       } else {
@@ -1126,7 +1126,7 @@ const AdminDashboardEnhanced: React.FC = () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Token ${token}`
           }
         });
       }

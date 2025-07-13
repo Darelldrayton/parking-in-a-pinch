@@ -24,6 +24,7 @@ interface PaymentFormProps {
   description: string;
   onSuccess: () => void;
   onCancel: () => void;
+  onFailure?: (bookingId: number) => void;
   isMobile?: boolean;
 }
 
@@ -33,6 +34,7 @@ const PaymentFormInner: React.FC<PaymentFormProps> = ({
   description,
   onSuccess,
   onCancel,
+  onFailure,
   isMobile = false,
 }) => {
   const stripe = useStripe();
@@ -90,6 +92,10 @@ const PaymentFormInner: React.FC<PaymentFormProps> = ({
 
       if (error) {
         setError(error.message || 'Payment failed');
+        // Call failure handler to cancel the booking
+        if (onFailure) {
+          onFailure(bookingId);
+        }
       } else if (confirmedPayment && confirmedPayment.status === 'succeeded') {
         // Confirm payment on backend
         await confirmPayment(confirmedPayment.id, bookingId);
@@ -99,6 +105,10 @@ const PaymentFormInner: React.FC<PaymentFormProps> = ({
     } catch (err: any) {
       setError(err.message || 'Payment failed');
       toast.error('Payment failed. Please try again.');
+      // Call failure handler to cancel the booking
+      if (onFailure) {
+        onFailure(bookingId);
+      }
     } finally {
       setLoading(false);
     }
