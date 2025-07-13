@@ -14,8 +14,6 @@ import {
   Paper,
 } from '@mui/material';
 import {
-  LocationOn,
-  DirectionsCar,
   People,
   NaturePeople as Eco,
   Security,
@@ -105,16 +103,8 @@ export default function AboutUs() {
                   height: 400,
                   background: `linear-gradient(45deg, ${alpha(theme.palette.secondary.main, 0.1)}, ${alpha(theme.palette.primary.light, 0.1)})`,
                   borderRadius: 3,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
                 }}
-              >
-                <Stack direction="row" spacing={2}>
-                  <LocationOn sx={{ fontSize: 60, opacity: 0.7 }} />
-                  <DirectionsCar sx={{ fontSize: 60, opacity: 0.5 }} />
-                </Stack>
-              </Box>
+              />
             </Grid>
           </Grid>
         </Container>
