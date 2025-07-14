@@ -390,67 +390,56 @@ const AdminDashboardEnhanced: React.FC = () => {
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('admin_access_token') || localStorage.getItem('access_token');
-      if (!token) {
-        console.warn('⚠️ No admin token found for stats');
-        throw new Error('No admin token');
-      }
-
-      const headers = { 
-        'Authorization': `Token ${token}`,
-        'Content-Type': 'application/json'
-      };
-
       console.log('📊 Fetching real data from admin APIs...');
       
       // Try admin-specific stats endpoints first, then fallback to individual APIs
       const [adminStatsRes, usersRes, verificationsRes, listingsRes, refundsRes, payoutsRes, disputesRes] = await Promise.all([
-        fetch('/api/v1/admin/dashboard-stats/', { headers }).catch(e => {
+        api.get('/admin/dashboard-stats/').catch(e => {
           console.warn('Admin stats API not available:', e);
-          return { ok: false, status: 503 };
+          return { data: null, status: e.response?.status || 503 };
         }),
-        fetch('/api/v1/users/admin/users/stats/', { headers }).catch(e => {
+        api.get('/users/admin/users/stats/').catch(e => {
           console.warn('Users stats API not available:', e);
-          return { ok: false, status: 503 };
+          return { data: null, status: e.response?.status || 503 };
         }),
-        fetch('/api/v1/users/admin/verification-requests/stats/', { headers }).catch(e => {
+        api.get('/users/admin/verification-requests/stats/').catch(e => {
           console.warn('Verification stats API not available:', e);
-          return { ok: false, status: 503 };
+          return { data: null, status: e.response?.status || 503 };
         }),
-        fetch('/api/v1/listings/admin/stats/', { headers }).catch(e => {
+        api.get('/listings/admin/stats/').catch(e => {
           console.warn('Listings stats API not available:', e);
-          return { ok: false, status: 503 };
+          return { data: null, status: e.response?.status || 503 };
         }),
-        fetch('/api/v1/payments/admin/refund-requests/stats/', { headers }).catch(e => {
+        api.get('/payments/admin/refund-requests/stats/').catch(e => {
           console.warn('Refunds stats API not available:', e);
-          return { ok: false, status: 503 };
+          return { data: null, status: e.response?.status || 503 };
         }),
-        fetch('/api/v1/payments/admin/payout-requests/stats/', { headers }).catch(e => {
+        api.get('/payments/admin/payout-requests/stats/').catch(e => {
           console.warn('Payouts stats API not available:', e);
-          return { ok: false, status: 503 };
+          return { data: null, status: e.response?.status || 503 };
         }),
-        fetch('/api/v1/disputes/admin/stats/', { headers }).catch(e => {
+        api.get('/disputes/admin/stats/').catch(e => {
           console.warn('Disputes stats API not available:', e);
-          return { ok: false, status: 503 };
+          return { data: null, status: e.response?.status || 503 };
         })
       ]);
 
       let realStats = null;
 
       // If the consolidated admin stats endpoint works, use it
-      if (adminStatsRes.ok) {
-        realStats = await adminStatsRes.json();
+      if (adminStatsRes.status === 200 && adminStatsRes.data) {
+        realStats = adminStatsRes.data;
         console.log('✅ Admin stats loaded from consolidated endpoint:', realStats);
       } else {
         // Otherwise, compile stats from individual endpoints
         console.log('📊 Compiling stats from individual endpoints...');
         
-        const users = usersRes.ok ? await usersRes.json() : { total_users: 0, verified_users: 0, recent_signups: 0 };
-        const verifications = verificationsRes.ok ? await verificationsRes.json() : { pending_requests: 0, total_requests: 0 };
-        const listings = listingsRes.ok ? await listingsRes.json() : { pending_listings: 0, total_listings: 0, approved_listings: 0 };
-        const refunds = refundsRes.ok ? await refundsRes.json() : { pending_requests: 0, total_requests: 0, total_requested_amount: 0 };
-        const payouts = payoutsRes.ok ? await payoutsRes.json() : { pending_requests: 0, total_requests: 0, total_pending_amount: 0 };
-        const disputes = disputesRes.ok ? await disputesRes.json() : { open_disputes: 0, total_disputes: 0, unassigned_disputes: 0 };
+        const users = (usersRes.status === 200 && usersRes.data) ? usersRes.data : { total_users: 0, verified_users: 0, recent_signups: 0 };
+        const verifications = (verificationsRes.status === 200 && verificationsRes.data) ? verificationsRes.data : { pending_requests: 0, total_requests: 0 };
+        const listings = (listingsRes.status === 200 && listingsRes.data) ? listingsRes.data : { pending_listings: 0, total_listings: 0, approved_listings: 0 };
+        const refunds = (refundsRes.status === 200 && refundsRes.data) ? refundsRes.data : { pending_requests: 0, total_requests: 0, total_requested_amount: 0 };
+        const payouts = (payoutsRes.status === 200 && payoutsRes.data) ? payoutsRes.data : { pending_requests: 0, total_requests: 0, total_pending_amount: 0 };
+        const disputes = (disputesRes.status === 200 && disputesRes.data) ? disputesRes.data : { open_disputes: 0, total_disputes: 0, unassigned_disputes: 0 };
 
         realStats = {
           // User stats
@@ -519,108 +508,48 @@ const AdminDashboardEnhanced: React.FC = () => {
 
   const fetchVerificationRequests = async () => {
     try {
-      const token = localStorage.getItem('admin_access_token') || localStorage.getItem('access_token');
-      if (!token) {
-        console.warn('⚠️ No admin token found for verification requests');
-        return;
-      }
-
-      const response = await fetch('/api/v1/users/admin/verification-requests/', {
-        headers: { 
-          'Authorization': `Token ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.status === 401) {
-        console.warn('⚠️ Admin session expired for verification requests');
-        return;
-      }
-
-      if (!response.ok) {
-        console.warn(`⚠️ Admin verification API not available (${response.status})`);
-        // If admin API is not available, return empty array
-        setVerificationRequests([]);
-        return;
-      }
-
-      const data = await response.json();
-      setVerificationRequests(data.results || []);
+      const response = await api.get('/users/admin/verification-requests/');
+      setVerificationRequests(response.data.results || []);
     } catch (err: any) {
       console.warn('Verification requests fetch error:', err);
+      if (err.response?.status === 401) {
+        console.warn('⚠️ Admin session expired for verification requests');
+      } else {
+        console.warn(`⚠️ Admin verification API not available (${err.response?.status || 'unknown'})`);
+      }
       setVerificationRequests([]);
     }
   };
 
   const fetchRefundRequests = async () => {
     try {
-      const token = localStorage.getItem('admin_access_token') || localStorage.getItem('access_token');
-      if (!token) {
-        console.warn('⚠️ No admin token found for refund requests');
-        return;
-      }
-
-      const response = await fetch('/api/v1/payments/admin/refund-requests/', {
-        headers: { 
-          'Authorization': `Token ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.status === 401) {
-        console.warn('⚠️ Admin session expired for refund requests');
-        return;
-      }
-
-      if (!response.ok) {
-        console.warn(`⚠️ Admin refund API not available (${response.status})`);
-        // If admin API is not available, return empty array
-        setRefundRequests([]);
-        return;
-      }
-
-      const data = await response.json();
-      setRefundRequests(data.results || []);
+      const response = await api.get('/payments/admin/refund-requests/');
+      setRefundRequests(response.data.results || []);
     } catch (err: any) {
       console.warn('Refund requests fetch error:', err);
+      if (err.response?.status === 401) {
+        console.warn('⚠️ Admin session expired for refund requests');
+      } else if (err.response?.status === 404) {
+        console.warn('⚠️ Admin refund API not available (404)');
+      } else {
+        console.warn(`⚠️ Admin refund API failed (${err.response?.status || 'unknown'})`);
+      }
       setRefundRequests([]);
     }
   };
 
   const fetchListings = async () => {
     try {
-      const token = localStorage.getItem('admin_access_token') || localStorage.getItem('access_token');
-      if (!token) {
-        console.warn('⚠️ No admin token found for listings');
-        return;
-      }
-
       // Try admin endpoint first, fall back to regular listings API
-      let response = await fetch('/api/v1/listings/admin/', {
-        headers: { 
-          'Authorization': `Token ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        console.warn(`⚠️ Admin listings API not available (${response.status}), trying regular listings API`);
-        response = await fetch('/api/v1/listings/', {
-          headers: { 
-            'Authorization': `Token ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-      }
-
-      if (!response.ok) {
-        console.warn(`⚠️ Regular listings API also failed (${response.status})`);
-        // If admin API is not available, return empty array
-        setListings([]);
-        return;
+      let response;
+      try {
+        response = await api.get('/listings/admin/');
+      } catch (err: any) {
+        console.warn(`⚠️ Admin listings API not available (${err.response?.status}), trying regular listings API`);
+        response = await api.get('/listings/');
       }
       
-      const data = await response.json();
+      const data = response.data;
       const allListings = data.results || data || [];
       console.log('📊 All listings loaded:', allListings.length);
       
@@ -642,6 +571,9 @@ const AdminDashboardEnhanced: React.FC = () => {
       setListings(adminListings); // Show all listings from API
     } catch (err: any) {
       console.warn('Listings fetch error:', err);
+      if (err.response?.status === 401) {
+        console.warn('⚠️ Admin session expired for listings');
+      }
       setListings([]);
     }
   };
@@ -649,21 +581,11 @@ const AdminDashboardEnhanced: React.FC = () => {
   const fetchUsers = async () => {
     setUsersLoading(true);
     try {
-      const token = localStorage.getItem('admin_access_token') || localStorage.getItem('access_token');
-      if (!token) {
-        setError('No admin token found. Please log in again.');
-        window.location.href = '/admin/login';
-        return;
-      }
-
-      const response = await fetch('/api/v1/users/admin/users/', {
-        headers: { 
-          'Authorization': `Token ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.status === 401) {
+      const response = await api.get('/users/admin/users/');
+      setUsers(response.data.results || response.data || []);
+    } catch (err: any) {
+      console.error('Users fetch error:', err);
+      if (err.response?.status === 401) {
         setError('⚠️ Session expired. Your admin login session has expired. Please log in again to continue.');
         localStorage.removeItem('admin_access_token');
         localStorage.removeItem('admin_refresh_token');
@@ -673,16 +595,8 @@ const AdminDashboardEnhanced: React.FC = () => {
         }, 3000);
         return;
       }
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch users (${response.status}: ${response.statusText})`);
-      }
-      
-      const data = await response.json();
-      setUsers(data.results || data || []);
-    } catch (err: any) {
       setError(`Failed to fetch users: ${err.message}`);
-      console.error('Users fetch error:', err);
+      setUsers([]);
     } finally {
       setUsersLoading(false);
     }
@@ -691,47 +605,24 @@ const AdminDashboardEnhanced: React.FC = () => {
   const fetchDisputes = async () => {
     setDisputesLoading(true);
     try {
-      const token = localStorage.getItem('admin_access_token') || localStorage.getItem('access_token');
-      if (!token) {
-        console.warn('⚠️ No admin token found for disputes');
-        setDisputes([]);
-        setDisputesLoading(false);
-        return;
-      }
-
-      console.log('📋 Fetching disputes from /api/v1/disputes/admin/ with token:', token ? 'TOKEN_FOUND' : 'NO_TOKEN');
+      console.log('📋 Fetching disputes from /disputes/admin/');
       
-      const response = await fetch('/api/v1/disputes/admin/', {
-        headers: { 
-          'Authorization': `Token ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      console.log('📋 Disputes API response status:', response.status);
-
-      if (response.status === 401) {
-        console.warn('⚠️ Admin session expired for disputes');
-        setDisputes([]);
-        setDisputesLoading(false);
-        return;
-      }
-
-      if (!response.ok) {
-        console.warn(`⚠️ Disputes API not available (${response.status})`);
-        // If admin API is not available, return empty array
-        setDisputes([]);
-        setDisputesLoading(false);
-        return;
-      }
-
-      const data = await response.json();
+      const response = await api.get('/disputes/admin/');
+      const data = response.data;
+      
       console.log('📋 Disputes API response data:', data);
       console.log('📋 Disputes count from API:', data.results ? data.results.length : 'NO_RESULTS_FIELD');
       
       setDisputes(data.results || data || []); // Try both data.results and direct data
     } catch (err: any) {
       console.warn('Disputes fetch error:', err);
+      if (err.response?.status === 401) {
+        console.warn('⚠️ Admin session expired for disputes');
+      } else if (err.response?.status === 404) {
+        console.warn('⚠️ Disputes API not available (404)');
+      } else {
+        console.warn(`⚠️ Disputes API failed (${err.response?.status || 'unknown'})`);
+      }
       setDisputes([]);
     } finally {
       setDisputesLoading(false);
@@ -847,13 +738,12 @@ const AdminDashboardEnhanced: React.FC = () => {
 
     setProcessing(true);
     try {
-      let url = '';
+      let endpoint = '';
       let payload: any = {};
-      const token = localStorage.getItem('admin_access_token') || localStorage.getItem('access_token');
 
       if (selectedItem.verification_type) {
         // Identity verification
-        url = `/api/v1/users/admin/verification-requests/${selectedItem.id}/${actionType}/`;
+        endpoint = `/users/admin/verification-requests/${selectedItem.id}/${actionType}/`;
         payload = {
           admin_notes: actionNotes,
           ...(actionType === 'reject' && { rejection_reason: actionReason }),
@@ -861,14 +751,14 @@ const AdminDashboardEnhanced: React.FC = () => {
         };
       } else if (selectedItem.request_id) {
         // Refund request
-        url = `/api/v1/payments/admin/refund-requests/${selectedItem.id}/${actionType}/`;
+        endpoint = `/payments/admin/refund-requests/${selectedItem.id}/${actionType}/`;
         payload = {
           admin_notes: actionNotes,
           ...(actionType === 'reject' && { rejection_reason: actionReason })
         };
       } else {
         // Listing
-        url = `/api/v1/listings/admin/${selectedItem.id}/${actionType === 'revision' ? 'request_revision' : actionType}/`;
+        endpoint = `/listings/admin/${selectedItem.id}/${actionType === 'revision' ? 'request_revision' : actionType}/`;
         payload = {
           admin_notes: actionNotes,
           ...(actionType === 'reject' && { rejection_reason: actionReason }),
@@ -876,16 +766,25 @@ const AdminDashboardEnhanced: React.FC = () => {
         };
       }
 
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Token ${token}`
-        },
-        body: JSON.stringify(payload)
-      });
+      await api.post(endpoint, payload);
 
-      if (response.status === 401) {
+      toast.success(`${actionType === 'approve' ? 'Approved' : actionType === 'reject' ? 'Rejected' : 'Revision requested'} successfully`);
+      setActionDialog(false);
+      setSelectedItem(null);
+      setActionNotes('');
+      setActionReason('');
+      
+      // Refresh data
+      await Promise.all([
+        fetchStats(),
+        fetchVerificationRequests(),
+        fetchRefundRequests(),
+        fetchListings(),
+        fetchDisputes()
+      ]);
+    } catch (err: any) {
+      console.error('Action error:', err);
+      if (err.response?.status === 401) {
         setError('⚠️ Session expired. Your admin login session has expired. Please log in again to continue.');
         localStorage.removeItem('admin_access_token');
         localStorage.removeItem('admin_refresh_token');
@@ -895,29 +794,10 @@ const AdminDashboardEnhanced: React.FC = () => {
         }, 3000);
         return;
       }
-
-      if (response.ok) {
-        toast.success(`${actionType === 'approve' ? 'Approved' : actionType === 'reject' ? 'Rejected' : 'Revision requested'} successfully`);
-        setActionDialog(false);
-        setSelectedItem(null);
-        setActionNotes('');
-        setActionReason('');
-        
-        // Refresh data
-        await Promise.all([
-          fetchStats(),
-          fetchVerificationRequests(),
-          fetchRefundRequests(),
-          fetchListings(),
-          fetchDisputes()
-        ]);
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Action failed');
-      }
-    } catch (err: any) {
-      setError(err.message || 'Failed to perform action');
-      toast.error(err.message || 'Failed to perform action');
+      
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to perform action';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setProcessing(false);
     }
@@ -971,61 +851,31 @@ const AdminDashboardEnhanced: React.FC = () => {
     }
 
     try {
-      const token = localStorage.getItem('admin_access_token') || localStorage.getItem('access_token');
-      if (!token) {
-        toast.error('No admin token found. Please log in again.');
-        return;
-      }
-
-      const response = await fetch(`/api/v1/disputes/admin/${replyDialog.dispute.id}/add_admin_message/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Token ${token}`
-        },
-        body: JSON.stringify({
-          message: replyDialog.message,
-          is_internal: replyDialog.isInternal
-        })
+      await api.post(`/disputes/admin/${replyDialog.dispute.id}/add_admin_message/`, {
+        message: replyDialog.message,
+        is_internal: replyDialog.isInternal
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to send message');
-      }
 
       toast.success('Message sent successfully');
       setReplyDialog({ open: false, dispute: null, message: '', isInternal: false });
       await fetchDisputes(); // Refresh disputes to show new message
     } catch (err: any) {
-      toast.error(`Failed to send message: ${err.message}`);
+      console.error('Send reply error:', err);
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to send message';
+      toast.error(`Failed to send message: ${errorMessage}`);
     }
   };
 
   const handleUpdateDisputeStatus = async (dispute: Dispute, newStatus: string) => {
     try {
-      const token = localStorage.getItem('admin_access_token') || localStorage.getItem('access_token');
-      if (!token) {
-        toast.error('No admin token found. Please log in again.');
-        return;
-      }
-
-      const response = await fetch(`/api/v1/disputes/admin/${dispute.id}/update_status/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Token ${token}`
-        },
-        body: JSON.stringify({ status: newStatus })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update status');
-      }
+      await api.post(`/disputes/admin/${dispute.id}/update_status/`, { status: newStatus });
 
       toast.success('Status updated successfully');
       await fetchDisputes(); // Refresh disputes
     } catch (err: any) {
-      toast.error(`Failed to update status: ${err.message}`);
+      console.error('Update dispute status error:', err);
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to update status';
+      toast.error(`Failed to update status: ${errorMessage}`);
     }
   };
 
@@ -1034,7 +884,6 @@ const AdminDashboardEnhanced: React.FC = () => {
 
     try {
       setProcessing(true);
-      const token = localStorage.getItem('admin_access_token') || localStorage.getItem('access_token');
       
       console.log('💾 Saving listing changes:', {
         id: editedListing.id,
@@ -1042,60 +891,51 @@ const AdminDashboardEnhanced: React.FC = () => {
         changes: editedListing
       });
       
-      const response = await fetch(`/api/v1/listings/admin/${editedListing.id}/`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Token ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          title: editedListing.title,
-          description: editedListing.description,
-          address: editedListing.address,
-          borough: editedListing.borough,
-          space_type: editedListing.space_type,
-          hourly_rate: editedListing.hourly_rate,
-          daily_rate: editedListing.daily_rate,
-          weekly_rate: editedListing.weekly_rate,
-          // Explicitly preserve approval status to prevent auto-approval
-          approval_status: selectedItem?.approval_status || 'PENDING'
-        })
-      });
+      const payload = {
+        title: editedListing.title,
+        description: editedListing.description,
+        address: editedListing.address,
+        borough: editedListing.borough,
+        space_type: editedListing.space_type,
+        hourly_rate: editedListing.hourly_rate,
+        daily_rate: editedListing.daily_rate,
+        weekly_rate: editedListing.weekly_rate,
+        // Explicitly preserve approval status to prevent auto-approval
+        approval_status: selectedItem?.approval_status || 'PENDING'
+      };
 
-      if (response.ok) {
-        const updatedListing = await response.json();
-        console.log('✅ Listing updated successfully:', updatedListing);
-        toast.success('Listing updated successfully');
-        
-        // Update the selectedItem with the response from server
-        setSelectedItem(updatedListing);
-        setEditMode(false);
-        
-        // Update the listings array in state to reflect changes immediately
-        setListings(prevListings => 
-          prevListings.map(listing => 
-            listing.id === editedListing.id 
-              ? { 
-                  ...listing, 
-                  ...updatedListing,
-                  // Preserve original approval status and reviewability
-                  approval_status: listing.approval_status,
-                  can_be_reviewed: listing.can_be_reviewed
-                }
-              : listing
-          )
-        );
-        
-        // Also refresh from server to ensure data consistency
-        await fetchListings();
-      } else {
-        const errorData = await response.json();
-        console.error('Update failed:', errorData);
-        throw new Error(errorData.message || 'Failed to update listing');
-      }
+      const response = await api.patch(`/listings/admin/${editedListing.id}/`, payload);
+      const updatedListing = response.data;
+      
+      console.log('✅ Listing updated successfully:', updatedListing);
+      toast.success('Listing updated successfully');
+      
+      // Update the selectedItem with the response from server
+      setSelectedItem(updatedListing);
+      setEditMode(false);
+      
+      // Update the listings array in state to reflect changes immediately
+      setListings(prevListings => 
+        prevListings.map(listing => 
+          listing.id === editedListing.id 
+            ? { 
+                ...listing, 
+                ...updatedListing,
+                // Preserve original approval status and reviewability
+                approval_status: listing.approval_status,
+                can_be_reviewed: listing.can_be_reviewed
+              }
+            : listing
+        )
+      );
+      
+      // Also refresh from server to ensure data consistency
+      await fetchListings();
     } catch (err: any) {
-      setError(err.message || 'Failed to update listing');
-      toast.error(err.message || 'Failed to update listing');
+      console.error('Save listing changes error:', err);
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to update listing';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setProcessing(false);
     }
@@ -1104,61 +944,42 @@ const AdminDashboardEnhanced: React.FC = () => {
   // User management functions
   const handleUserAction = async (userId: number, action: 'suspend' | 'activate' | 'verify' | 'unverify') => {
     try {
-      const token = localStorage.getItem('admin_access_token') || localStorage.getItem('access_token');
-      if (!token) {
-        toast.error('No admin token found. Please log in again.');
-        return;
-      }
-
-      let response;
+      let endpoint;
       if (action === 'verify' || action === 'unverify') {
         // Use the verification endpoints
-        response = await fetch(`/api/v1/users/admin/${userId}/${action}_user/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Token ${token}`
-          }
-        });
+        endpoint = `/users/admin/${userId}/${action}_user/`;
       } else {
         // Use the existing suspend/activate endpoints
-        response = await fetch(`/api/v1/users/admin/${userId}/${action}/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Token ${token}`
-          }
-        });
+        endpoint = `/users/admin/${userId}/${action}/`;
       }
 
-      if (response.ok) {
-        const actionText = {
-          'suspend': 'suspended',
-          'activate': 'activated',
-          'verify': 'verified',
-          'unverify': 'unverified'
-        }[action];
-        
-        toast.success(`User ${actionText} successfully`);
-        
-        // Update the user in the local state
-        setUsers(prevUsers => 
-          prevUsers.map(user => 
-            user.id === userId 
-              ? { 
-                  ...user, 
-                  is_active: action === 'suspend' ? false : action === 'activate' ? true : user.is_active,
-                  is_verified: action === 'verify' ? true : action === 'unverify' ? false : user.is_verified
-                }
-              : user
-          )
-        );
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `Failed to ${action} user`);
-      }
+      await api.post(endpoint);
+
+      const actionText = {
+        'suspend': 'suspended',
+        'activate': 'activated',
+        'verify': 'verified',
+        'unverify': 'unverified'
+      }[action];
+      
+      toast.success(`User ${actionText} successfully`);
+      
+      // Update the user in the local state
+      setUsers(prevUsers => 
+        prevUsers.map(user => 
+          user.id === userId 
+            ? { 
+                ...user, 
+                is_active: action === 'suspend' ? false : action === 'activate' ? true : user.is_active,
+                is_verified: action === 'verify' ? true : action === 'unverify' ? false : user.is_verified
+              }
+            : user
+        )
+      );
     } catch (err: any) {
-      toast.error(err.message || `Failed to ${action} user`);
+      console.error('User action error:', err);
+      const errorMessage = err.response?.data?.message || err.message || `Failed to ${action} user`;
+      toast.error(errorMessage);
     }
   };
 
