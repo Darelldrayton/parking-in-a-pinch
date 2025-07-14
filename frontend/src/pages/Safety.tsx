@@ -19,7 +19,6 @@ import {
 import {
   Security,
   Verified,
-  Shield,
   Camera,
   Phone,
   LocationOn,
@@ -34,11 +33,6 @@ const safetyFeatures = [
     icon: <Verified sx={{ fontSize: 40 }} />,
     title: 'Identity Verification',
     description: 'All users undergo thorough identity verification before joining our platform.',
-  },
-  {
-    icon: <Shield sx={{ fontSize: 40 }} />,
-    title: 'Insurance Coverage',
-    description: 'Qualifying bookings include liability insurance protection for both hosts and renters.',
   },
   {
     icon: <Camera sx={{ fontSize: 40 }} />,
@@ -253,79 +247,6 @@ export default function Safety() {
           </Grid>
         </Paper>
 
-        {/* Insurance Information */}
-        <Box sx={{ mb: 8 }}>
-          <Typography variant="h3" fontWeight={700} textAlign="center" gutterBottom>
-            Insurance Coverage
-          </Typography>
-          <Typography variant="h6" textAlign="center" color="text.secondary" sx={{ mb: 4 }}>
-            Protection for qualifying bookings
-          </Typography>
-          <Grid container spacing={4}>
-            <Grid item xs={12} md={6}>
-              <Card sx={{ borderRadius: 3, height: '100%' }}>
-                <CardContent sx={{ p: 4 }}>
-                  <Typography variant="h5" fontWeight={600} gutterBottom>
-                    What's Covered
-                  </Typography>
-                  <List>
-                    <ListItem sx={{ px: 0 }}>
-                      <ListItemIcon><CheckCircle color="success" /></ListItemIcon>
-                      <ListItemText primary="Third-party liability coverage" />
-                    </ListItem>
-                    <ListItem sx={{ px: 0 }}>
-                      <ListItemIcon><CheckCircle color="success" /></ListItemIcon>
-                      <ListItemText primary="Property damage protection" />
-                    </ListItem>
-                    <ListItem sx={{ px: 0 }}>
-                      <ListItemIcon><CheckCircle color="success" /></ListItemIcon>
-                      <ListItemText primary="Host protection insurance" />
-                    </ListItem>
-                    <ListItem sx={{ px: 0 }}>
-                      <ListItemIcon><CheckCircle color="success" /></ListItemIcon>
-                      <ListItemText primary="Guest accident coverage" />
-                    </ListItem>
-                  </List>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Card sx={{ borderRadius: 3, height: '100%' }}>
-                <CardContent sx={{ p: 4 }}>
-                  <Typography variant="h5" fontWeight={600} gutterBottom color="secondary.main">
-                    Coverage Limits
-                  </Typography>
-                  <Stack spacing={2}>
-                    <Box>
-                      <Typography variant="subtitle1" fontWeight={600}>
-                        Liability Coverage: $1,000,000
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Per incident coverage limit
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="subtitle1" fontWeight={600}>
-                        Property Damage: $100,000
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Maximum coverage per claim
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="subtitle1" fontWeight={600}>
-                        Deductible: $1,000
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Per claim deductible amount
-                      </Typography>
-                    </Box>
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-        </Box>
 
         {/* Report Safety Issues */}
         <Paper
