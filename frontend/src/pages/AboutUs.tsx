@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -69,6 +70,15 @@ const stats = [
 
 export default function AboutUs() {
   const theme = useTheme();
+  const navigate = useNavigate();
+
+  const handleBecomeEarlyUser = () => {
+    navigate('/login');
+  };
+
+  const handleShareYourSpace = () => {
+    navigate('/login');
+  };
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
@@ -295,6 +305,7 @@ export default function AboutUs() {
             <Button
               variant="contained"
               size="large"
+              onClick={handleBecomeEarlyUser}
               sx={{ px: 4, py: 1.5 }}
             >
               Become an Early User
@@ -302,6 +313,7 @@ export default function AboutUs() {
             <Button
               variant="outlined"
               size="large"
+              onClick={handleShareYourSpace}
               sx={{ px: 4, py: 1.5 }}
             >
               Share Your Space
