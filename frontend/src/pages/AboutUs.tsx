@@ -77,36 +77,24 @@ export default function AboutUs() {
         sx={{
           background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
           color: 'white',
-          py: 8,
+          py: 6,
           mb: 6,
         }}
       >
         <Container maxWidth="lg">
-          <Grid container spacing={4} alignItems="center">
-            <Grid item xs={12} md={6}>
-              <Typography variant="h2" component="h1" fontWeight={700} gutterBottom>
-                About Parking in a Pinch
-              </Typography>
-              <Typography variant="h5" sx={{ opacity: 0.9, mb: 4 }}>
-                Revolutionizing urban parking through community-driven solutions
-              </Typography>
-              <Typography variant="body1" sx={{ opacity: 0.8, fontSize: '1.1rem' }}>
-                We're on a mission to solve urban parking challenges by connecting people who need parking 
-                with those who have spaces to share. Founded in early 2025, we believe that the best solutions 
-                come from empowering communities to help each other.
-              </Typography>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Box
-                sx={{
-                  position: 'relative',
-                  height: 400,
-                  background: `linear-gradient(45deg, ${alpha(theme.palette.secondary.main, 0.1)}, ${alpha(theme.palette.primary.light, 0.1)})`,
-                  borderRadius: 3,
-                }}
-              />
-            </Grid>
-          </Grid>
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography variant="h2" component="h1" fontWeight={700} gutterBottom color="white">
+              About Parking in a Pinch
+            </Typography>
+            <Typography variant="h5" sx={{ opacity: 0.9, mb: 4, color: 'white' }}>
+              Revolutionizing urban parking through community-driven solutions
+            </Typography>
+            <Typography variant="body1" sx={{ opacity: 0.8, fontSize: '1.1rem', color: 'white', maxWidth: '800px', mx: 'auto' }}>
+              We're on a mission to solve urban parking challenges by connecting people who need parking 
+              with those who have spaces to share. Founded in early 2025, we believe that the best solutions 
+              come from empowering communities to help each other.
+            </Typography>
+          </Box>
         </Container>
       </Box>
 
