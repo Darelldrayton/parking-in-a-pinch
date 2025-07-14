@@ -25,6 +25,9 @@ import {
   Fade,
   Zoom,
   alpha,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -62,14 +65,12 @@ interface Listing {
   reviews_count?: number;
 }
 
-const popularLocations = [
-  'Downtown',
-  'Airport',
-  'Stadium',
-  'University',
-  'Shopping Mall',
-  'Hospital',
-  'Train Station',
+const boroughOptions = [
+  { value: 'Manhattan', label: 'Manhattan' },
+  { value: 'Brooklyn', label: 'Brooklyn' },
+  { value: 'Queens', label: 'Queens' },
+  { value: 'Bronx', label: 'Bronx' },
+  { value: 'Staten Island', label: 'Staten Island' },
 ];
 
 // Memoized ListingCard component to prevent unnecessary re-renders
@@ -422,9 +423,13 @@ function Home() {
                     <Grid size={{ xs: 12, md: 6 }}>
                       <Autocomplete
                         freeSolo
-                        options={popularLocations}
+                        options={boroughOptions}
+                        getOptionLabel={(option) => typeof option === 'string' ? option : option.label}
                         value={searchLocation}
-                        onChange={(_, value) => setSearchLocation(value)}
+                        onChange={(_, value) => {
+                          const locationValue = typeof value === 'string' ? value : value?.label || '';
+                          setSearchLocation(locationValue);
+                        }}
                         PaperComponent={({ children, ...props }) => (
                           <Paper 
                             {...props} 
@@ -442,15 +447,36 @@ function Home() {
                             {children}
                           </Paper>
                         )}
+                        renderOption={(props, option) => (
+                          <ListItem {...props} key={typeof option === 'string' ? option : option.value}>
+                            <ListItemIcon>
+                              <LocationOn sx={{ color: 'primary.main' }} />
+                            </ListItemIcon>
+                            <ListItemText 
+                              primary={typeof option === 'string' ? option : option.label}
+                              sx={{ mr: 1 }}
+                            />
+                            <Chip 
+                              label="Borough" 
+                              size="small" 
+                              sx={{ 
+                                bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                color: 'primary.main',
+                                fontWeight: 600,
+                                fontSize: '0.7rem'
+                              }} 
+                            />
+                          </ListItem>
+                        )}
                         renderInput={(params) => (
                           <TextField
                             {...params}
-                            placeholder="Where do you need parking?"
+                            placeholder="Select NYC Borough..."
                             InputProps={{
                               ...params.InputProps,
                               startAdornment: (
                                 <InputAdornment position="start">
-                                  <LocationOn  />
+                                  <LocationOn sx={{ color: 'primary.main' }} />
                                 </InputAdornment>
                               ),
                               sx: {
