@@ -65,7 +65,7 @@ import {
   AccountBalance
 } from '@mui/icons-material';
 import { format } from 'date-fns';
-import api from '../services/api';
+import api, { adminTokenUtils } from '../services/api';
 import PayoutManagement from '../components/admin/PayoutManagement';
 
 interface TabPanelProps {
@@ -289,42 +289,32 @@ const AdminDashboardEnhanced: React.FC = () => {
   // Check admin auth from localStorage
   useEffect(() => {
     console.log('🔍 AdminDashboard: Checking authentication...');
-    const adminUserStr = localStorage.getItem('admin_user');
-    const adminToken = localStorage.getItem('admin_access_token');
     
-    console.log('🔍 Admin token exists:', !!adminToken);
-    console.log('🔍 Admin user exists:', !!adminUserStr);
-    
-    if (!adminUserStr || !adminToken) {
-      console.log('❌ No admin credentials found, redirecting to login');
-      window.location.href = '/ruler/login';
+    // Validate admin tokens first
+    if (!adminTokenUtils.validateAdminTokens()) {
+      console.log('❌ Invalid admin tokens, redirecting to login');
+      adminTokenUtils.clearAdminSession();
       return;
     }
     
-    try {
-      const user = JSON.parse(adminUserStr);
-      console.log('✅ Admin user loaded:', user.email);
-      
-      // For owner account, bypass staff/superuser check
-      if (user.email === 'darelldrayton93@gmail.com') {
-        console.log('✅ Owner account detected, granting full admin access');
-        setAdminUser(user);
-        loadDataSafely();
-        return;
-      }
-      
-      if (!user.is_staff && !user.is_superuser) {
-        console.log('❌ User is not staff/superuser, redirecting');
-        window.location.href = '/ruler/login';
-        return;
-      }
-      
-      setAdminUser(user);
-      loadDataSafely();
-    } catch (e) {
-      console.error('❌ Error parsing admin user data:', e);
-      window.location.href = '/ruler/login';
+    // Check admin privileges
+    if (!adminTokenUtils.hasAdminPrivileges()) {
+      console.log('❌ User does not have admin privileges, redirecting');
+      adminTokenUtils.clearAdminSession();
+      return;
     }
+    
+    // Get admin user data
+    const user = adminTokenUtils.getAdminUser();
+    if (!user) {
+      console.log('❌ Could not load admin user data, redirecting');
+      adminTokenUtils.clearAdminSession();
+      return;
+    }
+    
+    console.log('✅ Admin authentication successful:', user.email);
+    setAdminUser(user);
+    loadDataSafely();
   }, []);
   
   const loadDataSafely = async () => {
@@ -598,11 +588,8 @@ const AdminDashboardEnhanced: React.FC = () => {
       console.error('Users fetch error:', err);
       if (err.response?.status === 401) {
         setError('⚠️ Session expired. Your admin login session has expired. Please log in again to continue.');
-        localStorage.removeItem('admin_access_token');
-        localStorage.removeItem('admin_refresh_token');
-        localStorage.removeItem('admin_user');
         setTimeout(() => {
-          window.location.href = '/admin/login';
+          adminTokenUtils.clearAdminSession();
         }, 3000);
         return;
       }

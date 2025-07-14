@@ -29,12 +29,32 @@ api.interceptors.request.use(
     console.log('API Base URL:', API_BASE_URL)
     console.log('Full URL:', `${API_BASE_URL}${config.url}`)
     
-    // Use Token format for DRF compatibility - only if token exists
-    const drf_token = localStorage.getItem('token') || localStorage.getItem('access_token')
+    // Determine if this is an admin request
+    const isAdminRequest = config.url?.includes('/admin/') || 
+                          config.url?.includes('/users/admin/') ||
+                          config.url?.includes('/payments/admin/') ||
+                          config.url?.includes('/listings/admin/') ||
+                          config.url?.includes('/disputes/admin/')
     
-    if (drf_token) {
-      config.headers.Authorization = `Token ${drf_token}`
-      console.log('✅ Using Token authentication format (v6.0):', drf_token.substring(0, 8) + '...')
+    let token = null
+    
+    if (isAdminRequest) {
+      // For admin requests, prefer admin token
+      token = localStorage.getItem('admin_access_token')
+      if (token) {
+        console.log('✅ Using admin Token authentication:', token.substring(0, 8) + '...')
+      } else {
+        console.log('⚠️ No admin token found for admin request - trying regular token')
+        token = localStorage.getItem('token') || localStorage.getItem('access_token')
+      }
+    } else {
+      // For regular requests, use regular token
+      token = localStorage.getItem('token') || localStorage.getItem('access_token')
+    }
+    
+    if (token) {
+      config.headers.Authorization = `Token ${token}`
+      console.log('✅ Using Token authentication format (v6.0):', token.substring(0, 8) + '...')
     } else {
       console.log('⚠️ No authentication token found - request will be anonymous')
     }
@@ -58,27 +78,70 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
       
-      try {
-        const refreshToken = localStorage.getItem('refresh_token')
-        if (refreshToken) {
-          const response = await axios.post(`${API_BASE_URL}/auth/token/refresh/`, {
-            refresh: refreshToken
-          })
-          
-          const { access } = response.data
-          localStorage.setItem('access_token', access)
-          
-          // Retry original request with new token - USE TOKEN FORMAT NOT BEARER
-          originalRequest.headers.Authorization = `Token ${access}`
-          return api(originalRequest)
+      // Determine if this was an admin request
+      const isAdminRequest = originalRequest.url?.includes('/admin/') || 
+                            originalRequest.url?.includes('/users/admin/') ||
+                            originalRequest.url?.includes('/payments/admin/') ||
+                            originalRequest.url?.includes('/listings/admin/') ||
+                            originalRequest.url?.includes('/disputes/admin/')
+      
+      if (isAdminRequest) {
+        // Handle admin token refresh
+        const adminRefreshToken = localStorage.getItem('admin_refresh_token')
+        if (adminRefreshToken) {
+          try {
+            const response = await axios.post(`${API_BASE_URL}/auth/admin/token/refresh/`, {
+              refresh: adminRefreshToken
+            })
+            
+            const { access } = response.data
+            localStorage.setItem('admin_access_token', access)
+            
+            // Retry original request with new admin token
+            originalRequest.headers.Authorization = `Token ${access}`
+            return api(originalRequest)
+          } catch (refreshError) {
+            console.error('Admin token refresh failed:', refreshError)
+            // Admin refresh failed, redirect to admin login
+            localStorage.removeItem('admin_access_token')
+            localStorage.removeItem('admin_refresh_token')
+            localStorage.removeItem('admin_user')
+            window.location.href = '/ruler/login'
+            return Promise.reject(refreshError)
+          }
+        } else {
+          // No admin refresh token, redirect to admin login
+          console.warn('No admin refresh token available')
+          localStorage.removeItem('admin_access_token')
+          localStorage.removeItem('admin_refresh_token')
+          localStorage.removeItem('admin_user')
+          window.location.href = '/ruler/login'
+          return Promise.reject(error)
         }
-      } catch (refreshError) {
-        // Refresh failed, logout user
-        localStorage.removeItem('access_token')
-        localStorage.removeItem('refresh_token')
-        localStorage.removeItem('user')
-        window.location.href = '/login'
-        return Promise.reject(refreshError)
+      } else {
+        // Handle regular user token refresh
+        try {
+          const refreshToken = localStorage.getItem('refresh_token')
+          if (refreshToken) {
+            const response = await axios.post(`${API_BASE_URL}/auth/token/refresh/`, {
+              refresh: refreshToken
+            })
+            
+            const { access } = response.data
+            localStorage.setItem('access_token', access)
+            
+            // Retry original request with new token - USE TOKEN FORMAT NOT BEARER
+            originalRequest.headers.Authorization = `Token ${access}`
+            return api(originalRequest)
+          }
+        } catch (refreshError) {
+          // Refresh failed, logout user
+          localStorage.removeItem('access_token')
+          localStorage.removeItem('refresh_token')
+          localStorage.removeItem('user')
+          window.location.href = '/login'
+          return Promise.reject(refreshError)
+        }
       }
     }
 
@@ -97,5 +160,83 @@ api.interceptors.response.use(
     return Promise.reject(error)
   }
 )
+
+// Utility functions for admin token management
+export const adminTokenUtils = {
+  /**
+   * Check if admin tokens are valid and not expired
+   */
+  validateAdminTokens(): boolean {
+    const token = localStorage.getItem('admin_access_token')
+    const refreshToken = localStorage.getItem('admin_refresh_token')
+    const user = localStorage.getItem('admin_user')
+    
+    if (!token || !refreshToken || !user) {
+      console.warn('Missing admin credentials')
+      return false
+    }
+    
+    try {
+      // Basic token format validation
+      if (token.split('.').length !== 3) {
+        console.warn('Invalid admin token format')
+        return false
+      }
+      
+      // Try to decode the token payload (basic validation)
+      const payload = JSON.parse(atob(token.split('.')[1]))
+      const now = Math.floor(Date.now() / 1000)
+      
+      if (payload.exp && payload.exp < now) {
+        console.warn('Admin token expired')
+        return false
+      }
+      
+      return true
+    } catch (error) {
+      console.error('Error validating admin token:', error)
+      return false
+    }
+  },
+
+  /**
+   * Clear all admin tokens and redirect to login
+   */
+  clearAdminSession(): void {
+    console.log('Clearing admin session')
+    localStorage.removeItem('admin_access_token')
+    localStorage.removeItem('admin_refresh_token')
+    localStorage.removeItem('admin_user')
+    window.location.href = '/ruler/login'
+  },
+
+  /**
+   * Get admin user info from localStorage
+   */
+  getAdminUser(): any | null {
+    try {
+      const userStr = localStorage.getItem('admin_user')
+      return userStr ? JSON.parse(userStr) : null
+    } catch (error) {
+      console.error('Error parsing admin user:', error)
+      return null
+    }
+  },
+
+  /**
+   * Check if current user has admin privileges
+   */
+  hasAdminPrivileges(): boolean {
+    const user = this.getAdminUser()
+    if (!user) return false
+    
+    // Owner account bypass
+    if (user.email === 'darelldrayton93@gmail.com') {
+      return true
+    }
+    
+    return user.is_staff || user.is_superuser
+  }
+}
 
 export default api
