@@ -14,10 +14,12 @@ class WebSocketService {
   private ws: WebSocket | null = null;
   private reconnectInterval: NodeJS.Timeout | null = null;
   private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
-  private reconnectDelay = 3000;
+  private maxReconnectAttempts = 3; // Reduced from 5 to 3
+  private reconnectDelay = 5000; // Increased from 3000 to 5000
   private pingInterval: NodeJS.Timeout | null = null;
   private isIntentionallyClosed = false;
+  private connectionFailures = 0;
+  private maxConnectionFailures = 3; // After 3 consecutive failures, stop trying
   
   // Event handlers
   private onNotificationReceived: ((notification: AppNotification) => void) | null = null;
@@ -47,6 +49,13 @@ class WebSocketService {
       return;
     }
 
+    // Don't try to connect if we've had too many failures
+    if (this.connectionFailures >= this.maxConnectionFailures) {
+      console.warn('❌ WebSocket connection disabled due to repeated failures');
+      this.onConnectionStatusChange?.('disconnected');
+      return;
+    }
+
     this.isIntentionallyClosed = false;
     const wsUrl = this.getWebSocketUrl(token);
     
@@ -57,6 +66,7 @@ class WebSocketService {
       this.setupEventHandlers();
     } catch (error) {
       console.error('Failed to create WebSocket connection:', error);
+      this.connectionFailures++;
       this.scheduleReconnect();
     }
   }
@@ -84,6 +94,7 @@ class WebSocketService {
     }
     
     this.reconnectAttempts = 0;
+    this.connectionFailures = 0;
   }
 
   /**
@@ -94,8 +105,8 @@ class WebSocketService {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const port = process.env.NODE_ENV === 'development' ? ':8000' : '';
     
-    // For now, use a mock WebSocket server for demonstration
-    // In production, this would connect to your Django Channels WebSocket endpoint
+    // WebSocket endpoint for real-time notifications
+    // This connects to Django Channels WebSocket endpoint when available
     return `${protocol}//${host}${port}/ws/notifications/?token=${token}`;
   }
 
@@ -108,6 +119,7 @@ class WebSocketService {
     this.ws.onopen = () => {
       console.log('✅ WebSocket connected');
       this.reconnectAttempts = 0;
+      this.connectionFailures = 0; // Reset failure count on successful connection
       this.onConnectionStatusChange?.('connected');
       
       // Start ping interval to keep connection alive
@@ -124,18 +136,29 @@ class WebSocketService {
     };
 
     this.ws.onerror = (error) => {
-      console.warn('⚠️ WebSocket connection failed (server may not be running)');
+      this.connectionFailures++;
+      console.warn(`⚠️ WebSocket connection failed (attempt ${this.connectionFailures}) - server may not be running`);
+      
+      // If we've failed too many times, stop trying
+      if (this.connectionFailures >= this.maxConnectionFailures) {
+        console.warn(`❌ WebSocket disabled after ${this.maxConnectionFailures} consecutive failures`);
+        this.isIntentionallyClosed = true;
+        this.onConnectionStatusChange?.('disconnected');
+      }
     };
 
     this.ws.onclose = (event) => {
-      if (event.code !== 1006) {  // Don't log expected connection failures
+      // Only log if it was an unexpected closure (not due to network issues)
+      if (event.code !== 1006 && event.code !== 1001) {
         console.log('🔌 WebSocket closed:', event.code, event.reason);
       }
       this.stopPingInterval();
       
-      if (!this.isIntentionallyClosed) {
+      if (!this.isIntentionallyClosed && this.connectionFailures < this.maxConnectionFailures) {
         this.onConnectionStatusChange?.('disconnected');
         this.scheduleReconnect();
+      } else {
+        this.onConnectionStatusChange?.('disconnected');
       }
     };
   }
@@ -252,8 +275,8 @@ class WebSocketService {
       return;
     }
 
-    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.warn(`⚠️ Max reconnection attempts (${this.maxReconnectAttempts}) reached. WebSocket will remain disconnected.`);
+    if (this.reconnectAttempts >= this.maxReconnectAttempts || this.connectionFailures >= this.maxConnectionFailures) {
+      console.warn(`⚠️ Max reconnection attempts (${this.maxReconnectAttempts}) or failures (${this.maxConnectionFailures}) reached. WebSocket will remain disconnected.`);
       this.onConnectionStatusChange?.('disconnected');
       return;
     }
@@ -288,7 +311,9 @@ class WebSocketService {
    */
   private startPingInterval() {
     this.pingInterval = setInterval(() => {
-      this.send({ type: 'ping' });
+      if (this.ws?.readyState === WebSocket.OPEN) {
+        this.send({ type: 'ping' });
+      }
     }, 30000); // Ping every 30 seconds
   }
 
@@ -343,6 +368,25 @@ class WebSocketService {
       return 'reconnecting';
     }
     return 'disconnected';
+  }
+
+  /**
+   * Reset the WebSocket service (clears failure counts and allows reconnection)
+   */
+  reset() {
+    console.log('🔄 Resetting WebSocket service...');
+    this.connectionFailures = 0;
+    this.reconnectAttempts = 0;
+    this.isIntentionallyClosed = false;
+  }
+
+  /**
+   * Check if WebSocket is available/enabled
+   */
+  isEnabled(): boolean {
+    return this.connectionFailures < this.maxConnectionFailures && 
+           !this.isIntentionallyClosed &&
+           !(typeof window !== 'undefined' && (window as any).disableWebSocket);
   }
 
   /**
