@@ -54,6 +54,7 @@ import {
 } from '@mui/icons-material';
 import notificationService from '../../services/notifications';
 import toast from 'react-hot-toast';
+import api from '../../services/api';
 
 interface NotificationSettings {
   pushEnabled: boolean;
@@ -143,25 +144,103 @@ const NotificationManager: React.FC = () => {
     }
   };
 
-  const loadSettings = () => {
-    // Load settings from localStorage or API
-    const savedSettings = localStorage.getItem(`notification_settings_${user?.id}`);
-    if (savedSettings) {
-      try {
-        const parsed = JSON.parse(savedSettings);
-        setSettings(prev => ({ ...prev, ...parsed }));
-      } catch (error) {
-        console.error('Failed to parse notification settings:', error);
+  const loadSettings = async () => {
+    try {
+      // First, try to load from backend
+      const response = await api.get('/notifications/preferences/');
+      
+      if (response.data) {
+        // Convert backend format to local format
+        const backendSettings = response.data;
+        const categories: any = {};
+        
+        // Map backend preferences to local categories
+        if (backendSettings.results && Array.isArray(backendSettings.results)) {
+          backendSettings.results.forEach((pref: any) => {
+            if (pref.notification_type) {
+              categories[pref.notification_type] = pref.enabled;
+            }
+          });
+        }
+        
+        // Set default values if not present
+        const defaultCategories = {
+          bookingUpdates: true,
+          paymentActivity: true,
+          messageNotifications: true,
+          timeReminders: true,
+          accountSecurity: true,
+          promotionalOffers: false,
+          systemUpdates: true,
+          hostNotifications: true,
+        };
+        
+        // Merge with defaults
+        Object.keys(defaultCategories).forEach(key => {
+          if (!(key in categories)) {
+            categories[key] = defaultCategories[key as keyof typeof defaultCategories];
+          }
+        });
+        
+        const newSettings = {
+          ...settings,
+          emailEnabled: backendSettings.email_enabled ?? settings.emailEnabled,
+          pushEnabled: backendSettings.push_enabled ?? settings.pushEnabled,
+          categories: categories,
+          schedule: backendSettings.schedule || settings.schedule,
+          sound: backendSettings.sound || settings.sound,
+          vibration: backendSettings.vibration || settings.vibration,
+        };
+        
+        setSettings(newSettings);
+        // Save to localStorage as cache
+        localStorage.setItem(`notification_settings_${user?.id}`, JSON.stringify(newSettings));
+      }
+    } catch (error) {
+      console.error('Failed to load notification settings from backend:', error);
+      
+      // Fall back to localStorage
+      const savedSettings = localStorage.getItem(`notification_settings_${user?.id}`);
+      if (savedSettings) {
+        try {
+          const parsed = JSON.parse(savedSettings);
+          setSettings(prev => ({ ...prev, ...parsed }));
+        } catch (parseError) {
+          console.error('Failed to parse notification settings:', parseError);
+        }
       }
     }
   };
 
-  const saveSettings = (newSettings: NotificationSettings) => {
-    setSettings(newSettings);
-    localStorage.setItem(`notification_settings_${user?.id}`, JSON.stringify(newSettings));
-    
-    // In a real app, this would also sync with the backend
-    toast.success('Notification settings saved');
+  const saveSettings = async (newSettings: NotificationSettings) => {
+    try {
+      setSettings(newSettings);
+      localStorage.setItem(`notification_settings_${user?.id}`, JSON.stringify(newSettings));
+      
+      // Sync with backend
+      const preferences = Object.entries(newSettings.categories).map(([key, enabled]) => ({
+        notification_type: key,
+        enabled: enabled,
+        email_enabled: newSettings.emailEnabled,
+        push_enabled: newSettings.pushEnabled
+      }));
+      
+      await api.patch('/notifications/preferences/', {
+        preferences: preferences,
+        email_enabled: newSettings.emailEnabled,
+        push_enabled: newSettings.pushEnabled,
+        schedule: newSettings.schedule,
+        sound: newSettings.sound,
+        vibration: newSettings.vibration
+      });
+      
+      toast.success('Notification settings saved');
+    } catch (error) {
+      console.error('Failed to save notification settings:', error);
+      toast.error('Failed to save settings. Please try again.');
+      // Revert local state on error
+      loadSettings();
+    }
   };
 
   const handleEnablePushNotifications = async () => {
@@ -174,7 +253,7 @@ const NotificationManager: React.FC = () => {
         const subscription = await notificationService.subscribeToPush();
         if (subscription) {
           setSubscriptionStatus('subscribed');
-          saveSettings({
+          await saveSettings({
             ...settings,
             pushEnabled: true,
           });
@@ -199,7 +278,7 @@ const NotificationManager: React.FC = () => {
       const unsubscribed = await notificationService.unsubscribeFromPush();
       if (unsubscribed) {
         setSubscriptionStatus('unsubscribed');
-        saveSettings({
+        await saveSettings({
           ...settings,
           pushEnabled: false,
         });
@@ -449,7 +528,7 @@ const NotificationManager: React.FC = () => {
                   <ListItemSecondaryAction>
                     <Switch
                       checked={settings.categories[category.key]}
-                      onChange={(e) => {
+                      onChange={async (e) => {
                         const newSettings = {
                           ...settings,
                           categories: {
@@ -457,7 +536,7 @@ const NotificationManager: React.FC = () => {
                             [category.key]: e.target.checked,
                           },
                         };
-                        saveSettings(newSettings);
+                        await saveSettings(newSettings);
                       }}
                     />
                   </ListItemSecondaryAction>
@@ -485,7 +564,7 @@ const NotificationManager: React.FC = () => {
                 control={
                   <Switch
                     checked={settings.emailEnabled}
-                    onChange={(e) => saveSettings({ ...settings, emailEnabled: e.target.checked })}
+                    onChange={async (e) => await saveSettings({ ...settings, emailEnabled: e.target.checked })}
                   />
                 }
                 label={
@@ -661,8 +740,8 @@ const NotificationManager: React.FC = () => {
           </Button>
           <Button
             variant="contained"
-            onClick={() => {
-              saveSettings(settings);
+            onClick={async () => {
+              await saveSettings(settings);
               setSettingsOpen(false);
             }}
           >
