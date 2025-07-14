@@ -3,7 +3,6 @@ import {
   Box,
   Container,
   Typography,
-  Grid,
   Card,
   CardContent,
   TextField,
@@ -25,13 +24,6 @@ import {
   Search,
   ExpandMore,
   Email,
-  Help,
-  DirectionsCar,
-  Payment,
-  Security,
-  Settings,
-  LocationOn,
-  Schedule,
   Close,
 } from '@mui/icons-material';
 
@@ -56,44 +48,6 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
-const categories = [
-  {
-    title: 'Getting Started',
-    icon: <Help sx={{ fontSize: 32 }} />,
-    description: 'Learn the basics of using our platform',
-    color: 'primary',
-  },
-  {
-    title: 'Booking & Parking',
-    icon: <DirectionsCar sx={{ fontSize: 32 }} />,
-    description: 'Everything about finding and booking parking',
-    color: 'secondary',
-  },
-  {
-    title: 'Payments & Billing',
-    icon: <Payment sx={{ fontSize: 32 }} />,
-    description: 'Payment methods, billing, and refunds',
-    color: 'success',
-  },
-  {
-    title: 'Safety & Security',
-    icon: <Security sx={{ fontSize: 32 }} />,
-    description: 'Safety guidelines and security features',
-    color: 'warning',
-  },
-  {
-    title: 'Account Settings',
-    icon: <Settings sx={{ fontSize: 32 }} />,
-    description: 'Manage your account and preferences',
-    color: 'info',
-  },
-  {
-    title: 'Host Resources',
-    icon: <LocationOn sx={{ fontSize: 32 }} />,
-    description: 'Information for parking space hosts',
-    color: 'error',
-  },
-];
 
 const generalFAQs = [
   {
@@ -300,41 +254,6 @@ export default function HelpCenter() {
       </Box>
 
       <Container maxWidth="lg">
-        {/* Quick Links */}
-        <Box sx={{ mb: 6 }}>
-          <Typography variant="h3" fontWeight={700} textAlign="center" gutterBottom>
-            Browse by Category
-          </Typography>
-          <Grid container spacing={3}>
-            {categories.map((category, index) => (
-              <Grid item xs={12} sm={6} md={4} key={index}>
-                <Card 
-                  sx={{ 
-                    height: '100%', 
-                    borderRadius: 3,
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                    },
-                  }}
-                >
-                  <CardContent sx={{ p: 3, textAlign: 'center' }}>
-                    <Box sx={{ color: `${category.color}.main`, mb: 2 }}>
-                      {category.icon}
-                    </Box>
-                    <Typography variant="h6" fontWeight={600} gutterBottom>
-                      {category.title}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {category.description}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
 
         {/* FAQ Sections */}
         <Box sx={{ mb: 6 }}>
