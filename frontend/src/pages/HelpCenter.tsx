@@ -195,14 +195,27 @@ export default function HelpCenter() {
     ...hostFAQs.map(faq => ({ ...faq, tab: 'host', category: 'For Hosts' })),
   ];
 
-  const filteredFAQs = searchTerm
+  const filteredFAQs = searchTerm.trim()
     ? allFAQs.filter(
-        faq =>
-          faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          faq.answer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (faq.category && faq.category.toLowerCase().includes(searchTerm.toLowerCase()))
+        faq => {
+          const searchTermLower = searchTerm.toLowerCase().trim();
+          const matches = faq.question.toLowerCase().includes(searchTermLower) ||
+                         faq.answer.toLowerCase().includes(searchTermLower) ||
+                         (faq.category && faq.category.toLowerCase().includes(searchTermLower));
+          return matches;
+        }
       )
     : [];
+
+  // Debug logging
+  React.useEffect(() => {
+    if (searchTerm.trim()) {
+      console.log('Search term:', searchTerm);
+      console.log('Total FAQs:', allFAQs.length);
+      console.log('Filtered FAQs:', filteredFAQs.length);
+      console.log('First few filtered FAQs:', filteredFAQs.slice(0, 3));
+    }
+  }, [searchTerm, filteredFAQs]);
 
   const filteredRenterFAQs = renterFAQs.filter(
     faq =>
@@ -329,22 +342,25 @@ export default function HelpCenter() {
             Frequently Asked Questions
           </Typography>
           
-          {searchTerm ? (
+          {searchTerm.trim() ? (
             // Show search results
             <Box sx={{ maxWidth: 800, mx: 'auto' }}>
               <Typography variant="h6" sx={{ mb: 3, textAlign: 'center' }}>
-                {filteredFAQs.length} results for "{searchTerm}"
+                {filteredFAQs.length} result{filteredFAQs.length !== 1 ? 's' : ''} for "{searchTerm.trim()}"
               </Typography>
               {filteredFAQs.length === 0 ? (
                 <Paper sx={{ p: 4, textAlign: 'center' }}>
-                  <Typography variant="body1" color="text.secondary">
-                    No results found. Try different keywords or browse our categories below.
+                  <Typography variant="body1" color="text.secondary" gutterBottom>
+                    No results found for "{searchTerm.trim()}"
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Try different keywords or browse our categories below.
                   </Typography>
                 </Paper>
               ) : (
                 filteredFAQs.map((faq, index) => (
                   <Accordion
-                    key={index}
+                    key={`search-${index}`}
                     expanded={expandedFAQ === `search-${index}`}
                     onChange={handleFAQChange(`search-${index}`)}
                     sx={{ mb: 1, borderRadius: 2, '&:before': { display: 'none' } }}
