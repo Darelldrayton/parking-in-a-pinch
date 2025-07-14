@@ -283,6 +283,9 @@ const AdminDashboardEnhanced: React.FC = () => {
     isInternal: boolean;
   }>({ open: false, dispute: null, message: '', isInternal: false });
 
+  // Track unavailable features for user feedback
+  const [unavailableFeatures, setUnavailableFeatures] = useState<string[]>([]);
+
   // Check admin auth from localStorage
   useEffect(() => {
     console.log('🔍 AdminDashboard: Checking authentication...');
@@ -510,10 +513,15 @@ const AdminDashboardEnhanced: React.FC = () => {
     try {
       const response = await api.get('/users/admin/verification-requests/');
       setVerificationRequests(response.data.results || []);
+      // Remove from unavailable features if it works
+      setUnavailableFeatures(prev => prev.filter(f => f !== 'verification'));
     } catch (err: any) {
       console.warn('Verification requests fetch error:', err);
       if (err.response?.status === 401) {
         console.warn('⚠️ Admin session expired for verification requests');
+      } else if (err.response?.status === 404) {
+        console.warn('⚠️ Admin verification API not available (404)');
+        setUnavailableFeatures(prev => [...new Set([...prev, 'verification'])]);
       } else {
         console.warn(`⚠️ Admin verification API not available (${err.response?.status || 'unknown'})`);
       }
@@ -525,12 +533,15 @@ const AdminDashboardEnhanced: React.FC = () => {
     try {
       const response = await api.get('/payments/admin/refund-requests/');
       setRefundRequests(response.data.results || []);
+      // Remove from unavailable features if it works
+      setUnavailableFeatures(prev => prev.filter(f => f !== 'refunds'));
     } catch (err: any) {
       console.warn('Refund requests fetch error:', err);
       if (err.response?.status === 401) {
         console.warn('⚠️ Admin session expired for refund requests');
       } else if (err.response?.status === 404) {
         console.warn('⚠️ Admin refund API not available (404)');
+        setUnavailableFeatures(prev => [...new Set([...prev, 'refunds'])]);
       } else {
         console.warn(`⚠️ Admin refund API failed (${err.response?.status || 'unknown'})`);
       }
@@ -614,12 +625,15 @@ const AdminDashboardEnhanced: React.FC = () => {
       console.log('📋 Disputes count from API:', data.results ? data.results.length : 'NO_RESULTS_FIELD');
       
       setDisputes(data.results || data || []); // Try both data.results and direct data
+      // Remove from unavailable features if it works
+      setUnavailableFeatures(prev => prev.filter(f => f !== 'disputes'));
     } catch (err: any) {
       console.warn('Disputes fetch error:', err);
       if (err.response?.status === 401) {
         console.warn('⚠️ Admin session expired for disputes');
       } else if (err.response?.status === 404) {
         console.warn('⚠️ Disputes API not available (404)');
+        setUnavailableFeatures(prev => [...new Set([...prev, 'disputes'])]);
       } else {
         console.warn(`⚠️ Disputes API failed (${err.response?.status || 'unknown'})`);
       }
@@ -1220,6 +1234,27 @@ const AdminDashboardEnhanced: React.FC = () => {
         {error && (
           <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
             {error}
+          </Alert>
+        )}
+
+        {unavailableFeatures.length > 0 && (
+          <Alert severity="warning" sx={{ mb: 3 }} onClose={() => setUnavailableFeatures([])}>
+            <Typography variant="body2" fontWeight={600}>
+              Some admin features are temporarily unavailable:
+            </Typography>
+            <Typography variant="body2" sx={{ mt: 1 }}>
+              {unavailableFeatures.map(feature => {
+                const featureNames = {
+                  verification: 'Identity Verification',
+                  refunds: 'Refund Management',
+                  disputes: 'Dispute Management'
+                };
+                return featureNames[feature as keyof typeof featureNames] || feature;
+              }).join(', ')}
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+              These features may require additional backend setup. Contact your system administrator if needed.
+            </Typography>
           </Alert>
         )}
         
