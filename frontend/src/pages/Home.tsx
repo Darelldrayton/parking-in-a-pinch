@@ -148,6 +148,7 @@ function Home() {
   const [error, setError] = useState<string | null>(null);
   const [searchLocation, setSearchLocation] = useState<string | null>('');
   const [searchDate, setSearchDate] = useState('');
+  const [availableCount, setAvailableCount] = useState<number>(0);
 
   // Redirect to dashboard if user is logged in
   useEffect(() => {
@@ -171,9 +172,23 @@ function Home() {
     }
   }, []);
 
+  const loadAvailableCount = useCallback(async () => {
+    try {
+      const response = await getListings({ 
+        is_available: true,
+        limit: 1000 // Get all available spots to count them
+      });
+      setAvailableCount(response.count || response.results?.length || 0);
+    } catch (err) {
+      console.error('Error loading available count:', err);
+      setAvailableCount(0);
+    }
+  }, []);
+
   useEffect(() => {
     // Only load once on mount
     loadFeaturedListings();
+    loadAvailableCount();
   }, []); // Empty dependency array
 
   const handleSearch = useCallback(() => {
@@ -577,8 +592,9 @@ function Home() {
                   variant="contained"
                   size="large"
                   onClick={() => navigate('/listings?filter=available')}
+                  disabled={loading}
                   sx={{
-                    bgcolor: 'success.main',
+                    bgcolor: availableCount > 0 ? 'success.main' : 'grey.500',
                     color: 'white',
                     fontWeight: 600,
                     fontSize: '1.1rem',
@@ -588,7 +604,7 @@ function Home() {
                     boxShadow: theme.shadows[8],
                     transition: 'all 0.3s ease',
                     '&:hover': {
-                      bgcolor: 'success.dark',
+                      bgcolor: availableCount > 0 ? 'success.dark' : 'grey.600',
                       transform: 'translateY(-2px)',
                       boxShadow: theme.shadows[12],
                       '&:before': {
@@ -619,7 +635,7 @@ function Home() {
                         height: 12,
                         borderRadius: '50%',
                         bgcolor: 'white',
-                        animation: 'pulse 2s infinite',
+                        animation: availableCount > 0 ? 'pulse 2s infinite' : 'none',
                         '@keyframes pulse': {
                           '0%': { opacity: 1 },
                           '50%': { opacity: 0.5 },
@@ -627,7 +643,7 @@ function Home() {
                         }
                       }}
                     />
-                    6 Available Now
+                    {loading ? 'Loading...' : availableCount > 0 ? `${availableCount} Available Now` : 'No spots available'}
                   </Box>
                 </Button>
 
