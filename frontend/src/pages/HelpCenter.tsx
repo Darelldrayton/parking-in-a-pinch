@@ -19,12 +19,12 @@ import {
   Paper,
   Tabs,
   Tab,
+  IconButton,
 } from '@mui/material';
 import {
   Search,
   ExpandMore,
   Email,
-  Chat,
   Help,
   DirectionsCar,
   Payment,
@@ -32,6 +32,7 @@ import {
   Settings,
   LocationOn,
   Schedule,
+  Close,
 } from '@mui/icons-material';
 
 interface TabPanelProps {
@@ -187,11 +188,32 @@ export default function HelpCenter() {
     setExpandedFAQ(isExpanded ? panel : false);
   };
 
-  const filteredFAQs = generalFAQs.filter(
+  // Combine all FAQs for search
+  const allFAQs = [
+    ...generalFAQs.map(faq => ({ ...faq, tab: 'general' })),
+    ...renterFAQs.map(faq => ({ ...faq, tab: 'renter', category: 'For Renters' })),
+    ...hostFAQs.map(faq => ({ ...faq, tab: 'host', category: 'For Hosts' })),
+  ];
+
+  const filteredFAQs = searchTerm
+    ? allFAQs.filter(
+        faq =>
+          faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          faq.answer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (faq.category && faq.category.toLowerCase().includes(searchTerm.toLowerCase()))
+      )
+    : [];
+
+  const filteredRenterFAQs = renterFAQs.filter(
     faq =>
       faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      faq.answer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      faq.category.toLowerCase().includes(searchTerm.toLowerCase())
+      faq.answer.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredHostFAQs = hostFAQs.filter(
+    faq =>
+      faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      faq.answer.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -225,6 +247,17 @@ export default function HelpCenter() {
                   startAdornment: (
                     <InputAdornment position="start">
                       <Search sx={{ color: 'white' }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: searchTerm && (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setSearchTerm('')}
+                        size="small"
+                        sx={{ color: 'white' }}
+                      >
+                        <Close />
+                      </IconButton>
                     </InputAdornment>
                   ),
                   sx: {
@@ -296,104 +329,148 @@ export default function HelpCenter() {
             Frequently Asked Questions
           </Typography>
           
-          <Tabs
-            value={tabValue}
-            onChange={handleTabChange}
-            centered
-            sx={{
-              mb: 4,
-              '& .MuiTab-root': {
-                fontSize: '1rem',
-                fontWeight: 600,
-                py: 2,
-                px: 3,
-              },
-            }}
-          >
-            <Tab label="General" />
-            <Tab label="For Renters" />
-            <Tab label="For Hosts" />
-          </Tabs>
-
-          {/* General FAQs */}
-          <TabPanel value={tabValue} index={0}>
+          {searchTerm ? (
+            // Show search results
             <Box sx={{ maxWidth: 800, mx: 'auto' }}>
-              {(searchTerm ? filteredFAQs : generalFAQs).map((faq, index) => (
-                <Accordion
-                  key={index}
-                  expanded={expandedFAQ === `general-${index}`}
-                  onChange={handleFAQChange(`general-${index}`)}
-                  sx={{ mb: 1, borderRadius: 2, '&:before': { display: 'none' } }}
-                >
-                  <AccordionSummary expandIcon={<ExpandMore />}>
-                    <Stack direction="row" spacing={2} alignItems="center" sx={{ width: '100%' }}>
-                      <Typography variant="h6" fontWeight={600}>
-                        {faq.question}
+              <Typography variant="h6" sx={{ mb: 3, textAlign: 'center' }}>
+                {filteredFAQs.length} results for "{searchTerm}"
+              </Typography>
+              {filteredFAQs.length === 0 ? (
+                <Paper sx={{ p: 4, textAlign: 'center' }}>
+                  <Typography variant="body1" color="text.secondary">
+                    No results found. Try different keywords or browse our categories below.
+                  </Typography>
+                </Paper>
+              ) : (
+                filteredFAQs.map((faq, index) => (
+                  <Accordion
+                    key={index}
+                    expanded={expandedFAQ === `search-${index}`}
+                    onChange={handleFAQChange(`search-${index}`)}
+                    sx={{ mb: 1, borderRadius: 2, '&:before': { display: 'none' } }}
+                  >
+                    <AccordionSummary expandIcon={<ExpandMore />}>
+                      <Stack direction="row" spacing={2} alignItems="center" sx={{ width: '100%' }}>
+                        <Typography variant="h6" fontWeight={600}>
+                          {faq.question}
+                        </Typography>
+                        {faq.category && (
+                          <Chip label={faq.category} size="small" />
+                        )}
+                      </Stack>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <Typography variant="body1" sx={{ fontSize: '1.1rem' }}>
+                        {faq.answer}
                       </Typography>
-                      {faq.category && (
-                        <Chip label={faq.category} size="small" />
-                      )}
-                    </Stack>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <Typography variant="body1" sx={{ fontSize: '1.1rem' }}>
-                      {faq.answer}
-                    </Typography>
-                  </AccordionDetails>
-                </Accordion>
-              ))}
+                    </AccordionDetails>
+                  </Accordion>
+                ))
+              )}
             </Box>
-          </TabPanel>
+          ) : (
+            // Show normal tabs
+            <>
+              <Tabs
+                value={tabValue}
+                onChange={handleTabChange}
+                centered
+                sx={{
+                  mb: 4,
+                  '& .MuiTab-root': {
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                    py: 2,
+                    px: 3,
+                  },
+                }}
+              >
+                <Tab label="General" />
+                <Tab label="For Renters" />
+                <Tab label="For Hosts" />
+              </Tabs>
 
-          {/* Renter FAQs */}
-          <TabPanel value={tabValue} index={1}>
-            <Box sx={{ maxWidth: 800, mx: 'auto' }}>
-              {renterFAQs.map((faq, index) => (
-                <Accordion
-                  key={index}
-                  expanded={expandedFAQ === `renter-${index}`}
-                  onChange={handleFAQChange(`renter-${index}`)}
-                  sx={{ mb: 1, borderRadius: 2, '&:before': { display: 'none' } }}
-                >
-                  <AccordionSummary expandIcon={<ExpandMore />}>
-                    <Typography variant="h6" fontWeight={600}>
-                      {faq.question}
-                    </Typography>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <Typography variant="body1" sx={{ fontSize: '1.1rem' }}>
-                      {faq.answer}
-                    </Typography>
-                  </AccordionDetails>
-                </Accordion>
-              ))}
-            </Box>
-          </TabPanel>
+              {/* General FAQs */}
+              <TabPanel value={tabValue} index={0}>
+                <Box sx={{ maxWidth: 800, mx: 'auto' }}>
+                  {generalFAQs.map((faq, index) => (
+                    <Accordion
+                      key={index}
+                      expanded={expandedFAQ === `general-${index}`}
+                      onChange={handleFAQChange(`general-${index}`)}
+                      sx={{ mb: 1, borderRadius: 2, '&:before': { display: 'none' } }}
+                    >
+                      <AccordionSummary expandIcon={<ExpandMore />}>
+                        <Stack direction="row" spacing={2} alignItems="center" sx={{ width: '100%' }}>
+                          <Typography variant="h6" fontWeight={600}>
+                            {faq.question}
+                          </Typography>
+                          {faq.category && (
+                            <Chip label={faq.category} size="small" />
+                          )}
+                        </Stack>
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        <Typography variant="body1" sx={{ fontSize: '1.1rem' }}>
+                          {faq.answer}
+                        </Typography>
+                      </AccordionDetails>
+                    </Accordion>
+                  ))}
+                </Box>
+              </TabPanel>
 
-          {/* Host FAQs */}
-          <TabPanel value={tabValue} index={2}>
-            <Box sx={{ maxWidth: 800, mx: 'auto' }}>
-              {hostFAQs.map((faq, index) => (
-                <Accordion
-                  key={index}
-                  expanded={expandedFAQ === `host-${index}`}
-                  onChange={handleFAQChange(`host-${index}`)}
-                  sx={{ mb: 1, borderRadius: 2, '&:before': { display: 'none' } }}
-                >
-                  <AccordionSummary expandIcon={<ExpandMore />}>
-                    <Typography variant="h6" fontWeight={600}>
-                      {faq.question}
-                    </Typography>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <Typography variant="body1" sx={{ fontSize: '1.1rem' }}>
-                      {faq.answer}
-                    </Typography>
-                  </AccordionDetails>
-                </Accordion>
-              ))}
-            </Box>
-          </TabPanel>
+              {/* Renter FAQs */}
+              <TabPanel value={tabValue} index={1}>
+                <Box sx={{ maxWidth: 800, mx: 'auto' }}>
+                  {renterFAQs.map((faq, index) => (
+                    <Accordion
+                      key={index}
+                      expanded={expandedFAQ === `renter-${index}`}
+                      onChange={handleFAQChange(`renter-${index}`)}
+                      sx={{ mb: 1, borderRadius: 2, '&:before': { display: 'none' } }}
+                    >
+                      <AccordionSummary expandIcon={<ExpandMore />}>
+                        <Typography variant="h6" fontWeight={600}>
+                          {faq.question}
+                        </Typography>
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        <Typography variant="body1" sx={{ fontSize: '1.1rem' }}>
+                          {faq.answer}
+                        </Typography>
+                      </AccordionDetails>
+                    </Accordion>
+                  ))}
+                </Box>
+              </TabPanel>
+
+              {/* Host FAQs */}
+              <TabPanel value={tabValue} index={2}>
+                <Box sx={{ maxWidth: 800, mx: 'auto' }}>
+                  {hostFAQs.map((faq, index) => (
+                    <Accordion
+                      key={index}
+                      expanded={expandedFAQ === `host-${index}`}
+                      onChange={handleFAQChange(`host-${index}`)}
+                      sx={{ mb: 1, borderRadius: 2, '&:before': { display: 'none' } }}
+                    >
+                      <AccordionSummary expandIcon={<ExpandMore />}>
+                        <Typography variant="h6" fontWeight={600}>
+                          {faq.question}
+                        </Typography>
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        <Typography variant="body1" sx={{ fontSize: '1.1rem' }}>
+                          {faq.answer}
+                        </Typography>
+                      </AccordionDetails>
+                    </Accordion>
+                  ))}
+                </Box>
+              </TabPanel>
+            </>
+          )}
         </Box>
 
         {/* Contact Support */}
@@ -410,44 +487,31 @@ export default function HelpCenter() {
             Still Need Help?
           </Typography>
           <Typography variant="h6" textAlign="center" color="text.secondary" sx={{ mb: 4 }}>
-            Our support team is here to help you 24/7
+            Our support team is here to help you
           </Typography>
           
-          <Grid container spacing={4}>
-            <Grid item xs={12} md={6}>
-              <Card sx={{ textAlign: 'center', borderRadius: 3, height: '100%' }}>
-                <CardContent sx={{ p: 4 }}>
-                  <Email sx={{ fontSize: 40, color: 'secondary.main', mb: 2 }} />
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
-                    Email Support
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" paragraph>
-                    Send us a detailed message
-                  </Typography>
-                  <Button variant="contained" color="secondary">
-                    Send Email
-                  </Button>
-                </CardContent>
-              </Card>
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
-              <Card sx={{ textAlign: 'center', borderRadius: 3, height: '100%' }}>
-                <CardContent sx={{ p: 4 }}>
-                  <Chat sx={{ fontSize: 40, color: 'success.main', mb: 2 }} />
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
-                    Live Chat
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" paragraph>
-                    Chat with us in real-time
-                  </Typography>
-                  <Button variant="contained" color="success">
-                    Start Chat
-                  </Button>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <Card sx={{ textAlign: 'center', borderRadius: 3, maxWidth: 400 }}>
+              <CardContent sx={{ p: 4 }}>
+                <Email sx={{ fontSize: 40, color: 'secondary.main', mb: 2 }} />
+                <Typography variant="h6" fontWeight={600} gutterBottom>
+                  Email Support
+                </Typography>
+                <Typography variant="body2" color="text.secondary" paragraph>
+                  Send us a detailed message and we'll get back to you as soon as possible
+                </Typography>
+                <Button 
+                  variant="contained" 
+                  color="secondary"
+                  component="a"
+                  href="mailto:support@parkinginapinch.com"
+                  sx={{ mt: 2 }}
+                >
+                  Contact Support
+                </Button>
+              </CardContent>
+            </Card>
+          </Box>
         </Paper>
       </Container>
     </Box>
