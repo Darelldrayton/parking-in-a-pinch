@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { 
   Box, 
@@ -287,12 +287,16 @@ const AdminDashboardEnhanced: React.FC = () => {
 
   // Track unavailable features for user feedback
   const [unavailableFeatures, setUnavailableFeatures] = useState<string[]>([]);
+  
+  // Track if we've already loaded data to prevent multiple calls
+  const hasLoadedDataRef = useRef(false);
 
   // Check admin auth from localStorage
   useEffect(() => {
-    console.log('🔍 AdminDashboard: Checking authentication...');
+    console.log('🔍 AdminDashboard: useEffect triggered - checking authentication...');
     console.log('🔍 Path:', window.location.pathname);
     console.log('🔍 Timestamp:', new Date().toISOString());
+    console.log('🔍 Current loading state:', loading);
     
     // Disable WebSocket for admin pages to prevent infinite loops
     if (typeof window !== 'undefined') {
@@ -328,7 +332,17 @@ const AdminDashboardEnhanced: React.FC = () => {
       const userData = JSON.parse(adminUser);
       console.log('✅ Admin user loaded:', userData.email);
       setAdminUser(userData);
-      loadDataSafely();
+      
+      // Only load data if we haven't already loaded it
+      if (!hasLoadedDataRef.current) {
+        console.log('📊 Loading data for first time...');
+        hasLoadedDataRef.current = true;
+        loadDataSafely();
+      } else {
+        console.log('📊 Data already loaded, skipping...');
+        // Still need to clear loading state if we've already loaded
+        setLoading(false);
+      }
     } catch (error) {
       console.error('❌ Error parsing admin user data:', error);
       window.location.href = '/admin/login';
@@ -346,6 +360,7 @@ const AdminDashboardEnhanced: React.FC = () => {
   
   const loadDataSafely = async () => {
     console.log('📊 Loading dashboard data...');
+    console.log('📊 Loading state before:', loading);
     setLoading(true);
     setError(null);
     
@@ -374,8 +389,10 @@ const AdminDashboardEnhanced: React.FC = () => {
       console.error('❌ Critical dashboard error:', error);
       setError('Some dashboard features may be limited due to connectivity issues.');
     } finally {
-      // Always stop loading, even if APIs fail
+      // CRITICAL: Always stop loading, even if APIs fail
+      console.log('📊 Setting loading to false in finally block');
       setLoading(false);
+      console.log('📊 Loading state after setLoading(false):', false);
     }
   };
 
