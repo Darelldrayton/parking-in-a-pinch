@@ -77,7 +77,7 @@ export default function AdminLogin() {
           localStorage.setItem('admin_user', user);
           
           // IMMEDIATE REDIRECT - STOP ALL EXECUTION
-          window.location.replace('/ruler/dashboard');
+          window.location.replace('/admin/dashboard');
           return; // Stop execution
         }
       } catch (e) {
@@ -159,7 +159,7 @@ export default function AdminLogin() {
 
       console.log('🎉 Admin login successful, navigating to dashboard');
       toast.success('Welcome to the admin panel!');
-      navigate('/ruler/dashboard');
+      navigate('/admin/dashboard');
       
     } catch (error: any) {
       console.error('❌ Admin login error:', error);
@@ -194,7 +194,7 @@ export default function AdminLogin() {
     console.log('📝 Admin tokens copied, redirecting with replace...');
     
     // Use replace instead of href to prevent back button issues
-    window.location.replace('/ruler/dashboard');
+    window.location.replace('/admin/dashboard');
   };
 
   // Show loading screen while redirecting

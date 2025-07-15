@@ -50,7 +50,7 @@ class AdminErrorBoundary extends Component<Props, State> {
   };
 
   private handleGoHome = () => {
-    window.location.href = '/ruler';
+    window.location.href = '/admin/dashboard';
   };
 
   private handleRetry = () => {
