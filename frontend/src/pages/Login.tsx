@@ -60,26 +60,23 @@ const Login: React.FC = () => {
 
   const from = location.state?.from?.pathname || '/dashboard';
 
-  // CRITICAL FIX: Clear ALL tokens on component mount to prevent conflicts
+  // Only clear conflicting admin tokens, not regular user tokens
   React.useEffect(() => {
-    console.log('🔄 Clearing all auth tokens for fresh login');
+    console.log('🔄 Clearing conflicting admin tokens only');
     const keysToRemove = [
       'admin_access_token',
       'admin_refresh_token', 
-      'admin_user',
-      'access_token',
-      'refresh_token',
-      'token'
+      'admin_user'
     ];
     
     keysToRemove.forEach(key => {
       if (localStorage.getItem(key)) {
-        console.log(`🗑️ Removing ${key}`);
+        console.log(`🗑️ Removing admin token: ${key}`);
         localStorage.removeItem(key);
       }
     });
     
-    console.log('✅ All auth tokens cleared for fresh login');
+    console.log('✅ Admin tokens cleared to prevent conflicts');
   }, []);
 
   const {
