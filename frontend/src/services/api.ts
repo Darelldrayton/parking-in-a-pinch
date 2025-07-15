@@ -91,7 +91,8 @@ api.interceptors.response.use(
       }
       
       // CRITICAL FIX: Disable JWT refresh for admin routes to prevent infinite loops
-      if (currentPath.includes('/admin')) {
+      // BUT allow login requests to proceed
+      if (currentPath.includes('/admin') && !originalRequest.url?.includes('/login')) {
         console.warn('🔒 Admin route detected - clearing tokens and redirecting to login')
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')
@@ -114,8 +115,9 @@ api.interceptors.response.use(
       refreshAttempts++
       
       // On mobile, prevent aggressive redirects that cause logout during navigation
+      // BUT allow login requests to proceed
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-      if (isMobile && currentPath.includes('/admin')) {
+      if (isMobile && currentPath.includes('/admin') && !originalRequest.url?.includes('/login')) {
         console.warn('🔒 Mobile admin page - skipping aggressive token refresh to prevent logout')
         return Promise.reject(error)
       }

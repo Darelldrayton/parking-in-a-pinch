@@ -65,9 +65,13 @@ export default function AdminLogin() {
     sessionStorage.removeItem('admin_redirecting');
     
     // CRITICAL FIX: Clear any stale tokens that might cause refresh loops
-    console.log('🔄 Clearing stale tokens to prevent refresh loops');
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
+    // Only clear if there are no admin tokens present (fresh login)
+    const hasAdminTokens = localStorage.getItem('admin_access_token');
+    if (!hasAdminTokens) {
+      console.log('🔄 Clearing stale tokens to prevent refresh loops');
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+    }
     
     // Check if admin is already logged in (admin tokens should remain)
     const adminToken = localStorage.getItem('admin_access_token');

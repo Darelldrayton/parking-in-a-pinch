@@ -301,8 +301,10 @@ const AdminDashboardEnhanced: React.FC = () => {
     }
     
     // CRITICAL FIX: Completely separate admin auth from regular auth
-    // Clear any regular auth tokens to prevent JWT refresh loops
-    if (localStorage.getItem('access_token') || localStorage.getItem('refresh_token')) {
+    // Only clear regular auth tokens if they exist and admin tokens are present
+    // This prevents clearing tokens during initial login
+    const hasAdminTokens = localStorage.getItem('admin_access_token');
+    if (hasAdminTokens && (localStorage.getItem('access_token') || localStorage.getItem('refresh_token'))) {
       console.log('🔄 Clearing regular auth tokens to prevent JWT refresh loops');
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
