@@ -61,6 +61,34 @@ export default function AdminLogin() {
   React.useEffect(() => {
     console.log('🚨 EMERGENCY REDIRECT CHECK RUNNING');
     
+    // Add persistent logging that survives page reloads
+    const persistentLog = (message: string, data?: any) => {
+      const logEntry = {
+        timestamp: new Date().toISOString(),
+        message,
+        data,
+        url: window.location.href,
+        userAgent: navigator.userAgent.substring(0, 50)
+      };
+      
+      try {
+        const existingLogs = JSON.parse(localStorage.getItem('admin_debug_logs') || '[]');
+        existingLogs.push(logEntry);
+        
+        // Keep only last 20 entries
+        if (existingLogs.length > 20) {
+          existingLogs.splice(0, existingLogs.length - 20);
+        }
+        
+        localStorage.setItem('admin_debug_logs', JSON.stringify(existingLogs));
+        console.log('📝 PERSISTENT LOG:', message, data);
+      } catch (e) {
+        console.error('Failed to save persistent log:', e);
+      }
+    };
+    
+    persistentLog('EMERGENCY_REDIRECT_CHECK_STARTED');
+    
     // Clear any redirect flags when landing on login page
     sessionStorage.removeItem('admin_redirecting');
     
@@ -71,6 +99,7 @@ export default function AdminLogin() {
       console.log('🔄 Clearing stale tokens to prevent refresh loops');
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
+      persistentLog('CLEARED_STALE_TOKENS');
     }
     
     // Check if admin is already logged in (admin tokens should remain)
@@ -81,24 +110,23 @@ export default function AdminLogin() {
       try {
         const userData = JSON.parse(adminUser);
         console.log('🚨 EMERGENCY CHECK - User email:', userData.email);
+        persistentLog('ADMIN_USER_FOUND', { email: userData.email });
         
         if (userData.email === 'darelldrayton93@gmail.com') {
           console.log('🚨 EMERGENCY REDIRECT - Owner detected, redirecting immediately');
+          persistentLog('EMERGENCY_REDIRECT_TRIGGERED', { email: userData.email });
           
-          // Store admin tokens immediately
-          localStorage.setItem('admin_access_token', token);
-          localStorage.setItem('admin_refresh_token', localStorage.getItem('refresh_token') || '');
-          localStorage.setItem('admin_user', user);
-          
-          // IMMEDIATE REDIRECT - STOP ALL EXECUTION
+          // Admin tokens are already stored, just redirect
           window.location.replace('/admin/dashboard');
           return; // Stop execution
         }
       } catch (e) {
         console.error('🚨 EMERGENCY CHECK ERROR:', e);
+        persistentLog('EMERGENCY_CHECK_ERROR', { error: e.message });
       }
     }
     
+    persistentLog('EMERGENCY_CHECK_COMPLETE');
     console.log('🚨 EMERGENCY CHECK COMPLETE - No redirect needed');
   }, []); // ONLY RUN ONCE
 
@@ -151,12 +179,46 @@ export default function AdminLogin() {
     console.log('🚨 ADMIN LOGIN FORM SUBMITTED!', data);
     console.log('🔍 Form data:', { email: data.email, password: data.password ? '[HIDDEN]' : 'undefined' });
     console.log('🔍 Current timestamp:', new Date().toISOString());
+    
+    // Enhanced persistent logging system
+    const persistentLog = (step: string, additionalData?: any) => {
+      const logEntry = {
+        timestamp: new Date().toISOString(),
+        action: 'LOGIN_ATTEMPT',
+        email: data.email,
+        step,
+        url: window.location.href,
+        userAgent: navigator.userAgent.substring(0, 50),
+        ...additionalData
+      };
+      
+      try {
+        const existingLogs = JSON.parse(localStorage.getItem('admin_login_debug_logs') || '[]');
+        existingLogs.push(logEntry);
+        
+        // Keep only last 10 entries
+        if (existingLogs.length > 10) {
+          existingLogs.splice(0, existingLogs.length - 10);
+        }
+        
+        localStorage.setItem('admin_login_debug_logs', JSON.stringify(existingLogs));
+        localStorage.setItem('admin_login_debug', JSON.stringify(logEntry)); // Keep the single entry for backward compatibility
+        console.log('📝 PERSISTENT LOGIN LOG:', step, additionalData);
+      } catch (e) {
+        console.error('Failed to save persistent login log:', e);
+      }
+    };
+    
+    persistentLog('FORM_SUBMITTED');
     setIsLoading(true);
     
     try {
       console.log('📤 Sending login request to /auth/login/');
       console.log('📤 API base URL:', '/api/v1');
       console.log('📤 Full URL will be: /api/v1/auth/login/');
+      
+      persistentLog('API_CALL_STARTED');
+      
       const response = await api.post('/auth/login/', data);
       
       console.log('✅ Login API call successful');
@@ -166,24 +228,98 @@ export default function AdminLogin() {
       console.log('🔑 is_superuser:', response.data.user?.is_superuser);
       console.log('📧 Email:', response.data.user?.email);
       
+      persistentLog('API_SUCCESS', { 
+        userEmail: response.data.user?.email,
+        isStaff: response.data.user?.is_staff,
+        isSuperuser: response.data.user?.is_superuser,
+        hasAccess: response.data.access ? 'YES' : 'NO'
+      });
+      
       // For now, let's bypass the admin check completely to test
       console.log('🔓 BYPASSING ADMIN CHECK FOR TESTING');
       
       // Store admin tokens
       console.log('💾 Storing admin tokens');
-      localStorage.setItem('admin_access_token', response.data.access || response.data.tokens?.access);
-      localStorage.setItem('admin_refresh_token', response.data.refresh || response.data.tokens?.refresh);
+      const accessToken = response.data.access || response.data.tokens?.access;
+      const refreshToken = response.data.refresh || response.data.tokens?.refresh;
+      
+      if (!accessToken) {
+        persistentLog('ERROR_NO_ACCESS_TOKEN', { responseData: response.data });
+        throw new Error('No access token received from server');
+      }
+      
+      localStorage.setItem('admin_access_token', accessToken);
+      localStorage.setItem('admin_refresh_token', refreshToken || '');
       localStorage.setItem('admin_user', JSON.stringify(response.data.user));
 
       console.log('🎉 Admin login successful, navigating to dashboard');
+      
+      persistentLog('TOKENS_STORED', { 
+        accessTokenLength: accessToken.length,
+        refreshTokenLength: refreshToken?.length || 0,
+        userStored: 'YES'
+      });
+      
       toast.success('Welcome to the admin panel!');
-      navigate('/admin/dashboard');
+      
+      // Add a small delay to ensure tokens are stored
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Force navigation with window.location to avoid React Router issues
+      console.log('🚀 Forcing navigation to /admin/dashboard');
+      persistentLog('NAVIGATION_STARTED', { method: 'window.location.href' });
+      
+      // Set up fallback redirect handling
+      const fallbackRedirect = () => {
+        console.log('🔄 Fallback redirect triggered');
+        persistentLog('FALLBACK_REDIRECT_TRIGGERED');
+        
+        // Try different navigation methods
+        try {
+          window.location.replace('/admin/dashboard');
+        } catch (e) {
+          console.error('Replace failed, trying assign:', e);
+          try {
+            window.location.assign('/admin/dashboard');
+          } catch (e2) {
+            console.error('Assign failed, trying manual reload:', e2);
+            window.location.pathname = '/admin/dashboard';
+            window.location.reload();
+          }
+        }
+      };
+      
+      // Set up a timeout to trigger fallback if navigation doesn't work
+      const fallbackTimeout = setTimeout(fallbackRedirect, 2000);
+      
+      // Add beforeunload handler to detect if page is actually changing
+      const beforeUnloadHandler = () => {
+        clearTimeout(fallbackTimeout);
+        persistentLog('NAVIGATION_DETECTED');
+      };
+      
+      window.addEventListener('beforeunload', beforeUnloadHandler);
+      
+      // Primary navigation attempt
+      try {
+        window.location.href = '/admin/dashboard';
+      } catch (e) {
+        console.error('Primary navigation failed:', e);
+        clearTimeout(fallbackTimeout);
+        fallbackRedirect();
+      }
       
     } catch (error: any) {
       console.error('❌ Admin login error:', error);
       console.error('❌ Error response:', error.response);
       console.error('❌ Error status:', error.response?.status);
       console.error('❌ Error data:', error.response?.data);
+      
+      persistentLog('LOGIN_ERROR', {
+        errorMessage: error.message,
+        errorStatus: error.response?.status,
+        errorData: error.response?.data
+      });
       
       const errorMessage = error.response?.data?.detail || 
                           error.response?.data?.message || 

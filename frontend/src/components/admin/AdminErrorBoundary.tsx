@@ -43,6 +43,32 @@ class AdminErrorBoundary extends Component<Props, State> {
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Admin Dashboard Error:', error, errorInfo);
     this.setState({ errorInfo });
+    
+    // Add persistent logging for admin errors
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      type: 'ADMIN_ERROR_BOUNDARY',
+      message: error.message,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack,
+      url: window.location.href,
+      userAgent: navigator.userAgent.substring(0, 50)
+    };
+    
+    try {
+      const existingLogs = JSON.parse(localStorage.getItem('admin_error_logs') || '[]');
+      existingLogs.push(logEntry);
+      
+      // Keep only last 5 error entries
+      if (existingLogs.length > 5) {
+        existingLogs.splice(0, existingLogs.length - 5);
+      }
+      
+      localStorage.setItem('admin_error_logs', JSON.stringify(existingLogs));
+      console.log('📝 PERSISTENT ERROR LOG:', logEntry);
+    } catch (e) {
+      console.error('Failed to save persistent error log:', e);
+    }
   }
 
   private handleReload = () => {
