@@ -13,6 +13,10 @@ console.log('💥 FORCED API BASE URL:', API_BASE_URL)
 console.log('🔑 FORCED DRF Token Auth (Backend requires Token format, not Bearer)')
 console.log('🎯 This should fix login + messaging on parkinginapinch.com')
 
+// Track refresh attempts to prevent infinite loops
+let refreshAttempts = 0
+const MAX_REFRESH_ATTEMPTS = 1
+
 // Create axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -69,6 +73,8 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response: AxiosResponse) => {
     console.log('API Response:', response.status, response.data)
+    // Reset refresh attempts on successful response
+    refreshAttempts = 0
     return response
   },
   async (error: AxiosError) => {
@@ -83,6 +89,29 @@ api.interceptors.response.use(
       if (currentPath === '/admin/login' || currentPath === '/login') {
         return Promise.reject(error)
       }
+      
+      // CRITICAL FIX: Disable JWT refresh for admin routes to prevent infinite loops
+      if (currentPath.includes('/admin')) {
+        console.warn('🔒 Admin route detected - clearing tokens and redirecting to login')
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('refresh_token')
+        localStorage.removeItem('admin_access_token')
+        localStorage.removeItem('admin_refresh_token')
+        localStorage.removeItem('admin_user')
+        window.location.href = '/admin/login'
+        return Promise.reject(error)
+      }
+      
+      // Check refresh attempt limit to prevent infinite loops
+      if (refreshAttempts >= MAX_REFRESH_ATTEMPTS) {
+        console.warn('🔒 Max refresh attempts reached - clearing tokens and redirecting')
+        refreshAttempts = 0
+        localStorage.clear()
+        window.location.href = '/login'
+        return Promise.reject(error)
+      }
+      
+      refreshAttempts++
       
       // On mobile, prevent aggressive redirects that cause logout during navigation
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)

@@ -64,12 +64,18 @@ export default function AdminLogin() {
     // Clear any redirect flags when landing on login page
     sessionStorage.removeItem('admin_redirecting');
     
-    const token = localStorage.getItem('access_token');
-    const user = localStorage.getItem('user');
+    // CRITICAL FIX: Clear any stale tokens that might cause refresh loops
+    console.log('🔄 Clearing stale tokens to prevent refresh loops');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
     
-    if (token && user) {
+    // Check if admin is already logged in (admin tokens should remain)
+    const adminToken = localStorage.getItem('admin_access_token');
+    const adminUser = localStorage.getItem('admin_user');
+    
+    if (adminToken && adminUser) {
       try {
-        const userData = JSON.parse(user);
+        const userData = JSON.parse(adminUser);
         console.log('🚨 EMERGENCY CHECK - User email:', userData.email);
         
         if (userData.email === 'darelldrayton93@gmail.com') {

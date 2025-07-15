@@ -300,7 +300,15 @@ const AdminDashboardEnhanced: React.FC = () => {
       console.log('🔒 WebSocket disabled for admin dashboard');
     }
     
-    // Simplified authentication - just check if tokens exist
+    // CRITICAL FIX: Completely separate admin auth from regular auth
+    // Clear any regular auth tokens to prevent JWT refresh loops
+    if (localStorage.getItem('access_token') || localStorage.getItem('refresh_token')) {
+      console.log('🔄 Clearing regular auth tokens to prevent JWT refresh loops');
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+    }
+    
+    // Admin auth - only use DRF tokens (admin_access_token)
     const adminToken = localStorage.getItem('admin_access_token');
     const adminUser = localStorage.getItem('admin_user');
     
