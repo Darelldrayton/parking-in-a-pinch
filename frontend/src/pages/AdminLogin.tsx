@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -50,6 +50,7 @@ interface FormData {
 export default function AdminLogin() {
   console.log('🚨 ADMIN LOGIN COMPONENT RENDERING!', Date.now());
   const navigate = useNavigate();
+  const location = useLocation();
   const theme = useTheme();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -58,8 +59,36 @@ export default function AdminLogin() {
   const [isOwnerLoggedIn, setIsOwnerLoggedIn] = useState(false);
   const [hasNavigated, setHasNavigated] = useState(false);
 
-  // 🚨 EMERGENCY REDIRECT CHECK - FIRST PRIORITY
+  // 🚨 ROUTE GUARD - PREVENT RUNNING IF ALREADY LOGGED IN
   React.useEffect(() => {
+    console.log('🚨 ROUTE GUARD: Checking if already logged in...');
+    console.log('🚨 Current location:', location.pathname);
+    
+    // If already logged in and we're on login page, redirect immediately
+    const token = localStorage.getItem('admin_access_token');
+    const user = localStorage.getItem('admin_user');
+    
+    if (token && user && location.pathname === '/admin/login') {
+      console.log('🚨 ROUTE GUARD: Already logged in, redirecting to dashboard...');
+      setHasNavigated(true);
+      setIsRedirecting(true);
+      
+      // Use React Router navigate instead of window.location
+      navigate('/admin/dashboard', { replace: true });
+      return;
+    }
+    
+    console.log('🚨 ROUTE GUARD: Not logged in, continuing with login page...');
+  }, [navigate, location.pathname]);
+
+  // 🚨 EMERGENCY REDIRECT CHECK - SECOND PRIORITY
+  React.useEffect(() => {
+    // Skip if we've already navigated
+    if (hasNavigated) {
+      console.log('🚨 EMERGENCY REDIRECT CHECK: Already navigated, skipping...');
+      return;
+    }
+    
     console.log('🚨 EMERGENCY REDIRECT CHECK RUNNING');
     
     // Add persistent logging that survives page reloads
@@ -120,8 +149,9 @@ export default function AdminLogin() {
           // PREVENT MULTIPLE REDIRECTS
           if (!hasNavigated) {
             setHasNavigated(true);
-            // Admin tokens are already stored, just redirect
-            window.location.replace('/admin/dashboard');
+            setIsRedirecting(true);
+            // Admin tokens are already stored, just redirect using React Router
+            navigate('/admin/dashboard', { replace: true });
           }
           return; // Stop execution
         }
@@ -309,17 +339,23 @@ export default function AdminLogin() {
         console.log('🔄 Fallback redirect triggered');
         persistentLog('FALLBACK_REDIRECT_TRIGGERED');
         
-        // Try different navigation methods
+        // Try React Router first, then fallback to window.location
         try {
-          window.location.replace('/admin/dashboard');
+          navigate('/admin/dashboard', { replace: true });
+          persistentLog('FALLBACK_NAVIGATION_SUCCESS', { method: 'react-router' });
         } catch (e) {
-          console.error('Replace failed, trying assign:', e);
+          console.error('React Router fallback failed, trying window.location:', e);
           try {
-            window.location.assign('/admin/dashboard');
+            window.location.replace('/admin/dashboard');
           } catch (e2) {
-            console.error('Assign failed, trying manual reload:', e2);
-            window.location.pathname = '/admin/dashboard';
-            window.location.reload();
+            console.error('Replace failed, trying assign:', e2);
+            try {
+              window.location.assign('/admin/dashboard');
+            } catch (e3) {
+              console.error('Assign failed, trying manual reload:', e3);
+              window.location.pathname = '/admin/dashboard';
+              window.location.reload();
+            }
           }
         }
       };
@@ -337,14 +373,19 @@ export default function AdminLogin() {
       
       // Primary navigation attempt - PREVENT MULTIPLE NAVIGATIONS
       if (!hasNavigated) {
-        console.log('🚀 Attempting navigation (first time)...');
+        console.log('🚀 Attempting navigation (first time) using React Router...');
         setHasNavigated(true);
+        setIsRedirecting(true);
+        clearTimeout(fallbackTimeout);
+        
         try {
-          window.location.href = '/admin/dashboard';
+          // Use React Router navigate instead of window.location
+          navigate('/admin/dashboard', { replace: true });
+          persistentLog('NAVIGATION_SUCCESS', { method: 'react-router-navigate' });
         } catch (e) {
-          console.error('Primary navigation failed:', e);
-          clearTimeout(fallbackTimeout);
-          fallbackRedirect();
+          console.error('React Router navigation failed, trying window.location:', e);
+          persistentLog('NAVIGATION_FALLBACK', { error: e.message });
+          window.location.href = '/admin/dashboard';
         }
       } else {
         console.log('🚀 Navigation already attempted, skipping...');
@@ -374,10 +415,11 @@ export default function AdminLogin() {
   };
 
   const handleQuickAdminAccess = () => {
-    if (isRedirecting) return; // Prevent double-clicks
+    if (isRedirecting || hasNavigated) return; // Prevent double-clicks
     
     console.log('🚀 Quick admin access requested');
     setIsRedirecting(true);
+    setHasNavigated(true);
     
     const token = localStorage.getItem('access_token');
     const user = localStorage.getItem('user');
@@ -387,10 +429,10 @@ export default function AdminLogin() {
     localStorage.setItem('admin_refresh_token', localStorage.getItem('refresh_token') || '');
     localStorage.setItem('admin_user', user || '');
     
-    console.log('📝 Admin tokens copied, redirecting with replace...');
+    console.log('📝 Admin tokens copied, redirecting with React Router...');
     
-    // Use replace instead of href to prevent back button issues
-    window.location.replace('/admin/dashboard');
+    // Use React Router navigate instead of window.location
+    navigate('/admin/dashboard', { replace: true });
   };
 
   // Show loading screen while redirecting
