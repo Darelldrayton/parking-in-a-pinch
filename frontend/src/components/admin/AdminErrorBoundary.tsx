@@ -9,8 +9,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Container,
-  useTheme
+  Container
 } from '@mui/material';
 import {
   Error as ErrorIcon,
