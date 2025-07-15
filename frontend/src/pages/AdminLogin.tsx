@@ -308,28 +308,33 @@ export default function AdminLogin() {
         responseKeys: Object.keys(response.data)
       });
       
+      // Determine which token to use
+      let tokenToStore;
+      let tokenType;
+      
       if (!drfToken) {
         console.error('❌ No DRF token in response! Backend not configured correctly');
         console.log('⚠️ Response data:', response.data);
         persistentLog('ERROR_NO_DRF_TOKEN', { responseData: response.data });
         
         // EMERGENCY FALLBACK: Use the known working DRF token
-        const fallbackToken = '003a2cb31d4aa5f8e07ae0d49287c27e64ada955';
+        tokenToStore = '003a2cb31d4aa5f8e07ae0d49287c27e64ada955';
+        tokenType = 'FALLBACK_DRF';
         console.log('🔄 Using fallback DRF token for admin access');
         
-        localStorage.setItem('admin_access_token', fallbackToken);
-        localStorage.setItem('token', fallbackToken);
-        localStorage.setItem('admin_user', JSON.stringify(response.data.user));
-        
-        persistentLog('FALLBACK_TOKEN_USED', { tokenLength: fallbackToken.length });
+        persistentLog('FALLBACK_TOKEN_USED', { tokenLength: tokenToStore.length });
       } else {
         console.log('✅ Using DRF token for admin authentication');
-        localStorage.setItem('admin_access_token', drfToken);
-        localStorage.setItem('token', drfToken);
-        localStorage.setItem('admin_user', JSON.stringify(response.data.user));
+        tokenToStore = drfToken;
+        tokenType = 'DRF';
         
-        persistentLog('TOKEN_TYPE_SELECTED', { type: 'DRF', tokenLength: drfToken.length });
+        persistentLog('TOKEN_TYPE_SELECTED', { type: 'DRF', tokenLength: tokenToStore.length });
       }
+      
+      // Store the determined token
+      localStorage.setItem('admin_access_token', tokenToStore);
+      localStorage.setItem('token', tokenToStore);
+      localStorage.setItem('admin_user', JSON.stringify(response.data.user));
       
       // Still store JWT refresh token if available (for future use)
       const refreshToken = response.data.refresh || response.data.tokens?.refresh;
@@ -340,8 +345,8 @@ export default function AdminLogin() {
       console.log('🎉 Admin login successful, navigating to dashboard');
       
       persistentLog('TOKENS_STORED', { 
-        adminTokenLength: adminToken.length,
-        adminTokenType: drfToken ? 'DRF' : 'JWT_FALLBACK',
+        tokenToStoreLength: tokenToStore.length,
+        tokenType: tokenType,
         refreshTokenLength: refreshToken?.length || 0,
         userStored: 'YES',
         storedInRegularToken: 'YES'
