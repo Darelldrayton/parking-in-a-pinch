@@ -46,8 +46,15 @@ api.interceptors.request.use(
       // For admin requests, prefer admin token, then regular DRF token
       token = localStorage.getItem('admin_access_token') || localStorage.getItem('token')
       if (token) {
+        const tokenType = token.includes('.') ? 'JWT format' : 'DRF format'
         console.log('✅ Using admin Token authentication:', token.substring(0, 8) + '...')
-        console.log('🔍 Token appears to be:', token.includes('.') ? 'JWT format' : 'DRF format')
+        console.log('🔍 Token appears to be:', tokenType)
+        
+        // CRITICAL: Admin endpoints need DRF tokens
+        if (tokenType === 'JWT format') {
+          console.error('❌ WARNING: Admin endpoint using JWT token - this may cause 401 errors')
+          console.error('❌ Admin endpoints require DRF tokens, not JWT tokens')
+        }
       } else {
         console.log('⚠️ No admin or regular DRF token found for admin request - trying JWT fallback')
         token = localStorage.getItem('access_token')
