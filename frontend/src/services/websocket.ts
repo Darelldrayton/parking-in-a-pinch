@@ -30,9 +30,17 @@ class WebSocketService {
    * Connect to WebSocket server
    */
   connect(token: string) {
-    // Check if WebSocket is disabled (e.g., on admin login page)
+    // Check if WebSocket is disabled (e.g., on admin pages)
     if (typeof window !== 'undefined' && (window as any).disableWebSocket) {
       console.log('🔒 WebSocket connection disabled');
+      this.onConnectionStatusChange?.('disconnected');
+      return;
+    }
+
+    // Disable WebSocket on admin pages
+    if (typeof window !== 'undefined' && window.location.pathname.includes('/admin')) {
+      console.log('🔒 WebSocket disabled on admin pages');
+      this.isIntentionallyClosed = true;
       this.onConnectionStatusChange?.('disconnected');
       return;
     }
@@ -268,9 +276,17 @@ class WebSocketService {
    * Schedule reconnection attempt
    */
   private scheduleReconnect() {
-    // Check if WebSocket is disabled (e.g., on admin login page)
+    // Check if WebSocket is disabled (e.g., on admin pages)
     if (typeof window !== 'undefined' && (window as any).disableWebSocket) {
       console.log('🔒 WebSocket reconnection disabled');
+      this.onConnectionStatusChange?.('disconnected');
+      return;
+    }
+
+    // Disable WebSocket reconnection on admin pages
+    if (typeof window !== 'undefined' && window.location.pathname.includes('/admin')) {
+      console.log('🔒 WebSocket reconnection disabled on admin pages');
+      this.isIntentionallyClosed = true;
       this.onConnectionStatusChange?.('disconnected');
       return;
     }

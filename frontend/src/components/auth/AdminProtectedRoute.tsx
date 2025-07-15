@@ -13,8 +13,14 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({
 }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
 
   useEffect(() => {
+    // Only check authentication once
+    if (hasCheckedAuth) {
+      return;
+    }
+
     const checkAuthentication = async () => {
       console.log('🔐 AdminProtectedRoute: Checking authentication...');
       
@@ -83,10 +89,11 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({
       }
 
       setIsLoading(false);
+      setHasCheckedAuth(true);
     };
 
     checkAuthentication();
-  }, []);
+  }, [hasCheckedAuth]);
 
   // Show loading while checking authentication
   if (isLoading) {

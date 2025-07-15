@@ -292,6 +292,12 @@ const AdminDashboardEnhanced: React.FC = () => {
   useEffect(() => {
     console.log('🔍 AdminDashboard: Checking authentication...');
     
+    // Disable WebSocket for admin pages to prevent infinite loops
+    if (typeof window !== 'undefined') {
+      (window as any).disableWebSocket = true;
+      console.log('🔒 WebSocket disabled for admin dashboard');
+    }
+    
     // Validate admin tokens first
     if (!adminTokenUtils.validateAdminTokens()) {
       console.log('❌ Invalid admin tokens, redirecting to login');
@@ -317,6 +323,14 @@ const AdminDashboardEnhanced: React.FC = () => {
     console.log('✅ Admin authentication successful:', user.email);
     setAdminUser(user);
     loadDataSafely();
+    
+    // Cleanup function to re-enable WebSocket when leaving admin dashboard
+    return () => {
+      if (typeof window !== 'undefined') {
+        (window as any).disableWebSocket = false;
+        console.log('🔓 WebSocket re-enabled when leaving admin dashboard');
+      }
+    };
   }, []);
   
   const loadDataSafely = async () => {
