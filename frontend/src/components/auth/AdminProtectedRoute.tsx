@@ -124,6 +124,8 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({
 
   // Render protected content if authenticated
   console.log('✅ SECURITY: Admin access granted, rendering dashboard');
+  console.log('✅ Current pathname:', window.location.pathname);
+  console.log('✅ Expected pathname: /admin/dashboard');
   return <>{children}</>;
 };
 

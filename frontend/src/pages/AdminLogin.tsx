@@ -49,6 +49,9 @@ interface FormData {
 
 export default function AdminLogin() {
   console.log('🚨 ADMIN LOGIN COMPONENT RENDERING!', Date.now());
+  console.log('🚨 Current pathname:', window.location.pathname);
+  console.log('🚨 Should render:', window.location.pathname === '/admin/login');
+  
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
@@ -59,10 +62,22 @@ export default function AdminLogin() {
   const [isOwnerLoggedIn, setIsOwnerLoggedIn] = useState(false);
   const [hasNavigated, setHasNavigated] = useState(false);
 
+  // CRITICAL: Don't render if not on login route
+  if (window.location.pathname !== '/admin/login') {
+    console.log('🚨 ADMIN LOGIN: Not on login route, returning null');
+    return null;
+  }
+
   // 🚨 ROUTE GUARD - PREVENT RUNNING IF ALREADY LOGGED IN
   React.useEffect(() => {
     console.log('🚨 ROUTE GUARD: Checking if already logged in...');
     console.log('🚨 Current location:', location.pathname);
+    
+    // Skip if we've already navigated
+    if (hasNavigated) {
+      console.log('🚨 ROUTE GUARD: Already navigated, skipping...');
+      return;
+    }
     
     // If already logged in and we're on login page, redirect immediately
     const token = localStorage.getItem('admin_access_token');
@@ -79,7 +94,7 @@ export default function AdminLogin() {
     }
     
     console.log('🚨 ROUTE GUARD: Not logged in, continuing with login page...');
-  }, [navigate, location.pathname]);
+  }, [navigate, location.pathname, hasNavigated]);
 
   // 🚨 EMERGENCY REDIRECT CHECK - SECOND PRIORITY
   React.useEffect(() => {
@@ -327,69 +342,20 @@ export default function AdminLogin() {
       
       toast.success('Welcome to the admin panel!');
       
-      // Add a small delay to ensure tokens are stored
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // SIMPLIFIED NAVIGATION - Just navigate immediately
+      console.log('🚀 Login successful, navigating to dashboard');
+      persistentLog('NAVIGATION_STARTED', { method: 'react-router-navigate' });
       
-      // Force navigation with window.location to avoid React Router issues
-      console.log('🚀 Forcing navigation to /admin/dashboard');
-      persistentLog('NAVIGATION_STARTED', { method: 'window.location.href' });
-      
-      // Set up fallback redirect handling
-      const fallbackRedirect = () => {
-        console.log('🔄 Fallback redirect triggered');
-        persistentLog('FALLBACK_REDIRECT_TRIGGERED');
-        
-        // Try React Router first, then fallback to window.location
-        try {
-          navigate('/admin/dashboard', { replace: true });
-          persistentLog('FALLBACK_NAVIGATION_SUCCESS', { method: 'react-router' });
-        } catch (e) {
-          console.error('React Router fallback failed, trying window.location:', e);
-          try {
-            window.location.replace('/admin/dashboard');
-          } catch (e2) {
-            console.error('Replace failed, trying assign:', e2);
-            try {
-              window.location.assign('/admin/dashboard');
-            } catch (e3) {
-              console.error('Assign failed, trying manual reload:', e3);
-              window.location.pathname = '/admin/dashboard';
-              window.location.reload();
-            }
-          }
-        }
-      };
-      
-      // Set up a timeout to trigger fallback if navigation doesn't work
-      const fallbackTimeout = setTimeout(fallbackRedirect, 2000);
-      
-      // Add beforeunload handler to detect if page is actually changing
-      const beforeUnloadHandler = () => {
-        clearTimeout(fallbackTimeout);
-        persistentLog('NAVIGATION_DETECTED');
-      };
-      
-      window.addEventListener('beforeunload', beforeUnloadHandler);
-      
-      // Primary navigation attempt - PREVENT MULTIPLE NAVIGATIONS
+      // Prevent multiple navigation attempts
       if (!hasNavigated) {
-        console.log('🚀 Attempting navigation (first time) using React Router...');
         setHasNavigated(true);
         setIsRedirecting(true);
-        clearTimeout(fallbackTimeout);
         
-        try {
-          // Use React Router navigate instead of window.location
-          navigate('/admin/dashboard', { replace: true });
-          persistentLog('NAVIGATION_SUCCESS', { method: 'react-router-navigate' });
-        } catch (e) {
-          console.error('React Router navigation failed, trying window.location:', e);
-          persistentLog('NAVIGATION_FALLBACK', { error: e.message });
-          window.location.href = '/admin/dashboard';
-        }
+        // Use React Router navigate with replace to ensure proper routing
+        navigate('/admin/dashboard', { replace: true });
+        persistentLog('NAVIGATION_SUCCESS', { method: 'react-router-navigate' });
       } else {
         console.log('🚀 Navigation already attempted, skipping...');
-        clearTimeout(fallbackTimeout);
       }
       
     } catch (error: any) {
