@@ -149,10 +149,14 @@ export default function AdminLogin() {
 
   const onSubmit = async (data: FormData) => {
     console.log('🚨 ADMIN LOGIN FORM SUBMITTED!', data);
+    console.log('🔍 Form data:', { email: data.email, password: data.password ? '[HIDDEN]' : 'undefined' });
+    console.log('🔍 Current timestamp:', new Date().toISOString());
     setIsLoading(true);
     
     try {
       console.log('📤 Sending login request to /auth/login/');
+      console.log('📤 API base URL:', '/api/v1');
+      console.log('📤 Full URL will be: /api/v1/auth/login/');
       const response = await api.post('/auth/login/', data);
       
       console.log('✅ Login API call successful');
@@ -288,6 +292,8 @@ export default function AdminLogin() {
           <CardContent sx={{ p: 4 }}>
             <Box component="form" onSubmit={handleSubmit(onSubmit)}>
               <Stack spacing={3}>
+                {/* Debug: Form submission handler */}
+                <input type="hidden" onChange={() => console.log('🔍 Form is interactive')} />
                 {isOwnerLoggedIn ? (
                   <Alert severity="success" icon={<Security />}>
                     <Typography variant="body2" fontWeight={600}>
@@ -380,6 +386,7 @@ export default function AdminLogin() {
                     variant="contained"
                     size="large"
                     disabled={isLoading}
+                    onClick={() => console.log('🔍 Submit button clicked!')}
                     sx={{
                       py: 1.5,
                       borderRadius: 2,
