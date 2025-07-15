@@ -229,6 +229,8 @@ export default function AdminLogin() {
     console.log('🚨 ADMIN LOGIN FORM SUBMITTED!', data);
     console.log('🔍 Form data:', { email: data.email, password: data.password ? '[HIDDEN]' : 'undefined' });
     console.log('🔍 Current timestamp:', new Date().toISOString());
+    console.log('📱 Mobile device detected:', /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+    console.log('📱 User agent:', navigator.userAgent);
     
     // Enhanced persistent logging system
     const persistentLog = (step: string, additionalData?: any) => {

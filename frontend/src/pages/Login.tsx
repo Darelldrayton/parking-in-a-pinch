@@ -95,6 +95,8 @@ const Login: React.FC = () => {
 
   const onSubmit = async (data: LoginFormData) => {
     console.log('Form submitted:', data);
+    console.log('📱 Mobile device detected:', isMobile);
+    console.log('📱 User agent:', navigator.userAgent);
     
     try {
       console.log('About to call login...');

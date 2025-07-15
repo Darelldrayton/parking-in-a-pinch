@@ -122,12 +122,10 @@ api.interceptors.response.use(
       
       refreshAttempts++
       
-      // On mobile, prevent aggressive redirects that cause logout during navigation
-      // BUT allow login requests to proceed
+      // On mobile, be more careful with redirects but don't block admin functionality entirely
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-      if (isMobile && currentPath.includes('/admin') && !originalRequest.url?.includes('/login')) {
-        console.warn('🔒 Mobile admin page - skipping aggressive token refresh to prevent logout')
-        return Promise.reject(error)
+      if (isMobile) {
+        console.log('📱 Mobile device detected - using mobile-friendly auth flow')
       }
       
       // Determine if this was an admin request
@@ -157,7 +155,8 @@ api.interceptors.response.use(
             // Admin refresh failed, redirect to admin login
             console.warn('Admin token refresh failed, clearing session')
             
-            // Add delay before redirect to prevent race conditions on mobile
+            // Add longer delay on mobile to prevent race conditions
+            const redirectDelay = isMobile ? 300 : 100
             setTimeout(() => {
               localStorage.removeItem('admin_access_token')
               localStorage.removeItem('admin_refresh_token')
@@ -166,9 +165,12 @@ api.interceptors.response.use(
               // Only redirect if not already redirecting
               if (!sessionStorage.getItem('admin_redirecting')) {
                 sessionStorage.setItem('admin_redirecting', 'true')
+                if (isMobile) {
+                  console.log('📱 Mobile admin redirect to login')
+                }
                 window.location.href = '/admin/login'
               }
-            }, 100)
+            }, redirectDelay)
             
             return Promise.reject(refreshError)
           }
@@ -176,7 +178,8 @@ api.interceptors.response.use(
           // No admin refresh token, redirect to admin login
           console.warn('No admin refresh token available')
           
-          // Add delay before redirect to prevent race conditions on mobile
+          // Add longer delay on mobile to prevent race conditions
+          const redirectDelay = isMobile ? 300 : 100
           setTimeout(() => {
             localStorage.removeItem('admin_access_token')
             localStorage.removeItem('admin_refresh_token')
@@ -185,9 +188,12 @@ api.interceptors.response.use(
             // Only redirect if not already redirecting
             if (!sessionStorage.getItem('admin_redirecting')) {
               sessionStorage.setItem('admin_redirecting', 'true')
+              if (isMobile) {
+                console.log('📱 Mobile admin redirect to login (no refresh token)')
+              }
               window.location.href = '/admin/login'
             }
-          }, 100)
+          }, redirectDelay)
           
           return Promise.reject(error)
         }
