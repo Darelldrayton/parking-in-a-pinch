@@ -325,9 +325,9 @@ const AdminDashboardEnhanced: React.FC = () => {
     
     // Admin auth - only use DRF tokens (admin_access_token)
     const adminToken = localStorage.getItem('admin_access_token');
-    const adminUser = localStorage.getItem('admin_user');
+    const adminUserData = localStorage.getItem('admin_user');
     
-    if (!adminToken || !adminUser) {
+    if (!adminToken || !adminUserData) {
       console.log('❌ No admin credentials found, redirecting to login');
       window.location.href = '/admin/login';
       return;
@@ -338,8 +338,9 @@ const AdminDashboardEnhanced: React.FC = () => {
     
     // Parse user data directly without complex validation
     try {
-      const userData = JSON.parse(adminUser);
+      const userData = JSON.parse(adminUserData);
       console.log('✅ Admin user loaded:', userData.email);
+      console.log('✅ Setting adminUser state...');
       setAdminUser(userData);
       
       // Only load data if we haven't already loaded it
@@ -1198,7 +1199,10 @@ const AdminDashboardEnhanced: React.FC = () => {
     );
   };
 
+  console.log('🔍 RENDER CHECK:', { loading, adminUser: !!adminUser, adminUserEmail: adminUser?.email });
+  
   if (loading || !adminUser) {
+    console.log('🔍 SHOWING LOADING SCREEN:', { loading, adminUser: !!adminUser });
     return (
       <AdminLoadingScreen 
         message="Initializing admin panel and loading data..."
@@ -1206,6 +1210,8 @@ const AdminDashboardEnhanced: React.FC = () => {
       />
     );
   }
+  
+  console.log('🔍 RENDERING FULL DASHBOARD');
 
 
   return (
