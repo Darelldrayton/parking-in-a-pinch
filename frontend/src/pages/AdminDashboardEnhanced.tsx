@@ -291,12 +291,13 @@ const AdminDashboardEnhanced: React.FC = () => {
   // Track if we've already loaded data to prevent multiple calls
   const hasLoadedDataRef = useRef(false);
   const hasInitializedRef = useRef(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   // Check admin auth from localStorage
   useEffect(() => {
     // CRITICAL FIX: Prevent multiple initializations
-    if (hasInitializedRef.current) {
-      console.log('🔍 AdminDashboard: Already initialized, skipping...');
+    if (hasInitialized) {
+      console.log('🔍 AdminDashboard: Already initialized (state check), skipping...');
       return;
     }
     
@@ -304,8 +305,7 @@ const AdminDashboardEnhanced: React.FC = () => {
     console.log('🔍 Path:', window.location.pathname);
     console.log('🔍 Timestamp:', new Date().toISOString());
     console.log('🔍 Current loading state:', loading);
-    
-    hasInitializedRef.current = true;
+    console.log('🔍 Current adminUser state:', adminUser);
     
     // Disable WebSocket for admin pages to prevent infinite loops
     if (typeof window !== 'undefined') {
@@ -323,41 +323,48 @@ const AdminDashboardEnhanced: React.FC = () => {
       localStorage.removeItem('refresh_token');
     }
     
-    // Admin auth - only use DRF tokens (admin_access_token)
-    const adminToken = localStorage.getItem('admin_access_token');
-    const adminUserData = localStorage.getItem('admin_user');
-    
-    if (!adminToken || !adminUserData) {
-      console.log('❌ No admin credentials found, redirecting to login');
-      window.location.href = '/admin/login';
-      return;
-    }
-    
-    // Skip complex token validation to prevent loops
-    console.log('✅ Admin credentials found, proceeding with dashboard');
-    
-    // Parse user data directly without complex validation
-    try {
-      const userData = JSON.parse(adminUserData);
-      console.log('✅ Admin user loaded:', userData.email);
-      console.log('✅ Setting adminUser state...');
-      setAdminUser(userData);
-      
-      // Only load data if we haven't already loaded it
-      if (!hasLoadedDataRef.current) {
-        console.log('📊 Loading data for first time...');
-        hasLoadedDataRef.current = true;
-        loadDataSafely();
-      } else {
-        console.log('📊 Data already loaded, skipping...');
-        // Still need to clear loading state if we've already loaded
+    const initDashboard = async () => {
+      try {
+        // Admin auth - only use DRF tokens (admin_access_token)
+        const adminToken = localStorage.getItem('admin_access_token');
+        const adminUserData = localStorage.getItem('admin_user');
+        
+        if (!adminToken || !adminUserData) {
+          console.log('❌ No admin credentials found, redirecting to login');
+          window.location.href = '/admin/login';
+          return;
+        }
+        
+        // Skip complex token validation to prevent loops
+        console.log('✅ Admin credentials found, proceeding with dashboard');
+        
+        // Parse user data directly without complex validation
+        const userData = JSON.parse(adminUserData);
+        console.log('✅ Admin user loaded:', userData.email);
+        console.log('✅ Setting adminUser state...');
+        setAdminUser(userData);
+        console.log('✅ Admin user state should be set now');
+        
+        // Only load data if we haven't already loaded it
+        if (!hasLoadedDataRef.current) {
+          console.log('📊 Loading data for first time...');
+          hasLoadedDataRef.current = true;
+          await loadDataSafely();
+        } else {
+          console.log('📊 Data already loaded, skipping...');
+        }
+      } catch (error) {
+        console.error('❌ Error parsing admin user data:', error);
+        window.location.href = '/admin/login';
+        return;
+      } finally {
+        console.log('🔍 Setting loading to false and hasInitialized to true');
         setLoading(false);
+        setHasInitialized(true);
       }
-    } catch (error) {
-      console.error('❌ Error parsing admin user data:', error);
-      window.location.href = '/admin/login';
-      return;
-    }
+    };
+    
+    initDashboard();
     
     // Cleanup function to re-enable WebSocket when leaving admin dashboard
     return () => {
@@ -366,7 +373,7 @@ const AdminDashboardEnhanced: React.FC = () => {
         console.log('🔓 WebSocket re-enabled when leaving admin dashboard');
       }
     };
-  }, []);
+  }, [hasInitialized]);
   
   const loadDataSafely = async () => {
     console.log('📊 Loading dashboard data...');
@@ -1199,10 +1206,20 @@ const AdminDashboardEnhanced: React.FC = () => {
     );
   };
 
-  console.log('🔍 RENDER CHECK:', { loading, adminUser: !!adminUser, adminUserEmail: adminUser?.email });
+  console.log('🔍 RENDER CHECK:', { 
+    loading, 
+    adminUser: !!adminUser, 
+    adminUserEmail: adminUser?.email,
+    hasInitialized 
+  });
   
   if (loading || !adminUser) {
-    console.log('🔍 SHOWING LOADING SCREEN:', { loading, adminUser: !!adminUser });
+    console.log('🔍 SHOWING LOADING SCREEN:', { 
+      loading, 
+      adminUser: !!adminUser,
+      hasInitialized,
+      reason: loading ? 'loading=true' : 'adminUser=null'
+    });
     return (
       <AdminLoadingScreen 
         message="Initializing admin panel and loading data..."
@@ -1211,7 +1228,7 @@ const AdminDashboardEnhanced: React.FC = () => {
     );
   }
   
-  console.log('🔍 RENDERING FULL DASHBOARD');
+  console.log('🔍 RENDERING FULL DASHBOARD - All conditions met');
 
 
   return (
