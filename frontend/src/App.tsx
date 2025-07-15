@@ -61,19 +61,15 @@ const HostResources = lazy(() => import('./pages/HostResources'));
 // Admin Pages
 const AdminLogin = lazy(() => import('./pages/AdminLogin'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboardEnhanced'));
-const RulerDashboard = lazy(() => import('./pages/RulerDashboardRealAPIs'));
 // 🚨 FORCE CACHE CLEAR - BUILD v2025-01-02-20:42 PST
 const AdminProtectedRoute = lazy(() => import('./components/auth/AdminProtectedRoute'));
 
 // Test Pages
 const TestDeploy = lazy(() => import('./pages/TestDeploy'));
 const CleanupListings = lazy(() => import('./pages/CleanupListings'));
-const RulerTest = lazy(() => import('./pages/RulerTest'));
 const TestUpdate = lazy(() => import('./pages/TestUpdate'));
 
 // 🛑 ROUTING FIXED v10.0: 2024-12-30 20:19 PST - EXPLICIT IMPORT FIX
-// 🎯 /ruler/dashboard -> RulerDashboard -> ./pages/RulerDashboardFixed
-// 🚨 STOP LOADING AdminDashboardEnhanced AT /ruler/dashboard!
 
 // Loading component
 const PageLoader = () => (
@@ -133,7 +129,6 @@ function AppRoutes() {
         <Route path="/listings/:id" element={<Layout><ListingDetail /></Layout>} />
         
         {/* Test route to debug ruler routes */}
-        <Route path="/ruler-test" element={<RulerTest />} />
         <Route path="/test-update" element={<TestUpdate />} />
         
         {/* Auth Routes (redirect to dashboard if already logged in) */}
@@ -324,14 +319,10 @@ function AppRoutes() {
         <Route path="/host-insurance" element={<Layout><HostInsurance /></Layout>} />
         <Route path="/host-resources" element={<Layout><HostResources /></Layout>} />
         
-        {/* Admin Routes - 🚨 SECURITY FIXED - DEMO DATA REMOVED */}
+        {/* Admin Routes */}
         <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/ruler/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminProtectedRoute redirectTo="/admin/login"><AdminDashboard /></AdminProtectedRoute>} />
-        <Route path="/ruler/dashboard" element={<AdminProtectedRoute redirectTo="/ruler/login"><RulerDashboard /></AdminProtectedRoute>} />
-        {/* 🚨 DEBUGGING: If you see AdminDashboardEnhanced in console, the routing is still wrong */}
         <Route path="/admin/cleanup-listings" element={<AdminProtectedRoute redirectTo="/admin/login"><CleanupListings /></AdminProtectedRoute>} />
-        <Route path="/ruler/cleanup-listings" element={<AdminProtectedRoute redirectTo="/ruler/login"><CleanupListings /></AdminProtectedRoute>} />
         
         {/* Development Helper (only in development) */}
         <Route path="/dev-helper" element={<Layout><DevHelper /></Layout>} />
@@ -350,7 +341,7 @@ function AppRoutes() {
 function App() {
   console.log('🚀 App component rendering - v2025-01-02-20:42-PST...');
   console.log('Current path:', window.location.pathname);
-  console.log('🎯 Routes available: /ruler/login, /ruler/dashboard, /ruler/cleanup-listings');
+  console.log('🎯 Routes available: /admin/login, /admin/dashboard, /admin/cleanup-listings');
   console.log('🔄 CACHE CLEARED - NEW BUILD FORCED...');
   
   return (

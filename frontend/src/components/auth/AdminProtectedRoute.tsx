@@ -9,7 +9,7 @@ interface AdminProtectedRouteProps {
 
 const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({ 
   children, 
-  redirectTo = '/ruler/login' 
+  redirectTo = '/admin/login' 
 }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);

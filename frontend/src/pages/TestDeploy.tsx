@@ -19,10 +19,10 @@ const TestDeploy: React.FC = () => {
         <Typography variant="h6">Test the fixes:</Typography>
         <Button 
           variant="contained" 
-          onClick={() => navigate('/ruler/login')}
+          onClick={() => navigate('/admin/login')}
           sx={{ m: 1 }}
         >
-          Test /ruler/login Route
+          Test /admin/login Route
         </Button>
         <Button 
           variant="contained" 

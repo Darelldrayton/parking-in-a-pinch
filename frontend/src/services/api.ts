@@ -106,7 +106,7 @@ api.interceptors.response.use(
             localStorage.removeItem('admin_access_token')
             localStorage.removeItem('admin_refresh_token')
             localStorage.removeItem('admin_user')
-            window.location.href = '/ruler/login'
+            window.location.href = '/admin/login'
             return Promise.reject(refreshError)
           }
         } else {
@@ -115,7 +115,7 @@ api.interceptors.response.use(
           localStorage.removeItem('admin_access_token')
           localStorage.removeItem('admin_refresh_token')
           localStorage.removeItem('admin_user')
-          window.location.href = '/ruler/login'
+          window.location.href = '/admin/login'
           return Promise.reject(error)
         }
       } else {
@@ -207,7 +207,7 @@ export const adminTokenUtils = {
     localStorage.removeItem('admin_access_token')
     localStorage.removeItem('admin_refresh_token')
     localStorage.removeItem('admin_user')
-    window.location.href = '/ruler/login'
+    window.location.href = '/admin/login'
   },
 
   /**

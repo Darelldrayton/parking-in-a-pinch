@@ -42,7 +42,7 @@ const AdminDashboardSimple: React.FC = () => {
     
     if (!adminUserStr || !adminToken) {
       console.log('❌ No admin credentials found, redirecting to login');
-      window.location.href = '/ruler/login';
+      window.location.href = '/admin/login';
       return;
     }
     
@@ -52,7 +52,7 @@ const AdminDashboardSimple: React.FC = () => {
       setAdminUser(user);
     } catch (e) {
       console.error('❌ Error parsing admin user data:', e);
-      window.location.href = '/ruler/login';
+      window.location.href = '/admin/login';
       return;
     }
     
@@ -63,7 +63,7 @@ const AdminDashboardSimple: React.FC = () => {
     localStorage.removeItem('admin_access_token');
     localStorage.removeItem('admin_refresh_token');
     localStorage.removeItem('admin_user');
-    navigate('/ruler/login');
+    navigate('/admin/login');
   };
 
   if (loading || !adminUser) {
