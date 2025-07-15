@@ -67,6 +67,8 @@ import {
 import { format } from 'date-fns';
 import api, { adminTokenUtils } from '../services/api';
 import PayoutManagement from '../components/admin/PayoutManagement';
+import AdminErrorBoundary from '../components/admin/AdminErrorBoundary';
+import AdminLoadingScreen from '../components/admin/AdminLoadingScreen';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -1147,21 +1149,17 @@ const AdminDashboardEnhanced: React.FC = () => {
 
   if (loading || !adminUser) {
     return (
-      <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', p: 4 }}>
-        <Typography variant="h5" gutterBottom>
-          Loading Parking in a Pinch Admin Dashboard...
-        </Typography>
-        <LinearProgress sx={{ width: '50%', mb: 2 }} />
-        <Typography variant="body2" color="text.secondary">
-          Initializing admin panel and loading data
-        </Typography>
-      </Box>
+      <AdminLoadingScreen 
+        message="Initializing admin panel and loading data..."
+        variant="full" 
+      />
     );
   }
 
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
+    <AdminErrorBoundary>
+      <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
       {/* Header */}
       <Box
         sx={{
@@ -2395,9 +2393,10 @@ const AdminDashboardEnhanced: React.FC = () => {
                 </Typography>
                 
                 {usersLoading ? (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                    <CircularProgress />
-                  </Box>
+                  <AdminLoadingScreen 
+                    message="Loading user management data..." 
+                    variant="compact" 
+                  />
                 ) : users.length === 0 ? (
                   <Alert severity="info" sx={{ my: 2 }}>
                     No users found. Click "Refresh Data" to load users.
@@ -2547,7 +2546,10 @@ const AdminDashboardEnhanced: React.FC = () => {
             </Alert>
             
             {disputesLoading ? (
-              <LinearProgress />
+              <AdminLoadingScreen 
+                message="Loading dispute management data..." 
+                variant="compact" 
+              />
             ) : disputes.length === 0 ? (
               <Alert severity="success">
                 No disputes found. All issues have been resolved!
@@ -3412,6 +3414,7 @@ const AdminDashboardEnhanced: React.FC = () => {
         </Button>
       </Box>
     </Box>
+    </AdminErrorBoundary>
   );
 };
 
