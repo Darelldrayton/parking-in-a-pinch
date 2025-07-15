@@ -56,6 +56,7 @@ export default function AdminLogin() {
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [isOwnerLoggedIn, setIsOwnerLoggedIn] = useState(false);
+  const [hasNavigated, setHasNavigated] = useState(false);
 
   // 🚨 EMERGENCY REDIRECT CHECK - FIRST PRIORITY
   React.useEffect(() => {
@@ -116,8 +117,12 @@ export default function AdminLogin() {
           console.log('🚨 EMERGENCY REDIRECT - Owner detected, redirecting immediately');
           persistentLog('EMERGENCY_REDIRECT_TRIGGERED', { email: userData.email });
           
-          // Admin tokens are already stored, just redirect
-          window.location.replace('/admin/dashboard');
+          // PREVENT MULTIPLE REDIRECTS
+          if (!hasNavigated) {
+            setHasNavigated(true);
+            // Admin tokens are already stored, just redirect
+            window.location.replace('/admin/dashboard');
+          }
           return; // Stop execution
         }
       } catch (e) {
@@ -330,13 +335,20 @@ export default function AdminLogin() {
       
       window.addEventListener('beforeunload', beforeUnloadHandler);
       
-      // Primary navigation attempt
-      try {
-        window.location.href = '/admin/dashboard';
-      } catch (e) {
-        console.error('Primary navigation failed:', e);
+      // Primary navigation attempt - PREVENT MULTIPLE NAVIGATIONS
+      if (!hasNavigated) {
+        console.log('🚀 Attempting navigation (first time)...');
+        setHasNavigated(true);
+        try {
+          window.location.href = '/admin/dashboard';
+        } catch (e) {
+          console.error('Primary navigation failed:', e);
+          clearTimeout(fallbackTimeout);
+          fallbackRedirect();
+        }
+      } else {
+        console.log('🚀 Navigation already attempted, skipping...');
         clearTimeout(fallbackTimeout);
-        fallbackRedirect();
       }
       
     } catch (error: any) {

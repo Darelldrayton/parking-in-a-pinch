@@ -290,13 +290,22 @@ const AdminDashboardEnhanced: React.FC = () => {
   
   // Track if we've already loaded data to prevent multiple calls
   const hasLoadedDataRef = useRef(false);
+  const hasInitializedRef = useRef(false);
 
   // Check admin auth from localStorage
   useEffect(() => {
-    console.log('🔍 AdminDashboard: useEffect triggered - checking authentication...');
+    // CRITICAL FIX: Prevent multiple initializations
+    if (hasInitializedRef.current) {
+      console.log('🔍 AdminDashboard: Already initialized, skipping...');
+      return;
+    }
+    
+    console.log('🔍 AdminDashboard: useEffect triggered - checking authentication (ONE TIME ONLY)...');
     console.log('🔍 Path:', window.location.pathname);
     console.log('🔍 Timestamp:', new Date().toISOString());
     console.log('🔍 Current loading state:', loading);
+    
+    hasInitializedRef.current = true;
     
     // Disable WebSocket for admin pages to prevent infinite loops
     if (typeof window !== 'undefined') {

@@ -13,20 +13,13 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({
 }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
 
   useEffect(() => {
-    // Only check authentication once
-    if (hasCheckedAuth) {
-      console.log('🔐 AdminProtectedRoute: Skipping auth check - already checked');
-      return;
-    }
-
+    // CRITICAL FIX: Only check authentication once with empty dependency array
     const checkAuthentication = async () => {
-      console.log('🔐 AdminProtectedRoute: Checking authentication...');
+      console.log('🔐 AdminProtectedRoute: Checking authentication (ONE TIME ONLY)...');
       console.log('🔐 Current path:', window.location.pathname);
-      console.log('🔐 User agent:', navigator.userAgent);
-      console.log('🔐 Is mobile:', /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+      console.log('🔐 Timestamp:', new Date().toISOString());
       
       const adminToken = localStorage.getItem('admin_access_token');
       const adminUser = localStorage.getItem('admin_user');
@@ -35,7 +28,7 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({
       console.log('🔐 Admin user exists:', !!adminUser);
       
       if (!adminToken || !adminUser) {
-        console.log('❌ No admin credentials found');
+        console.log('❌ No admin credentials found - redirecting to login');
         setIsAuthenticated(false);
         setIsLoading(false);
         return;
@@ -47,13 +40,13 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({
         
         // For owner account, bypass additional checks
         if (userData.email === 'darelldrayton93@gmail.com') {
-          console.log('✅ Owner account verified');
+          console.log('✅ Owner account verified - granting access');
           setIsAuthenticated(true);
           setIsLoading(false);
           return;
         }
 
-        // For other users, verify token with backend
+        // For other users, verify token with backend (simplified)
         try {
           const response = await fetch('/api/v1/auth/verify/', {
             headers: {
@@ -63,7 +56,7 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({
           });
 
           if (response.ok) {
-            console.log('✅ Token verified with backend');
+            console.log('✅ Token verified with backend - granting access');
             setIsAuthenticated(true);
           } else {
             console.log('❌ Token verification failed:', response.status);
@@ -74,7 +67,7 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({
             setIsAuthenticated(false);
           }
         } catch (verifyError) {
-          console.warn('⚠️ Token verification failed, but allowing owner access:', verifyError);
+          console.warn('⚠️ Token verification failed, checking staff/superuser status:', verifyError);
           // If verification endpoint doesn't exist, still allow access for staff/superuser
           if (userData.is_staff || userData.is_superuser) {
             console.log('✅ Staff/superuser access granted');
@@ -93,11 +86,11 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({
       }
 
       setIsLoading(false);
-      setHasCheckedAuth(true);
+      console.log('🔐 Authentication check completed - will not run again');
     };
 
     checkAuthentication();
-  }, [hasCheckedAuth]);
+  }, []); // EMPTY DEPENDENCY ARRAY - RUN ONLY ONCE
 
   // Show loading while checking authentication
   if (isLoading) {
