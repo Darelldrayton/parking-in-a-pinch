@@ -43,16 +43,17 @@ api.interceptors.request.use(
     let token = null
     
     if (isAdminRequest) {
-      // For admin requests, prefer admin token
-      token = localStorage.getItem('admin_access_token')
+      // For admin requests, prefer admin token, then regular DRF token
+      token = localStorage.getItem('admin_access_token') || localStorage.getItem('token')
       if (token) {
         console.log('✅ Using admin Token authentication:', token.substring(0, 8) + '...')
+        console.log('🔍 Token appears to be:', token.includes('.') ? 'JWT format' : 'DRF format')
       } else {
-        console.log('⚠️ No admin token found for admin request - trying regular token')
-        token = localStorage.getItem('token') || localStorage.getItem('access_token')
+        console.log('⚠️ No admin or regular DRF token found for admin request - trying JWT fallback')
+        token = localStorage.getItem('access_token')
       }
     } else {
-      // For regular requests, use regular token
+      // For regular requests, prefer DRF token over JWT
       token = localStorage.getItem('token') || localStorage.getItem('access_token')
     }
     

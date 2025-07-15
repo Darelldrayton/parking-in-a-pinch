@@ -238,26 +238,56 @@ export default function AdminLogin() {
       // For now, let's bypass the admin check completely to test
       console.log('🔓 BYPASSING ADMIN CHECK FOR TESTING');
       
-      // Store admin tokens
-      console.log('💾 Storing admin tokens');
-      const accessToken = response.data.access || response.data.tokens?.access;
-      const refreshToken = response.data.refresh || response.data.tokens?.refresh;
+      // Store admin tokens - CRITICAL FIX: Use DRF token format, not JWT
+      console.log('💾 Storing admin tokens (DRF format)');
+      console.log('🔍 Response data keys:', Object.keys(response.data));
+      console.log('🔍 Looking for DRF token in response:', {
+        token: response.data.token ? 'FOUND' : 'NOT_FOUND',
+        auth_token: response.data.auth_token ? 'FOUND' : 'NOT_FOUND',
+        access: response.data.access ? 'FOUND (JWT)' : 'NOT_FOUND',
+        refresh: response.data.refresh ? 'FOUND (JWT)' : 'NOT_FOUND'
+      });
       
-      if (!accessToken) {
-        persistentLog('ERROR_NO_ACCESS_TOKEN', { responseData: response.data });
-        throw new Error('No access token received from server');
+      // For admin users, prioritize DRF token over JWT tokens
+      const drfToken = response.data.token || response.data.auth_token;
+      const jwtAccessToken = response.data.access || response.data.tokens?.access;
+      
+      let adminToken = null;
+      
+      if (drfToken) {
+        console.log('✅ Using DRF token for admin authentication');
+        adminToken = drfToken;
+        persistentLog('TOKEN_TYPE_SELECTED', { type: 'DRF', tokenLength: drfToken.length });
+      } else if (jwtAccessToken) {
+        console.log('⚠️ No DRF token found, falling back to JWT (may cause issues)');
+        adminToken = jwtAccessToken;
+        persistentLog('TOKEN_TYPE_SELECTED', { type: 'JWT_FALLBACK', tokenLength: jwtAccessToken.length });
       }
       
-      localStorage.setItem('admin_access_token', accessToken);
-      localStorage.setItem('admin_refresh_token', refreshToken || '');
+      if (!adminToken) {
+        persistentLog('ERROR_NO_ADMIN_TOKEN', { responseData: response.data });
+        throw new Error('No admin token received from server (neither DRF nor JWT)');
+      }
+      
+      // Store tokens in both admin and regular storage for compatibility
+      localStorage.setItem('admin_access_token', adminToken);
+      localStorage.setItem('token', adminToken); // DRF format for regular API calls
       localStorage.setItem('admin_user', JSON.stringify(response.data.user));
+      
+      // Also store refresh token if available (for JWT systems)
+      const refreshToken = response.data.refresh || response.data.tokens?.refresh;
+      if (refreshToken) {
+        localStorage.setItem('admin_refresh_token', refreshToken);
+      }
 
       console.log('🎉 Admin login successful, navigating to dashboard');
       
       persistentLog('TOKENS_STORED', { 
-        accessTokenLength: accessToken.length,
+        adminTokenLength: adminToken.length,
+        adminTokenType: drfToken ? 'DRF' : 'JWT_FALLBACK',
         refreshTokenLength: refreshToken?.length || 0,
-        userStored: 'YES'
+        userStored: 'YES',
+        storedInRegularToken: 'YES'
       });
       
       toast.success('Welcome to the admin panel!');

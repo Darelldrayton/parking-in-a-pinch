@@ -170,6 +170,12 @@ const AdminDashboardSimple: React.FC = () => {
               • Admin Token: {localStorage.getItem('admin_access_token') ? '✅ Present' : '❌ Missing'}
             </Typography>
             <Typography variant="body2" color="text.secondary">
+              • Regular Token: {localStorage.getItem('token') ? '✅ Present' : '❌ Missing'}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              • Token Type: {localStorage.getItem('admin_access_token')?.includes('.') ? 'JWT' : localStorage.getItem('admin_access_token') ? 'DRF' : 'None'}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
               • User Data: {adminUser ? '✅ Loaded' : '❌ Missing'}
             </Typography>
             <Typography variant="body2" color="text.secondary">
