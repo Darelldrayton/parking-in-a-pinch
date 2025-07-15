@@ -78,6 +78,12 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
       
+      // Check if we're already on login pages to prevent redirect loops
+      const currentPath = window.location.pathname
+      if (currentPath === '/admin/login' || currentPath === '/login') {
+        return Promise.reject(error)
+      }
+      
       // Determine if this was an admin request
       const isAdminRequest = originalRequest.url?.includes('/admin/') || 
                             originalRequest.url?.includes('/users/admin/') ||
@@ -103,19 +109,40 @@ api.interceptors.response.use(
           } catch (refreshError) {
             console.error('Admin token refresh failed:', refreshError)
             // Admin refresh failed, redirect to admin login
-            localStorage.removeItem('admin_access_token')
-            localStorage.removeItem('admin_refresh_token')
-            localStorage.removeItem('admin_user')
-            window.location.href = '/admin/login'
+            console.warn('Admin token refresh failed, clearing session')
+            
+            // Add delay before redirect to prevent race conditions on mobile
+            setTimeout(() => {
+              localStorage.removeItem('admin_access_token')
+              localStorage.removeItem('admin_refresh_token')
+              localStorage.removeItem('admin_user')
+              
+              // Only redirect if not already redirecting
+              if (!sessionStorage.getItem('admin_redirecting')) {
+                sessionStorage.setItem('admin_redirecting', 'true')
+                window.location.href = '/admin/login'
+              }
+            }, 100)
+            
             return Promise.reject(refreshError)
           }
         } else {
           // No admin refresh token, redirect to admin login
           console.warn('No admin refresh token available')
-          localStorage.removeItem('admin_access_token')
-          localStorage.removeItem('admin_refresh_token')
-          localStorage.removeItem('admin_user')
-          window.location.href = '/admin/login'
+          
+          // Add delay before redirect to prevent race conditions on mobile
+          setTimeout(() => {
+            localStorage.removeItem('admin_access_token')
+            localStorage.removeItem('admin_refresh_token')
+            localStorage.removeItem('admin_user')
+            
+            // Only redirect if not already redirecting
+            if (!sessionStorage.getItem('admin_redirecting')) {
+              sessionStorage.setItem('admin_redirecting', 'true')
+              window.location.href = '/admin/login'
+            }
+          }, 100)
+          
           return Promise.reject(error)
         }
       } else {

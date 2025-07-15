@@ -60,6 +60,10 @@ export default function AdminLogin() {
   // 🚨 EMERGENCY REDIRECT CHECK - FIRST PRIORITY
   React.useEffect(() => {
     console.log('🚨 EMERGENCY REDIRECT CHECK RUNNING');
+    
+    // Clear any redirect flags when landing on login page
+    sessionStorage.removeItem('admin_redirecting');
+    
     const token = localStorage.getItem('access_token');
     const user = localStorage.getItem('user');
     
