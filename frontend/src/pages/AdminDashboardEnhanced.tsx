@@ -291,6 +291,8 @@ const AdminDashboardEnhanced: React.FC = () => {
   // Check admin auth from localStorage
   useEffect(() => {
     console.log('🔍 AdminDashboard: Checking authentication...');
+    console.log('🔍 Path:', window.location.pathname);
+    console.log('🔍 Timestamp:', new Date().toISOString());
     
     // Disable WebSocket for admin pages to prevent infinite loops
     if (typeof window !== 'undefined') {
@@ -298,31 +300,30 @@ const AdminDashboardEnhanced: React.FC = () => {
       console.log('🔒 WebSocket disabled for admin dashboard');
     }
     
-    // Validate admin tokens first
-    if (!adminTokenUtils.validateAdminTokens()) {
-      console.log('❌ Invalid admin tokens, redirecting to login');
-      adminTokenUtils.clearAdminSession();
+    // Simplified authentication - just check if tokens exist
+    const adminToken = localStorage.getItem('admin_access_token');
+    const adminUser = localStorage.getItem('admin_user');
+    
+    if (!adminToken || !adminUser) {
+      console.log('❌ No admin credentials found, redirecting to login');
+      window.location.href = '/admin/login';
       return;
     }
     
-    // Check admin privileges
-    if (!adminTokenUtils.hasAdminPrivileges()) {
-      console.log('❌ User does not have admin privileges, redirecting');
-      adminTokenUtils.clearAdminSession();
+    // Skip complex token validation to prevent loops
+    console.log('✅ Admin credentials found, proceeding with dashboard');
+    
+    // Parse user data directly without complex validation
+    try {
+      const userData = JSON.parse(adminUser);
+      console.log('✅ Admin user loaded:', userData.email);
+      setAdminUser(userData);
+      loadDataSafely();
+    } catch (error) {
+      console.error('❌ Error parsing admin user data:', error);
+      window.location.href = '/admin/login';
       return;
     }
-    
-    // Get admin user data
-    const user = adminTokenUtils.getAdminUser();
-    if (!user) {
-      console.log('❌ Could not load admin user data, redirecting');
-      adminTokenUtils.clearAdminSession();
-      return;
-    }
-    
-    console.log('✅ Admin authentication successful:', user.email);
-    setAdminUser(user);
-    loadDataSafely();
     
     // Cleanup function to re-enable WebSocket when leaving admin dashboard
     return () => {

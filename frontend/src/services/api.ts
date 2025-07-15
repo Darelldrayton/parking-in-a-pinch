@@ -84,6 +84,13 @@ api.interceptors.response.use(
         return Promise.reject(error)
       }
       
+      // On mobile, prevent aggressive redirects that cause logout during navigation
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      if (isMobile && currentPath.includes('/admin')) {
+        console.warn('🔒 Mobile admin page - skipping aggressive token refresh to prevent logout')
+        return Promise.reject(error)
+      }
+      
       // Determine if this was an admin request
       const isAdminRequest = originalRequest.url?.includes('/admin/') || 
                             originalRequest.url?.includes('/users/admin/') ||

@@ -344,6 +344,15 @@ function App() {
   console.log('🎯 Routes available: /admin/login, /admin/dashboard, /admin/cleanup-listings');
   console.log('🔄 CACHE CLEARED - NEW BUILD FORCED...');
   
+  // Completely disable notifications and WebSocket on admin pages
+  const isAdminPage = window.location.pathname.includes('/admin');
+  
+  if (isAdminPage) {
+    console.log('🔒 ADMIN PAGE DETECTED - DISABLING WEBSOCKET AND NOTIFICATIONS');
+    // Disable WebSocket globally for admin pages
+    (window as any).disableWebSocket = true;
+  }
+  
   return (
     <ThemeModeProvider>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -356,13 +365,21 @@ function App() {
           autoHideDuration={4000}
         >
           <AuthProvider>
-            <NotificationProvider>
+            {!isAdminPage ? (
+              <NotificationProvider>
+                <BookingsProvider>
+                  <Router>
+                    <AppRoutes />
+                  </Router>
+                </BookingsProvider>
+              </NotificationProvider>
+            ) : (
               <BookingsProvider>
                 <Router>
                   <AppRoutes />
                 </Router>
               </BookingsProvider>
-            </NotificationProvider>
+            )}
           </AuthProvider>
         </SnackbarProvider>
       </LocalizationProvider>

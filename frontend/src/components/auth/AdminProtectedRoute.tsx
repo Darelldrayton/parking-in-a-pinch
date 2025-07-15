@@ -18,11 +18,15 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({
   useEffect(() => {
     // Only check authentication once
     if (hasCheckedAuth) {
+      console.log('🔐 AdminProtectedRoute: Skipping auth check - already checked');
       return;
     }
 
     const checkAuthentication = async () => {
       console.log('🔐 AdminProtectedRoute: Checking authentication...');
+      console.log('🔐 Current path:', window.location.pathname);
+      console.log('🔐 User agent:', navigator.userAgent);
+      console.log('🔐 Is mobile:', /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
       
       const adminToken = localStorage.getItem('admin_access_token');
       const adminUser = localStorage.getItem('admin_user');
