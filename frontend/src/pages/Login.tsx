@@ -101,24 +101,33 @@ const Login: React.FC = () => {
     try {
       console.log('About to call login...');
       await login(data.email, data.password);
-    // ... rest of the function
       
-      // Check if user is admin and store admin tokens
+      // Check if user is admin and redirect to admin login page
       const user = JSON.parse(localStorage.getItem('user') || '{}');
-      if (user.is_staff || user.is_superuser) {
-        // Copy tokens to admin keys for admin dashboard
-        const accessToken = localStorage.getItem('access_token');
-        const refreshToken = localStorage.getItem('refresh_token');
-        if (accessToken) localStorage.setItem('admin_access_token', accessToken);
-        if (refreshToken) localStorage.setItem('admin_refresh_token', refreshToken);
-        localStorage.setItem('admin_user', JSON.stringify(user));
+      console.log('🔍 Login successful, checking user type:', { 
+        email: user.email, 
+        is_staff: user.is_staff, 
+        is_superuser: user.is_superuser 
+      });
+      
+      if (user.is_staff || user.is_superuser || user.email === 'darelldrayton93@gmail.com') {
+        console.log('🚨 Admin user detected on regular login page - redirecting to admin portal');
         
-        enqueueSnackbar('Welcome to admin dashboard!', { variant: 'success' });
-        navigate('/admin/dashboard', { replace: true });
-      } else {
-        enqueueSnackbar('Welcome back!', { variant: 'success' });
-        navigate(from, { replace: true });
+        // Clear regular user tokens since this is an admin
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('user');
+        
+        enqueueSnackbar('Admin account detected. Redirecting to admin portal...', { variant: 'info' });
+        
+        // Redirect to admin login page instead of dashboard
+        navigate('/admin/login', { replace: true });
+        return;
       }
+      
+      // Continue with regular user login
+      enqueueSnackbar('Welcome back!', { variant: 'success' });
+      navigate(from, { replace: true });
     } catch (error: any) {
       enqueueSnackbar(error.message || 'Login failed', { variant: 'error' });
     }
@@ -266,9 +275,9 @@ const Login: React.FC = () => {
                   {isLoading ? 'Signing in...' : 'Sign In'}
                 </Button>
 
-                <Grid container justifyContent="center">
-                  <Grid size="auto">
-                    <Typography variant="body2" color="text.secondary">
+                <Grid container justifyContent="center" spacing={2}>
+                  <Grid size={12}>
+                    <Typography variant="body2" color="text.secondary" align="center">
                       Don't have an account?{' '}
                       <Link
                         to="/signup"
@@ -278,6 +287,21 @@ const Login: React.FC = () => {
                         }}
                       >
                         Sign up
+                      </Link>
+                    </Typography>
+                  </Grid>
+                  <Grid size={12}>
+                    <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 1 }}>
+                      Admin user?{' '}
+                      <Link
+                        to="/admin/login"
+                        style={{
+                          textDecoration: 'none',
+                          fontWeight: 600,
+                          color: '#1976d2'
+                        }}
+                      >
+                        Click here for admin login
                       </Link>
                     </Typography>
                   </Grid>
