@@ -3068,7 +3068,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                             </TableCell>
                             <TableCell>
                               <Typography variant="body2">
-                                {format(new Date(application.appliedDate), 'MMM d, yyyy')}
+                                {format(new Date(application.applied_date), 'MMM d, yyyy')}
                               </Typography>
                             </TableCell>
                             <TableCell>
@@ -3104,11 +3104,11 @@ const AdminDashboardEnhanced: React.FC = () => {
                             </TableCell>
                             <TableCell>
                               <Chip
-                                label={application.experience}
+                                label={application.experience_level}
                                 size="small"
                                 variant="outlined"
-                                color={application.experience === 'Senior' ? 'success' : 
-                                       application.experience === 'Mid' ? 'primary' : 'default'}
+                                color={application.experience_level === 'Senior' ? 'success' : 
+                                       application.experience_level === 'Mid' ? 'primary' : 'default'}
                               />
                             </TableCell>
                             <TableCell align="center">
@@ -3127,7 +3127,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                                 <Tooltip title="Download Resume">
                                   <IconButton
                                     size="small"
-                                    onClick={() => window.open(application.resumeUrl, '_blank')}
+                                    onClick={() => window.open(application.resume_url, '_blank')}
                                   >
                                     <GetApp />
                                   </IconButton>
@@ -3261,11 +3261,11 @@ const AdminDashboardEnhanced: React.FC = () => {
                 </Grid>
                 <Grid item xs={6}>
                   <Typography variant="subtitle2" color="text.secondary">Experience Level</Typography>
-                  <Typography variant="body1">{selectedApplication.experience}</Typography>
+                  <Typography variant="body1">{selectedApplication.experience_level}</Typography>
                 </Grid>
                 <Grid item xs={6}>
                   <Typography variant="subtitle2" color="text.secondary">Applied Date</Typography>
-                  <Typography variant="body1">{format(new Date(selectedApplication.appliedDate), 'MMM d, yyyy')}</Typography>
+                  <Typography variant="body1">{format(new Date(selectedApplication.applied_date), 'MMM d, yyyy')}</Typography>
                 </Grid>
                 <Grid item xs={12}>
                   <Typography variant="subtitle2" color="text.secondary">Status</Typography>
@@ -3312,7 +3312,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                   <Typography variant="subtitle2" color="text.secondary" gutterBottom>Cover Letter</Typography>
                   <Paper sx={{ p: 2, bgcolor: 'grey.50', maxHeight: 300, overflow: 'auto' }}>
                     <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>
-                      {selectedApplication.coverLetter}
+                      {selectedApplication.cover_letter}
                     </Typography>
                   </Paper>
                 </Grid>
@@ -3342,7 +3342,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                     <Button
                       variant="outlined"
                       startIcon={<GetApp />}
-                      onClick={() => window.open(selectedApplication.resumeUrl, '_blank')}
+                      onClick={() => window.open(selectedApplication.resume_url, '_blank')}
                       size="small"
                     >
                       Resume

@@ -284,24 +284,46 @@ export default function Careers() {
     setApplicationModalOpen(true);
   };
 
-  const handleSubmitApplication = () => {
-    // Here you would typically send the application data to your backend
-    console.log('Submitting application:', { job: selectedJob, application: applicationData });
+  const handleSubmitApplication = async () => {
+    if (!selectedJob) return;
     
-    // Reset form and close modal
-    setApplicationData({
-      fullName: '',
-      email: '',
-      phone: '',
-      linkedIn: '',
-      portfolio: '',
-      coverLetter: '',
-      resume: null,
-    });
-    setApplicationModalOpen(false);
-    
-    // Show success message (you could use a snackbar here)
-    alert('Application submitted successfully!');
+    try {
+      // Import the careers service
+      const { careersService } = await import('../services/careers');
+      
+      // Submit the application
+      await careersService.submitApplication({
+        name: applicationData.fullName,
+        email: applicationData.email,
+        phone: applicationData.phone,
+        position: selectedJob.title,
+        department: selectedJob.department,
+        experience_level: selectedJob.experience,
+        location: 'New York, NY', // Default location
+        linkedin: applicationData.linkedIn,
+        portfolio: applicationData.portfolio,
+        cover_letter: applicationData.coverLetter,
+        resume: applicationData.resume,
+      });
+      
+      // Reset form and close modal
+      setApplicationData({
+        fullName: '',
+        email: '',
+        phone: '',
+        linkedIn: '',
+        portfolio: '',
+        coverLetter: '',
+        resume: null,
+      });
+      setApplicationModalOpen(false);
+      
+      // Show success message
+      alert('Application submitted successfully! You will receive a confirmation email shortly.');
+    } catch (error) {
+      console.error('Error submitting application:', error);
+      alert('Error submitting application. Please try again.');
+    }
   };
 
   const handleResumeUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
