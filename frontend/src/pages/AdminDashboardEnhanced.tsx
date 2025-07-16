@@ -62,13 +62,107 @@ import {
   Gavel,
   Send,
   Reply,
-  AccountBalance
+  AccountBalance,
+  Work,
+  Star,
+  StarBorder,
+  LinkedIn,
+  Web
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import api, { adminTokenUtils } from '../services/api';
 import PayoutManagement from '../components/admin/PayoutManagement';
 import AdminErrorBoundary from '../components/admin/AdminErrorBoundary';
 import AdminLoadingScreen from '../components/admin/AdminLoadingScreen';
+
+// Career Applications Data
+const sampleJobApplications = [
+  {
+    id: 1,
+    name: 'Sarah Chen',
+    email: 'sarah.chen@email.com',
+    phone: '+1 (555) 123-4567',
+    position: 'Founding Full-Stack Engineer',
+    department: 'Engineering',
+    appliedDate: '2024-01-15',
+    status: 'interview',
+    rating: 4,
+    experience: 'Senior',
+    location: 'New York, NY',
+    linkedin: 'https://linkedin.com/in/sarahchen',
+    portfolio: 'https://sarahchen.dev',
+    coverLetter: 'I am excited about the opportunity to join Parking in a Pinch as a founding engineer. With 6 years of full-stack development experience, I have built scalable web applications using React, Node.js, and Python. I am particularly drawn to your mission of solving urban mobility challenges...',
+    resumeUrl: '/resumes/sarah-chen-resume.pdf'
+  },
+  {
+    id: 2,
+    name: 'Marcus Johnson',
+    email: 'marcus.j@email.com',
+    phone: '+1 (555) 234-5678',
+    position: 'Mobile Developer',
+    department: 'Engineering',
+    appliedDate: '2024-01-12',
+    status: 'reviewing',
+    rating: 5,
+    experience: 'Mid',
+    location: 'New York, NY',
+    linkedin: 'https://linkedin.com/in/marcusjohnson',
+    portfolio: 'https://marcusapps.com',
+    coverLetter: 'As a mobile developer with 4 years of experience building React Native apps, I am thrilled about the opportunity to help create the next generation of parking solutions...',
+    resumeUrl: '/resumes/marcus-johnson-resume.pdf'
+  },
+  {
+    id: 3,
+    name: 'Emily Rodriguez',
+    email: 'emily.rodriguez@email.com',
+    phone: '+1 (555) 345-6789',
+    position: 'UI/UX Designer',
+    department: 'Design',
+    appliedDate: '2024-01-10',
+    status: 'new',
+    rating: 0,
+    experience: 'Mid',
+    location: 'Brooklyn, NY',
+    linkedin: 'https://linkedin.com/in/emilyrodriguez',
+    portfolio: 'https://emilydesigns.com',
+    coverLetter: 'I am passionate about creating intuitive user experiences and would love to contribute to making parking more accessible through great design...',
+    resumeUrl: '/resumes/emily-rodriguez-resume.pdf'
+  },
+  {
+    id: 4,
+    name: 'David Kim',
+    email: 'david.kim@email.com',
+    phone: '+1 (555) 456-7890',
+    position: 'Growth Marketing Manager',
+    department: 'Marketing',
+    appliedDate: '2024-01-08',
+    status: 'hired',
+    rating: 5,
+    experience: 'Senior',
+    location: 'Manhattan, NY',
+    linkedin: 'https://linkedin.com/in/davidkim',
+    portfolio: 'https://davidgrowth.com',
+    coverLetter: 'With 5 years of growth marketing experience at tech startups, I have driven user acquisition and retention strategies that resulted in 300% growth...',
+    resumeUrl: '/resumes/david-kim-resume.pdf'
+  },
+  {
+    id: 5,
+    name: 'Lisa Park',
+    email: 'lisa.park@email.com',
+    phone: '+1 (555) 567-8901',
+    position: 'Customer Success Manager',
+    department: 'Operations',
+    appliedDate: '2024-01-05',
+    status: 'rejected',
+    rating: 2,
+    experience: 'Mid',
+    location: 'Queens, NY',
+    linkedin: 'https://linkedin.com/in/lisapark',
+    portfolio: null,
+    coverLetter: 'I am excited about the opportunity to help customers succeed with Parking in a Pinch. My background in customer support and account management...',
+    resumeUrl: '/resumes/lisa-park-resume.pdf'
+  }
+];
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -284,6 +378,12 @@ const AdminDashboardEnhanced: React.FC = () => {
     message: string;
     isInternal: boolean;
   }>({ open: false, dispute: null, message: '', isInternal: false });
+
+  // Career Applications state
+  const [jobApplications, setJobApplications] = useState(sampleJobApplications);
+  const [applicationFilter, setApplicationFilter] = useState('all');
+  const [selectedApplication, setSelectedApplication] = useState<any>(null);
+  const [applicationDetailsDialog, setApplicationDetailsDialog] = useState(false);
 
   // Track unavailable features for user feedback
   
@@ -1642,6 +1742,14 @@ const AdminDashboardEnhanced: React.FC = () => {
                 }
                 icon={<Gavel />}
               />
+              <Tab 
+                label={
+                  <Badge badgeContent={jobApplications.filter(app => app.status === 'new').length} color="primary">
+                    Career Applications
+                  </Badge>
+                }
+                icon={<Work />}
+              />
             </Tabs>
           </Box>
 
@@ -2752,8 +2860,386 @@ const AdminDashboardEnhanced: React.FC = () => {
             )}
           </TabPanel>
 
+          {/* Career Applications Tab */}
+          <TabPanel value={tabValue} index={7}>
+            <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Work />
+              Career Applications ({jobApplications.length} total)
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              Review and manage job applications from the careers page.
+            </Typography>
+
+            {/* Filter Controls */}
+            <Card sx={{ mb: 3 }}>
+              <CardContent>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Typography variant="h6">Filter Applications:</Typography>
+                  <FormControl size="small" sx={{ minWidth: 120 }}>
+                    <Select
+                      value={applicationFilter}
+                      onChange={(e) => setApplicationFilter(e.target.value)}
+                    >
+                      <MenuItem value="all">All ({jobApplications.length})</MenuItem>
+                      <MenuItem value="new">New ({jobApplications.filter(app => app.status === 'new').length})</MenuItem>
+                      <MenuItem value="reviewing">Reviewing ({jobApplications.filter(app => app.status === 'reviewing').length})</MenuItem>
+                      <MenuItem value="interview">Interview ({jobApplications.filter(app => app.status === 'interview').length})</MenuItem>
+                      <MenuItem value="hired">Hired ({jobApplications.filter(app => app.status === 'hired').length})</MenuItem>
+                      <MenuItem value="rejected">Rejected ({jobApplications.filter(app => app.status === 'rejected').length})</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Stack>
+              </CardContent>
+            </Card>
+
+            {/* Applications Statistics */}
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              <Grid item xs={12} md={2.4}>
+                <Card sx={{ textAlign: 'center', p: 2 }}>
+                  <Typography variant="h4" color="primary.main">
+                    {jobApplications.filter(app => app.status === 'new').length}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    New Applications
+                  </Typography>
+                </Card>
+              </Grid>
+              <Grid item xs={12} md={2.4}>
+                <Card sx={{ textAlign: 'center', p: 2 }}>
+                  <Typography variant="h4" color="warning.main">
+                    {jobApplications.filter(app => app.status === 'reviewing').length}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Under Review
+                  </Typography>
+                </Card>
+              </Grid>
+              <Grid item xs={12} md={2.4}>
+                <Card sx={{ textAlign: 'center', p: 2 }}>
+                  <Typography variant="h4" color="info.main">
+                    {jobApplications.filter(app => app.status === 'interview').length}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Interview Stage
+                  </Typography>
+                </Card>
+              </Grid>
+              <Grid item xs={12} md={2.4}>
+                <Card sx={{ textAlign: 'center', p: 2 }}>
+                  <Typography variant="h4" color="success.main">
+                    {jobApplications.filter(app => app.status === 'hired').length}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Hired
+                  </Typography>
+                </Card>
+              </Grid>
+              <Grid item xs={12} md={2.4}>
+                <Card sx={{ textAlign: 'center', p: 2 }}>
+                  <Typography variant="h4" color="error.main">
+                    {jobApplications.filter(app => app.status === 'rejected').length}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Rejected
+                  </Typography>
+                </Card>
+              </Grid>
+            </Grid>
+
+            {/* Applications Table */}
+            <TableContainer component={Paper} elevation={0}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Applicant</TableCell>
+                    <TableCell>Position</TableCell>
+                    <TableCell>Department</TableCell>
+                    <TableCell>Applied Date</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell>Rating</TableCell>
+                    <TableCell>Experience</TableCell>
+                    <TableCell align="center">Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {jobApplications
+                    .filter(app => applicationFilter === 'all' || app.status === applicationFilter)
+                    .map((application) => (
+                      <TableRow key={application.id} hover>
+                        <TableCell>
+                          <Stack direction="row" alignItems="center" spacing={2}>
+                            <Avatar sx={{ bgcolor: 'primary.main' }}>
+                              {application.name.charAt(0)}
+                            </Avatar>
+                            <Box>
+                              <Typography variant="body2" fontWeight="bold">
+                                {application.name}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {application.email}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                                {application.phone}
+                              </Typography>
+                            </Box>
+                          </Stack>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" fontWeight="medium">
+                            {application.position}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={application.department}
+                            size="small"
+                            color={application.department === 'Engineering' ? 'primary' : 
+                                   application.department === 'Design' ? 'secondary' : 
+                                   application.department === 'Marketing' ? 'success' : 'default'}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">
+                            {format(new Date(application.appliedDate), 'MMM d, yyyy')}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={application.status.charAt(0).toUpperCase() + application.status.slice(1)}
+                            size="small"
+                            color={application.status === 'new' ? 'primary' : 
+                                   application.status === 'reviewing' ? 'warning' : 
+                                   application.status === 'interview' ? 'info' : 
+                                   application.status === 'hired' ? 'success' : 'error'}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Stack direction="row" alignItems="center" spacing={0.5}>
+                            {Array.from({ length: 5 }, (_, i) => (
+                              <IconButton key={i} size="small" disabled>
+                                {i < application.rating ? <Star sx={{ color: 'warning.main', fontSize: 16 }} /> : <StarBorder sx={{ color: 'text.disabled', fontSize: 16 }} />}
+                              </IconButton>
+                            ))}
+                            <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                              {application.rating > 0 ? `${application.rating}/5` : 'Not rated'}
+                            </Typography>
+                          </Stack>
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={application.experience}
+                            size="small"
+                            variant="outlined"
+                            color={application.experience === 'Senior' ? 'success' : 
+                                   application.experience === 'Mid' ? 'primary' : 'default'}
+                          />
+                        </TableCell>
+                        <TableCell align="center">
+                          <Stack direction="row" spacing={1} justifyContent="center">
+                            <Tooltip title="View Details">
+                              <IconButton
+                                size="small"
+                                onClick={() => {
+                                  setSelectedApplication(application);
+                                  setApplicationDetailsDialog(true);
+                                }}
+                              >
+                                <Visibility />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Download Resume">
+                              <IconButton
+                                size="small"
+                                onClick={() => window.open(application.resumeUrl, '_blank')}
+                              >
+                                <GetApp />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Send Email">
+                              <IconButton
+                                size="small"
+                                onClick={() => window.open(`mailto:${application.email}`, '_blank')}
+                              >
+                                <Email />
+                              </IconButton>
+                            </Tooltip>
+                          </Stack>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+
+            {/* Quick Actions */}
+            <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+              <Button
+                variant="outlined"
+                startIcon={<GetApp />}
+                onClick={() => {
+                  const csvContent = "data:text/csv;charset=utf-8," + 
+                    "Name,Email,Phone,Position,Department,Applied Date,Status,Experience,Location\n" +
+                    jobApplications.map(app => 
+                      `${app.name},${app.email},${app.phone},${app.position},${app.department},${app.appliedDate},${app.status},${app.experience},${app.location}`
+                    ).join("\n");
+                  const encodedUri = encodeURI(csvContent);
+                  const link = document.createElement("a");
+                  link.setAttribute("href", encodedUri);
+                  link.setAttribute("download", "job_applications.csv");
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }}
+              >
+                Export All Applications
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<Email />}
+                onClick={() => {
+                  const newApplicants = jobApplications.filter(app => app.status === 'new');
+                  if (newApplicants.length > 0) {
+                    const emailList = newApplicants.map(app => app.email).join(';');
+                    window.open(`mailto:${emailList}?subject=Thank you for your application&body=Thank you for your interest in joining Parking in a Pinch...`, '_blank');
+                  }
+                }}
+                disabled={jobApplications.filter(app => app.status === 'new').length === 0}
+              >
+                Email New Applicants ({jobApplications.filter(app => app.status === 'new').length})
+              </Button>
+            </Stack>
+          </TabPanel>
+
         </Card>
       </Container>
+
+      {/* Application Details Dialog */}
+      <Dialog 
+        open={applicationDetailsDialog} 
+        onClose={() => setApplicationDetailsDialog(false)} 
+        maxWidth="md" 
+        fullWidth
+      >
+        <DialogTitle>
+          Application Details - {selectedApplication?.name}
+        </DialogTitle>
+        <DialogContent>
+          {selectedApplication && (
+            <Stack spacing={3} sx={{ mt: 1 }}>
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Name</Typography>
+                  <Typography variant="body1">{selectedApplication.name}</Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Email</Typography>
+                  <Typography variant="body1">{selectedApplication.email}</Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Phone</Typography>
+                  <Typography variant="body1">{selectedApplication.phone}</Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Location</Typography>
+                  <Typography variant="body1">{selectedApplication.location}</Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Position</Typography>
+                  <Typography variant="body1">{selectedApplication.position}</Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Department</Typography>
+                  <Typography variant="body1">{selectedApplication.department}</Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Experience Level</Typography>
+                  <Typography variant="body1">{selectedApplication.experience}</Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="subtitle2" color="text.secondary">Applied Date</Typography>
+                  <Typography variant="body1">{format(new Date(selectedApplication.appliedDate), 'MMM d, yyyy')}</Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="subtitle2" color="text.secondary">Status</Typography>
+                  <Chip
+                    label={selectedApplication.status.charAt(0).toUpperCase() + selectedApplication.status.slice(1)}
+                    color={selectedApplication.status === 'new' ? 'primary' : 
+                           selectedApplication.status === 'reviewing' ? 'warning' : 
+                           selectedApplication.status === 'interview' ? 'info' : 
+                           selectedApplication.status === 'hired' ? 'success' : 'error'}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>Rating</Typography>
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <IconButton key={i} size="small" disabled>
+                        {i < selectedApplication.rating ? <Star sx={{ color: 'warning.main' }} /> : <StarBorder sx={{ color: 'text.disabled' }} />}
+                      </IconButton>
+                    ))}
+                    <Typography variant="body2" color="text.secondary">
+                      {selectedApplication.rating > 0 ? `${selectedApplication.rating}/5` : 'Not rated'}
+                    </Typography>
+                  </Stack>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>Cover Letter</Typography>
+                  <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
+                    <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>
+                      {selectedApplication.coverLetter}
+                    </Typography>
+                  </Paper>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>Links</Typography>
+                  <Stack direction="row" spacing={2}>
+                    {selectedApplication.linkedin && (
+                      <Button
+                        variant="outlined"
+                        startIcon={<LinkedIn />}
+                        onClick={() => window.open(selectedApplication.linkedin, '_blank')}
+                        size="small"
+                      >
+                        LinkedIn
+                      </Button>
+                    )}
+                    {selectedApplication.portfolio && (
+                      <Button
+                        variant="outlined"
+                        startIcon={<Web />}
+                        onClick={() => window.open(selectedApplication.portfolio, '_blank')}
+                        size="small"
+                      >
+                        Portfolio
+                      </Button>
+                    )}
+                    <Button
+                      variant="outlined"
+                      startIcon={<GetApp />}
+                      onClick={() => window.open(selectedApplication.resumeUrl, '_blank')}
+                      size="small"
+                    >
+                      Resume
+                    </Button>
+                  </Stack>
+                </Grid>
+              </Grid>
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setApplicationDetailsDialog(false)}>
+            Close
+          </Button>
+          <Button
+            onClick={() => window.open(`mailto:${selectedApplication?.email}`, '_blank')}
+            variant="contained"
+            startIcon={<Email />}
+          >
+            Send Email
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Details Dialog */}
       <Dialog open={detailsDialog} onClose={() => setDetailsDialog(false)} maxWidth="md" fullWidth>
