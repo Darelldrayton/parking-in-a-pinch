@@ -108,17 +108,30 @@ const Login: React.FC = () => {
       });
       
       if (user.is_staff || user.is_superuser || user.email === 'darelldrayton93@gmail.com') {
-        console.log('🚨 Admin user detected on regular login page - redirecting to admin portal');
+        console.log('🚨 Admin user detected on regular login page - copying tokens to admin storage');
         
-        // Clear regular user tokens since this is an admin
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user');
+        // Copy tokens to admin storage (don't clear regular tokens!)
+        const accessToken = localStorage.getItem('access_token');
+        const refreshToken = localStorage.getItem('refresh_token');
+        const userJson = localStorage.getItem('user');
+        
+        if (accessToken) {
+          localStorage.setItem('admin_access_token', accessToken);
+          console.log('✅ Copied access token to admin storage');
+        }
+        if (refreshToken) {
+          localStorage.setItem('admin_refresh_token', refreshToken);
+          console.log('✅ Copied refresh token to admin storage');
+        }
+        if (userJson) {
+          localStorage.setItem('admin_user', userJson);
+          console.log('✅ Copied user data to admin storage');
+        }
         
         enqueueSnackbar('Admin account detected. Redirecting to admin portal...', { variant: 'info' });
         
-        // Redirect to admin login page instead of dashboard
-        navigate('/admin/login', { replace: true });
+        // Redirect to admin dashboard directly (not login page)
+        navigate('/admin/dashboard', { replace: true });
         return;
       }
       

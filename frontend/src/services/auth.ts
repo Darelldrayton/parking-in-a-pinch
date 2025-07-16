@@ -299,7 +299,7 @@ class AuthService {
     }
   }
 
-  private clearAuthData(): void {
+  clearAuthData(): void {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
     localStorage.removeItem('user')

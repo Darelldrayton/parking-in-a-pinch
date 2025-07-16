@@ -443,15 +443,15 @@ const AdminDashboardEnhanced: React.FC = () => {
 
   const fetchStats = async () => {
     try {
-      console.log('📊 Fetching real data from admin APIs...');
+      console.log('📊 Fetching real data from admin APIs with correct endpoints...');
       
-      // Try admin-specific stats endpoints first, then fallback to individual APIs
+      // Use the correct admin endpoints that exist in the backend
       const [adminStatsRes, usersRes, verificationsRes, listingsRes, refundsRes, payoutsRes, disputesRes] = await Promise.all([
         api.get('/admin/dashboard-stats/').catch(e => {
           console.warn('Admin stats API not available:', e);
           return { data: null, status: e.response?.status || 503 };
         }),
-        api.get('/users/admin/users/stats/').catch(e => {
+        api.get('/users/admin/stats/').catch(e => {
           console.warn('Users stats API not available:', e);
           return { data: null, status: e.response?.status || 503 };
         }),
@@ -480,12 +480,21 @@ const AdminDashboardEnhanced: React.FC = () => {
       let realStats = null;
 
       // If the consolidated admin stats endpoint works, use it
+      console.log('🔍 Admin stats response status:', adminStatsRes.status);
+      console.log('🔍 Admin stats response data:', adminStatsRes.data);
       if (adminStatsRes.status === 200 && adminStatsRes.data) {
         realStats = adminStatsRes.data;
         console.log('✅ Admin stats loaded from consolidated endpoint:', realStats);
       } else {
         // Otherwise, compile stats from individual endpoints
         console.log('📊 Compiling stats from individual endpoints...');
+        console.log('📊 Individual API responses:', {
+          refunds: { status: refundsRes.status, hasData: !!refundsRes.data },
+          payouts: { status: payoutsRes.status, hasData: !!payoutsRes.data },
+          users: { status: usersRes.status, hasData: !!usersRes.data },
+          listings: { status: listingsRes.status, hasData: !!listingsRes.data },
+          disputes: { status: disputesRes.status, hasData: !!disputesRes.data }
+        });
         
         const users = (usersRes.status === 200 && usersRes.data) ? usersRes.data : { total_users: 0, verified_users: 0, recent_signups: 0 };
         const verifications = (verificationsRes.status === 200 && verificationsRes.data) ? verificationsRes.data : { pending_requests: 0, total_requests: 0 };
@@ -561,14 +570,16 @@ const AdminDashboardEnhanced: React.FC = () => {
 
   const fetchVerificationRequests = async () => {
     try {
+      console.log('🔍 Fetching verification requests from: /users/admin/verification-requests/');
       const response = await api.get('/users/admin/verification-requests/');
+      console.log('✅ Verification requests loaded:', response.data);
       setVerificationRequests(response.data.results || []);
     } catch (err: any) {
       console.warn('Verification requests fetch error:', err);
       if (err.response?.status === 401) {
         console.warn('⚠️ Admin session expired for verification requests');
       } else if (err.response?.status === 404) {
-        console.warn('⚠️ Admin verification API not available (404)');
+        console.warn('⚠️ Admin verification API not available (404) - endpoint might not exist');
       } else {
         console.warn(`⚠️ Admin verification API not available (${err.response?.status || 'unknown'})`);
       }
@@ -578,14 +589,16 @@ const AdminDashboardEnhanced: React.FC = () => {
 
   const fetchRefundRequests = async () => {
     try {
+      console.log('🔍 Fetching refund requests from: /payments/admin/refund-requests/');
       const response = await api.get('/payments/admin/refund-requests/');
+      console.log('✅ Refund requests loaded:', response.data);
       setRefundRequests(response.data.results || []);
     } catch (err: any) {
       console.warn('Refund requests fetch error:', err);
       if (err.response?.status === 401) {
         console.warn('⚠️ Admin session expired for refund requests');
       } else if (err.response?.status === 404) {
-        console.warn('⚠️ Admin refund API not available (404)');
+        console.warn('⚠️ Admin refund API not available (404) - this endpoint should exist!');
       } else {
         console.warn(`⚠️ Admin refund API failed (${err.response?.status || 'unknown'})`);
       }
@@ -636,7 +649,9 @@ const AdminDashboardEnhanced: React.FC = () => {
   const fetchUsers = async () => {
     setUsersLoading(true);
     try {
+      console.log('🔍 Fetching users from: /users/admin/users/');
       const response = await api.get('/users/admin/users/');
+      console.log('✅ Users loaded:', response.data);
       setUsers(response.data.results || response.data || []);
     } catch (err: any) {
       console.error('Users fetch error:', err);
@@ -646,6 +661,8 @@ const AdminDashboardEnhanced: React.FC = () => {
           adminTokenUtils.clearAdminSession();
         }, 3000);
         return;
+      } else if (err.response?.status === 404) {
+        console.warn('⚠️ Admin users API not available (404) - endpoint might not exist');
       }
       setError(`Failed to fetch users: ${err.message}`);
       setUsers([]);

@@ -43,18 +43,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const storedUser = authService.getStoredUser()
       
       if (storedToken && storedUser) {
+        console.log('🔐 AuthContext: Found stored credentials, initializing...')
         setToken(storedToken)
         setUser(storedUser)
         
-        // Verify token is still valid by fetching current user
+        // Try to verify token is still valid by fetching current user
+        // But don't clear everything on failure - this could be a network issue
         try {
           const currentUser = await authService.getCurrentUser()
           setUser(currentUser)
           localStorage.setItem('user', JSON.stringify(currentUser))
+          console.log('✅ AuthContext: Token verified successfully')
         } catch (error) {
-          // Token is invalid, clear storage
-          await logout()
+          console.warn('⚠️ AuthContext: Token verification failed, but keeping stored auth (might be network issue)')
+          // Only clear if it's specifically a 401 Unauthorized error
+          if (error.response?.status === 401) {
+            console.log('🚪 AuthContext: 401 error - clearing invalid credentials')
+            authService.clearAuthData()
+            setToken(null)
+            setUser(null)
+          }
+          // For other errors (network, 500, etc.), keep the stored credentials
         }
+      } else {
+        console.log('🔍 AuthContext: No stored credentials found')
       }
       setIsLoading(false)
     }
