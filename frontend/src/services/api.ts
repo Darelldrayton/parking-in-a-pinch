@@ -2,16 +2,16 @@ import axios, { type AxiosResponse, type AxiosError } from 'axios'
 import toast from 'react-hot-toast'
 
 // AGGRESSIVE API FIX - FORCE DIGITALOCEAN URL v6.0 + TOKEN AUTH FIX
-console.log('🚀 API Configuration Loading - FORCE DigitalOcean v6.0 + Token Auth Fix')
+// console.log('🚀 API Configuration Loading - FORCE DigitalOcean v6.0 + Token Auth Fix')
 
 // USE VERCEL PROXY TO BYPASS HTTPS/HTTP MIXED CONTENT
 const API_BASE_URL = '/api/v1'
 
 // REMOVED: Hardcoded production token - let users authenticate properly
 
-console.log('💥 FORCED API BASE URL:', API_BASE_URL)
-console.log('🔑 FORCED DRF Token Auth (Backend requires Token format, not Bearer)')
-console.log('🎯 This should fix login + messaging on parkinginapinch.com')
+// console.log('💥 FORCED API BASE URL:', API_BASE_URL)
+// console.log('🔑 FORCED DRF Token Auth (Backend requires Token format, not Bearer)')
+// console.log('🎯 This should fix login + messaging on parkinginapinch.com')
 
 // Track refresh attempts to prevent infinite loops
 let refreshAttempts = 0
@@ -29,9 +29,9 @@ const api = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
-    console.log('API Request:', config.method?.toUpperCase(), config.url, config.data)
-    console.log('API Base URL:', API_BASE_URL)
-    console.log('Full URL:', `${API_BASE_URL}${config.url}`)
+    // console.log('API Request:', config.method?.toUpperCase(), config.url, config.data)
+    // console.log('API Base URL:', API_BASE_URL)
+    // console.log('Full URL:', `${API_BASE_URL}${config.url}`)
     
     // Determine if this is an admin request
     const isAdminRequest = config.url?.includes('/admin/') || 
@@ -47,8 +47,8 @@ api.interceptors.request.use(
       token = localStorage.getItem('admin_access_token') || localStorage.getItem('token')
       if (token) {
         const tokenType = token.includes('.') ? 'JWT format' : 'DRF format'
-        console.log('✅ Using admin Token authentication:', token.substring(0, 8) + '...')
-        console.log('🔍 Token appears to be:', tokenType)
+        // console.log('✅ Using admin Token authentication:', token.substring(0, 8) + '...')
+        // console.log('🔍 Token appears to be:', tokenType)
         
         // CRITICAL: Admin endpoints need DRF tokens
         if (tokenType === 'JWT format') {
@@ -56,7 +56,7 @@ api.interceptors.request.use(
           console.error('❌ Admin endpoints require DRF tokens, not JWT tokens')
         }
       } else {
-        console.log('⚠️ No admin or regular DRF token found for admin request - trying JWT fallback')
+        // console.log('⚠️ No admin or regular DRF token found for admin request - trying JWT fallback')
         token = localStorage.getItem('access_token')
       }
     } else {
@@ -66,9 +66,9 @@ api.interceptors.request.use(
     
     if (token) {
       config.headers.Authorization = `Token ${token}`
-      console.log('✅ Using Token authentication format (v6.0):', token.substring(0, 8) + '...')
+      // console.log('✅ Using Token authentication format (v6.0):', token.substring(0, 8) + '...')
     } else {
-      console.log('⚠️ No authentication token found - request will be anonymous')
+      // console.log('⚠️ No authentication token found - request will be anonymous')
     }
     return config
   },
@@ -80,7 +80,7 @@ api.interceptors.request.use(
 // Response interceptor for error handling
 api.interceptors.response.use(
   (response: AxiosResponse) => {
-    console.log('API Response:', response.status, response.data)
+    // console.log('API Response:', response.status, response.data)
     // Reset refresh attempts on successful response
     refreshAttempts = 0
     return response

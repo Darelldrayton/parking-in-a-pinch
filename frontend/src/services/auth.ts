@@ -72,24 +72,24 @@ export interface TokenRefreshResponse {
 
 class AuthService {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    console.log('AuthService: Attempting login with:', credentials)
+    // console.log('AuthService: Attempting login with:', credentials)
     const response = await api.post('/auth/login/', credentials)
-    console.log('AuthService: Login response status:', response.status)
-    console.log('AuthService: Login response data:', response.data)
+    // console.log('AuthService: Login response status:', response.status)
+    // console.log('AuthService: Login response data:', response.data)
     const data = response.data
     
     // Store tokens and user data
     this.storeAuthData(data)
-    console.log('AuthService: Auth data stored')
+    // console.log('AuthService: Auth data stored')
     
     return data
   }
 
   async signup(data: SignupData): Promise<AuthResponse> {
-    console.log('AuthService: Attempting signup with:', data)
+    // console.log('AuthService: Attempting signup with:', data)
     const response = await api.post('/auth/register/', data)
-    console.log('AuthService: Signup response status:', response.status)
-    console.log('AuthService: Signup response data:', response.data)
+    // console.log('AuthService: Signup response status:', response.status)
+    // console.log('AuthService: Signup response data:', response.data)
     
     const rawData = response.data
     
@@ -101,11 +101,11 @@ class AuthService {
       tokens: rawData.tokens
     }
     
-    console.log('AuthService: Transformed auth data:', authData)
+    // console.log('AuthService: Transformed auth data:', authData)
     
     // Store tokens and user data
     this.storeAuthData(authData)
-    console.log('AuthService: Signup auth data stored')
+    // console.log('AuthService: Signup auth data stored')
     
     return authData
   }
@@ -138,7 +138,7 @@ class AuthService {
 
   async getCurrentUser(): Promise<User> {
     const response = await api.get('/users/me/')
-    console.log('🔍 getCurrentUser API response:', JSON.stringify(response.data, null, 2))
+    // console.log('🔍 getCurrentUser API response:', JSON.stringify(response.data, null, 2))
     return response.data
   }
 
@@ -190,13 +190,13 @@ class AuthService {
         },
       })
       
-      console.log('🔍 Upload response:', JSON.stringify(response.data, null, 2))
+      // console.log('🔍 Upload response:', JSON.stringify(response.data, null, 2))
       
       // Get updated user data
       const updatedUser = await this.getCurrentUser()
       localStorage.setItem('user', JSON.stringify(updatedUser))
       
-      console.log('🔍 Updated user after photo upload:', JSON.stringify(updatedUser, null, 2))
+      // console.log('🔍 Updated user after photo upload:', JSON.stringify(updatedUser, null, 2))
       
       return updatedUser
     } catch (error) {
@@ -229,10 +229,10 @@ class AuthService {
   }
 
   async resetPassword(email: string): Promise<void> {
-    console.log('AuthService: Attempting password reset for:', email)
+    // console.log('AuthService: Attempting password reset for:', email)
     try {
       const response = await api.post('/auth/password/reset/', { email })
-      console.log('AuthService: Password reset response:', response.data)
+      // console.log('AuthService: Password reset response:', response.data)
       return response.data
     } catch (error) {
       console.error('AuthService: Password reset error:', error)

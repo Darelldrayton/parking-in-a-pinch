@@ -32,21 +32,21 @@ class WebSocketService {
   connect(token: string) {
     // Check if WebSocket is disabled (e.g., on admin pages)
     if (typeof window !== 'undefined' && (window as any).disableWebSocket) {
-      console.log('🔒 WebSocket connection disabled');
+      // console.log('🔒 WebSocket connection disabled');
       this.onConnectionStatusChange?.('disconnected');
       return;
     }
 
     // Disable WebSocket on admin pages
     if (typeof window !== 'undefined' && window.location.pathname.includes('/admin')) {
-      console.log('🔒 WebSocket disabled on admin pages');
+      // console.log('🔒 WebSocket disabled on admin pages');
       this.isIntentionallyClosed = true;
       this.onConnectionStatusChange?.('disconnected');
       return;
     }
 
     if (this.ws?.readyState === WebSocket.OPEN) {
-      console.log('WebSocket already connected');
+      // console.log('WebSocket already connected');
       return;
     }
 
@@ -67,7 +67,7 @@ class WebSocketService {
     this.isIntentionallyClosed = false;
     const wsUrl = this.getWebSocketUrl(token);
     
-    console.log('🔌 Connecting to WebSocket:', wsUrl);
+    // console.log('🔌 Connecting to WebSocket:', wsUrl);
     
     try {
       this.ws = new WebSocket(wsUrl);

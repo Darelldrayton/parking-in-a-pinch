@@ -330,16 +330,16 @@ function AppRoutes() {
 }
 
 function App() {
-  console.log('🚀 App component rendering - v2025-01-02-20:42-PST...');
-  console.log('Current path:', window.location.pathname);
-  console.log('🎯 Routes available: /admin/login, /admin/dashboard, /admin/cleanup-listings');
-  console.log('🔄 CACHE CLEARED - NEW BUILD FORCED...');
+  // console.log('🚀 App component rendering - v2025-01-02-20:42-PST...');
+  // console.log('Current path:', window.location.pathname);
+  // console.log('🎯 Routes available: /admin/login, /admin/dashboard, /admin/cleanup-listings');
+  // console.log('🔄 CACHE CLEARED - NEW BUILD FORCED...');
   
   // Completely disable notifications and WebSocket on admin pages
   const isAdminPage = window.location.pathname.includes('/admin');
   
   if (isAdminPage) {
-    console.log('🔒 ADMIN PAGE DETECTED - DISABLING WEBSOCKET AND NOTIFICATIONS');
+    // console.log('🔒 ADMIN PAGE DETECTED - DISABLING WEBSOCKET AND NOTIFICATIONS');
     // Disable WebSocket globally for admin pages
     (window as any).disableWebSocket = true;
   }
