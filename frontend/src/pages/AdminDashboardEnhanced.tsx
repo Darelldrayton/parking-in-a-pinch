@@ -74,95 +74,7 @@ import api, { adminTokenUtils } from '../services/api';
 import PayoutManagement from '../components/admin/PayoutManagement';
 import AdminErrorBoundary from '../components/admin/AdminErrorBoundary';
 import AdminLoadingScreen from '../components/admin/AdminLoadingScreen';
-
-// Career Applications Data
-const sampleJobApplications = [
-  {
-    id: 1,
-    name: 'Sarah Chen',
-    email: 'sarah.chen@email.com',
-    phone: '+1 (555) 123-4567',
-    position: 'Founding Full-Stack Engineer',
-    department: 'Engineering',
-    appliedDate: '2024-01-15',
-    status: 'interview',
-    rating: 4,
-    experience: 'Senior',
-    location: 'New York, NY',
-    linkedin: 'https://linkedin.com/in/sarahchen',
-    portfolio: 'https://sarahchen.dev',
-    coverLetter: 'I am excited about the opportunity to join Parking in a Pinch as a founding engineer. With 6 years of full-stack development experience, I have built scalable web applications using React, Node.js, and Python. I am particularly drawn to your mission of solving urban mobility challenges...',
-    resumeUrl: '/resumes/sarah-chen-resume.pdf'
-  },
-  {
-    id: 2,
-    name: 'Marcus Johnson',
-    email: 'marcus.j@email.com',
-    phone: '+1 (555) 234-5678',
-    position: 'Mobile Developer',
-    department: 'Engineering',
-    appliedDate: '2024-01-12',
-    status: 'reviewing',
-    rating: 5,
-    experience: 'Mid',
-    location: 'New York, NY',
-    linkedin: 'https://linkedin.com/in/marcusjohnson',
-    portfolio: 'https://marcusapps.com',
-    coverLetter: 'As a mobile developer with 4 years of experience building React Native apps, I am thrilled about the opportunity to help create the next generation of parking solutions...',
-    resumeUrl: '/resumes/marcus-johnson-resume.pdf'
-  },
-  {
-    id: 3,
-    name: 'Emily Rodriguez',
-    email: 'emily.rodriguez@email.com',
-    phone: '+1 (555) 345-6789',
-    position: 'UI/UX Designer',
-    department: 'Design',
-    appliedDate: '2024-01-10',
-    status: 'new',
-    rating: 0,
-    experience: 'Mid',
-    location: 'Brooklyn, NY',
-    linkedin: 'https://linkedin.com/in/emilyrodriguez',
-    portfolio: 'https://emilydesigns.com',
-    coverLetter: 'I am passionate about creating intuitive user experiences and would love to contribute to making parking more accessible through great design...',
-    resumeUrl: '/resumes/emily-rodriguez-resume.pdf'
-  },
-  {
-    id: 4,
-    name: 'David Kim',
-    email: 'david.kim@email.com',
-    phone: '+1 (555) 456-7890',
-    position: 'Growth Marketing Manager',
-    department: 'Marketing',
-    appliedDate: '2024-01-08',
-    status: 'hired',
-    rating: 5,
-    experience: 'Senior',
-    location: 'Manhattan, NY',
-    linkedin: 'https://linkedin.com/in/davidkim',
-    portfolio: 'https://davidgrowth.com',
-    coverLetter: 'With 5 years of growth marketing experience at tech startups, I have driven user acquisition and retention strategies that resulted in 300% growth...',
-    resumeUrl: '/resumes/david-kim-resume.pdf'
-  },
-  {
-    id: 5,
-    name: 'Lisa Park',
-    email: 'lisa.park@email.com',
-    phone: '+1 (555) 567-8901',
-    position: 'Customer Success Manager',
-    department: 'Operations',
-    appliedDate: '2024-01-05',
-    status: 'rejected',
-    rating: 2,
-    experience: 'Mid',
-    location: 'Queens, NY',
-    linkedin: 'https://linkedin.com/in/lisapark',
-    portfolio: null,
-    coverLetter: 'I am excited about the opportunity to help customers succeed with Parking in a Pinch. My background in customer support and account management...',
-    resumeUrl: '/resumes/lisa-park-resume.pdf'
-  }
-];
+import { careersService, type JobApplication, type JobApplicationStats } from '../services/careers';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -380,10 +292,13 @@ const AdminDashboardEnhanced: React.FC = () => {
   }>({ open: false, dispute: null, message: '', isInternal: false });
 
   // Career Applications state
-  const [jobApplications, setJobApplications] = useState(sampleJobApplications);
+  const [jobApplications, setJobApplications] = useState<JobApplication[]>([]);
+  const [applicationStats, setApplicationStats] = useState<JobApplicationStats | null>(null);
   const [applicationFilter, setApplicationFilter] = useState('all');
-  const [selectedApplication, setSelectedApplication] = useState<any>(null);
+  const [selectedApplication, setSelectedApplication] = useState<JobApplication | null>(null);
   const [applicationDetailsDialog, setApplicationDetailsDialog] = useState(false);
+  const [applicationsLoading, setApplicationsLoading] = useState(false);
+  const [selectedApplicationIds, setSelectedApplicationIds] = useState<(string | number)[]>([]);
 
   // Track unavailable features for user feedback
   
@@ -391,6 +306,116 @@ const AdminDashboardEnhanced: React.FC = () => {
   const hasLoadedDataRef = useRef(false);
   const hasInitializedRef = useRef(false);
   const [hasInitialized, setHasInitialized] = useState(false);
+
+  // Career Applications Functions
+  const fetchJobApplications = useCallback(async () => {
+    if (applicationsLoading) return;
+    
+    setApplicationsLoading(true);
+    try {
+      const [applications, stats] = await Promise.all([
+        careersService.getAllApplications(),
+        careersService.getApplicationStats()
+      ]);
+      
+      setJobApplications(applications);
+      setApplicationStats(stats);
+    } catch (error) {
+      console.error('Error fetching job applications:', error);
+      toast.error('Failed to load job applications');
+    } finally {
+      setApplicationsLoading(false);
+    }
+  }, [applicationsLoading]);
+
+  const handleStatusChange = async (applicationId: string | number, newStatus: JobApplication['status']) => {
+    try {
+      await careersService.updateApplicationStatus(applicationId, newStatus);
+      
+      // Update local state
+      setJobApplications(prev => 
+        prev.map(app => 
+          app.id === applicationId ? { ...app, status: newStatus } : app
+        )
+      );
+      
+      // Refresh stats
+      const newStats = await careersService.getApplicationStats();
+      setApplicationStats(newStats);
+      
+      toast.success('Application status updated successfully');
+    } catch (error) {
+      console.error('Error updating application status:', error);
+      toast.error('Failed to update application status');
+    }
+  };
+
+  const handleRatingChange = async (applicationId: string | number, newRating: number) => {
+    try {
+      await careersService.updateApplicationRating(applicationId, newRating);
+      
+      // Update local state
+      setJobApplications(prev => 
+        prev.map(app => 
+          app.id === applicationId ? { ...app, rating: newRating } : app
+        )
+      );
+      
+      toast.success('Application rating updated successfully');
+    } catch (error) {
+      console.error('Error updating application rating:', error);
+      toast.error('Failed to update application rating');
+    }
+  };
+
+  const handleBulkStatusChange = async (newStatus: JobApplication['status']) => {
+    if (selectedApplicationIds.length === 0) return;
+    
+    try {
+      await careersService.bulkUpdateStatus(selectedApplicationIds, newStatus);
+      
+      // Update local state
+      setJobApplications(prev => 
+        prev.map(app => 
+          selectedApplicationIds.includes(app.id) 
+            ? { ...app, status: newStatus }
+            : app
+        )
+      );
+      
+      // Refresh stats
+      const newStats = await careersService.getApplicationStats();
+      setApplicationStats(newStats);
+      
+      // Clear selection
+      setSelectedApplicationIds([]);
+      
+      toast.success(`${selectedApplicationIds.length} applications updated successfully`);
+    } catch (error) {
+      console.error('Error bulk updating applications:', error);
+      toast.error('Failed to update applications');
+    }
+  };
+
+  const handleExportApplications = async () => {
+    try {
+      const csvContent = await careersService.exportApplicationsToCSV();
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `job_applications_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.success('Applications exported successfully');
+    } catch (error) {
+      console.error('Error exporting applications:', error);
+      toast.error('Failed to export applications');
+    }
+  };
 
   // Check admin auth from localStorage
   useEffect(() => {
@@ -487,12 +512,13 @@ const AdminDashboardEnhanced: React.FC = () => {
         fetchVerificationRequests(),
         fetchRefundRequests(),
         fetchListings(),
-        fetchDisputes()
+        fetchDisputes(),
+        fetchJobApplications()
       ]);
       
       // Log which APIs failed but don't block the dashboard
       results.forEach((result, index) => {
-        const apiNames = ['Stats', 'Verification Requests', 'Refund Requests', 'Listings', 'Disputes'];
+        const apiNames = ['Stats', 'Verification Requests', 'Refund Requests', 'Listings', 'Disputes', 'Job Applications'];
         if (result.status === 'rejected') {
           console.warn(`❌ ${apiNames[index]} API failed:`, result.reason);
         } else {
@@ -537,6 +563,9 @@ const AdminDashboardEnhanced: React.FC = () => {
         break;
       case 6: // Disputes
         if (disputes.length === 0) fetchDisputes();
+        break;
+      case 7: // Career Applications
+        if (jobApplications.length === 0) fetchJobApplications();
         break;
     }
   };
@@ -1744,7 +1773,7 @@ const AdminDashboardEnhanced: React.FC = () => {
               />
               <Tab 
                 label={
-                  <Badge badgeContent={jobApplications.filter(app => app.status === 'new').length} color="primary">
+                  <Badge badgeContent={applicationStats?.new || 0} color="primary">
                     Career Applications
                   </Badge>
                 }
@@ -2864,250 +2893,328 @@ const AdminDashboardEnhanced: React.FC = () => {
           <TabPanel value={tabValue} index={7}>
             <Typography variant="h5" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Work />
-              Career Applications ({jobApplications.length} total)
+              Career Applications ({applicationStats?.total || 0} total)
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
               Review and manage job applications from the careers page.
             </Typography>
 
-            {/* Filter Controls */}
-            <Card sx={{ mb: 3 }}>
-              <CardContent>
-                <Stack direction="row" spacing={2} alignItems="center">
-                  <Typography variant="h6">Filter Applications:</Typography>
-                  <FormControl size="small" sx={{ minWidth: 120 }}>
-                    <Select
-                      value={applicationFilter}
-                      onChange={(e) => setApplicationFilter(e.target.value)}
-                    >
-                      <MenuItem value="all">All ({jobApplications.length})</MenuItem>
-                      <MenuItem value="new">New ({jobApplications.filter(app => app.status === 'new').length})</MenuItem>
-                      <MenuItem value="reviewing">Reviewing ({jobApplications.filter(app => app.status === 'reviewing').length})</MenuItem>
-                      <MenuItem value="interview">Interview ({jobApplications.filter(app => app.status === 'interview').length})</MenuItem>
-                      <MenuItem value="hired">Hired ({jobApplications.filter(app => app.status === 'hired').length})</MenuItem>
-                      <MenuItem value="rejected">Rejected ({jobApplications.filter(app => app.status === 'rejected').length})</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Stack>
-              </CardContent>
-            </Card>
+            {applicationsLoading ? (
+              <AdminLoadingScreen message="Loading job applications..." variant="compact" />
+            ) : (
+              <>
+                {/* Filter Controls */}
+                <Card sx={{ mb: 3 }}>
+                  <CardContent>
+                    <Stack direction="row" spacing={2} alignItems="center">
+                      <Typography variant="h6">Filter Applications:</Typography>
+                      <FormControl size="small" sx={{ minWidth: 120 }}>
+                        <Select
+                          value={applicationFilter}
+                          onChange={(e) => setApplicationFilter(e.target.value)}
+                        >
+                          <MenuItem value="all">All ({applicationStats?.total || 0})</MenuItem>
+                          <MenuItem value="new">New ({applicationStats?.new || 0})</MenuItem>
+                          <MenuItem value="reviewing">Reviewing ({applicationStats?.reviewing || 0})</MenuItem>
+                          <MenuItem value="interview">Interview ({applicationStats?.interview || 0})</MenuItem>
+                          <MenuItem value="hired">Hired ({applicationStats?.hired || 0})</MenuItem>
+                          <MenuItem value="rejected">Rejected ({applicationStats?.rejected || 0})</MenuItem>
+                        </Select>
+                      </FormControl>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        startIcon={<Refresh />}
+                        onClick={fetchJobApplications}
+                        disabled={applicationsLoading}
+                      >
+                        Refresh
+                      </Button>
+                    </Stack>
+                  </CardContent>
+                </Card>
 
-            {/* Applications Statistics */}
-            <Grid container spacing={3} sx={{ mb: 3 }}>
-              <Grid item xs={12} md={2.4}>
-                <Card sx={{ textAlign: 'center', p: 2 }}>
-                  <Typography variant="h4" color="primary.main">
-                    {jobApplications.filter(app => app.status === 'new').length}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    New Applications
-                  </Typography>
-                </Card>
-              </Grid>
-              <Grid item xs={12} md={2.4}>
-                <Card sx={{ textAlign: 'center', p: 2 }}>
-                  <Typography variant="h4" color="warning.main">
-                    {jobApplications.filter(app => app.status === 'reviewing').length}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Under Review
-                  </Typography>
-                </Card>
-              </Grid>
-              <Grid item xs={12} md={2.4}>
-                <Card sx={{ textAlign: 'center', p: 2 }}>
-                  <Typography variant="h4" color="info.main">
-                    {jobApplications.filter(app => app.status === 'interview').length}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Interview Stage
-                  </Typography>
-                </Card>
-              </Grid>
-              <Grid item xs={12} md={2.4}>
-                <Card sx={{ textAlign: 'center', p: 2 }}>
-                  <Typography variant="h4" color="success.main">
-                    {jobApplications.filter(app => app.status === 'hired').length}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Hired
-                  </Typography>
-                </Card>
-              </Grid>
-              <Grid item xs={12} md={2.4}>
-                <Card sx={{ textAlign: 'center', p: 2 }}>
-                  <Typography variant="h4" color="error.main">
-                    {jobApplications.filter(app => app.status === 'rejected').length}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Rejected
-                  </Typography>
-                </Card>
-              </Grid>
-            </Grid>
+                {/* Applications Statistics */}
+                <Grid container spacing={3} sx={{ mb: 3 }}>
+                  <Grid item xs={12} md={2.4}>
+                    <Card sx={{ textAlign: 'center', p: 2 }}>
+                      <Typography variant="h4" color="primary.main">
+                        {applicationStats?.new || 0}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        New Applications
+                      </Typography>
+                    </Card>
+                  </Grid>
+                  <Grid item xs={12} md={2.4}>
+                    <Card sx={{ textAlign: 'center', p: 2 }}>
+                      <Typography variant="h4" color="warning.main">
+                        {applicationStats?.reviewing || 0}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Under Review
+                      </Typography>
+                    </Card>
+                  </Grid>
+                  <Grid item xs={12} md={2.4}>
+                    <Card sx={{ textAlign: 'center', p: 2 }}>
+                      <Typography variant="h4" color="info.main">
+                        {applicationStats?.interview || 0}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Interview Stage
+                      </Typography>
+                    </Card>
+                  </Grid>
+                  <Grid item xs={12} md={2.4}>
+                    <Card sx={{ textAlign: 'center', p: 2 }}>
+                      <Typography variant="h4" color="success.main">
+                        {applicationStats?.hired || 0}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Hired
+                      </Typography>
+                    </Card>
+                  </Grid>
+                  <Grid item xs={12} md={2.4}>
+                    <Card sx={{ textAlign: 'center', p: 2 }}>
+                      <Typography variant="h4" color="error.main">
+                        {applicationStats?.rejected || 0}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Rejected
+                      </Typography>
+                    </Card>
+                  </Grid>
+                </Grid>
 
-            {/* Applications Table */}
-            <TableContainer component={Paper} elevation={0}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Applicant</TableCell>
-                    <TableCell>Position</TableCell>
-                    <TableCell>Department</TableCell>
-                    <TableCell>Applied Date</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>Rating</TableCell>
-                    <TableCell>Experience</TableCell>
-                    <TableCell align="center">Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {jobApplications
-                    .filter(app => applicationFilter === 'all' || app.status === applicationFilter)
-                    .map((application) => (
-                      <TableRow key={application.id} hover>
-                        <TableCell>
-                          <Stack direction="row" alignItems="center" spacing={2}>
-                            <Avatar sx={{ bgcolor: 'primary.main' }}>
-                              {application.name.charAt(0)}
-                            </Avatar>
-                            <Box>
-                              <Typography variant="body2" fontWeight="bold">
-                                {application.name}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {application.email}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                                {application.phone}
-                              </Typography>
-                            </Box>
-                          </Stack>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" fontWeight="medium">
-                            {application.position}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={application.department}
-                            size="small"
-                            color={application.department === 'Engineering' ? 'primary' : 
-                                   application.department === 'Design' ? 'secondary' : 
-                                   application.department === 'Marketing' ? 'success' : 'default'}
+                {/* Applications Table */}
+                <TableContainer component={Paper} elevation={0}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell padding="checkbox">
+                          <Checkbox
+                            indeterminate={selectedApplicationIds.length > 0 && selectedApplicationIds.length < jobApplications.length}
+                            checked={jobApplications.length > 0 && selectedApplicationIds.length === jobApplications.length}
+                            onChange={(event) => {
+                              if (event.target.checked) {
+                                setSelectedApplicationIds(jobApplications.map(app => app.id));
+                              } else {
+                                setSelectedApplicationIds([]);
+                              }
+                            }}
                           />
                         </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {format(new Date(application.appliedDate), 'MMM d, yyyy')}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={application.status.charAt(0).toUpperCase() + application.status.slice(1)}
-                            size="small"
-                            color={application.status === 'new' ? 'primary' : 
-                                   application.status === 'reviewing' ? 'warning' : 
-                                   application.status === 'interview' ? 'info' : 
-                                   application.status === 'hired' ? 'success' : 'error'}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Stack direction="row" alignItems="center" spacing={0.5}>
-                            {Array.from({ length: 5 }, (_, i) => (
-                              <IconButton key={i} size="small" disabled>
-                                {i < application.rating ? <Star sx={{ color: 'warning.main', fontSize: 16 }} /> : <StarBorder sx={{ color: 'text.disabled', fontSize: 16 }} />}
-                              </IconButton>
-                            ))}
-                            <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-                              {application.rating > 0 ? `${application.rating}/5` : 'Not rated'}
-                            </Typography>
-                          </Stack>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={application.experience}
-                            size="small"
-                            variant="outlined"
-                            color={application.experience === 'Senior' ? 'success' : 
-                                   application.experience === 'Mid' ? 'primary' : 'default'}
-                          />
-                        </TableCell>
-                        <TableCell align="center">
-                          <Stack direction="row" spacing={1} justifyContent="center">
-                            <Tooltip title="View Details">
-                              <IconButton
-                                size="small"
-                                onClick={() => {
-                                  setSelectedApplication(application);
-                                  setApplicationDetailsDialog(true);
-                                }}
-                              >
-                                <Visibility />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Download Resume">
-                              <IconButton
-                                size="small"
-                                onClick={() => window.open(application.resumeUrl, '_blank')}
-                              >
-                                <GetApp />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Send Email">
-                              <IconButton
-                                size="small"
-                                onClick={() => window.open(`mailto:${application.email}`, '_blank')}
-                              >
-                                <Email />
-                              </IconButton>
-                            </Tooltip>
-                          </Stack>
-                        </TableCell>
+                        <TableCell>Applicant</TableCell>
+                        <TableCell>Position</TableCell>
+                        <TableCell>Department</TableCell>
+                        <TableCell>Applied Date</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell>Rating</TableCell>
+                        <TableCell>Experience</TableCell>
+                        <TableCell align="center">Actions</TableCell>
                       </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                    </TableHead>
+                    <TableBody>
+                      {jobApplications
+                        .filter(app => applicationFilter === 'all' || app.status === applicationFilter)
+                        .map((application) => (
+                          <TableRow key={application.id} hover>
+                            <TableCell padding="checkbox">
+                              <Checkbox
+                                checked={selectedApplicationIds.includes(application.id)}
+                                onChange={(event) => {
+                                  if (event.target.checked) {
+                                    setSelectedApplicationIds([...selectedApplicationIds, application.id]);
+                                  } else {
+                                    setSelectedApplicationIds(selectedApplicationIds.filter(id => id !== application.id));
+                                  }
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Stack direction="row" alignItems="center" spacing={2}>
+                                <Avatar sx={{ bgcolor: 'primary.main' }}>
+                                  {application.name.charAt(0)}
+                                </Avatar>
+                                <Box>
+                                  <Typography variant="body2" fontWeight="bold">
+                                    {application.name}
+                                  </Typography>
+                                  <Typography variant="caption" color="text.secondary">
+                                    {application.email}
+                                  </Typography>
+                                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                                    {application.phone}
+                                  </Typography>
+                                </Box>
+                              </Stack>
+                            </TableCell>
+                            <TableCell>
+                              <Typography variant="body2" fontWeight="medium">
+                                {application.position}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                label={application.department}
+                                size="small"
+                                color={application.department === 'Engineering' ? 'primary' : 
+                                       application.department === 'Design' ? 'secondary' : 
+                                       application.department === 'Marketing' ? 'success' : 'default'}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Typography variant="body2">
+                                {format(new Date(application.appliedDate), 'MMM d, yyyy')}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <FormControl size="small" sx={{ minWidth: 120 }}>
+                                <Select
+                                  value={application.status}
+                                  onChange={(e) => handleStatusChange(application.id, e.target.value as JobApplication['status'])}
+                                  size="small"
+                                >
+                                  <MenuItem value="new">New</MenuItem>
+                                  <MenuItem value="reviewing">Reviewing</MenuItem>
+                                  <MenuItem value="interview">Interview</MenuItem>
+                                  <MenuItem value="hired">Hired</MenuItem>
+                                  <MenuItem value="rejected">Rejected</MenuItem>
+                                </Select>
+                              </FormControl>
+                            </TableCell>
+                            <TableCell>
+                              <Stack direction="row" alignItems="center" spacing={0.5}>
+                                {Array.from({ length: 5 }, (_, i) => (
+                                  <IconButton 
+                                    key={i} 
+                                    size="small" 
+                                    onClick={() => handleRatingChange(application.id, i + 1)}
+                                  >
+                                    {i < application.rating ? <Star sx={{ color: 'warning.main', fontSize: 16 }} /> : <StarBorder sx={{ color: 'text.disabled', fontSize: 16 }} />}
+                                  </IconButton>
+                                ))}
+                                <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                                  {application.rating > 0 ? `${application.rating}/5` : 'Not rated'}
+                                </Typography>
+                              </Stack>
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                label={application.experience}
+                                size="small"
+                                variant="outlined"
+                                color={application.experience === 'Senior' ? 'success' : 
+                                       application.experience === 'Mid' ? 'primary' : 'default'}
+                              />
+                            </TableCell>
+                            <TableCell align="center">
+                              <Stack direction="row" spacing={1} justifyContent="center">
+                                <Tooltip title="View Details">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => {
+                                      setSelectedApplication(application);
+                                      setApplicationDetailsDialog(true);
+                                    }}
+                                  >
+                                    <Visibility />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Download Resume">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => window.open(application.resumeUrl, '_blank')}
+                                  >
+                                    <GetApp />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Send Email">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => window.open(`mailto:${application.email}`, '_blank')}
+                                  >
+                                    <Email />
+                                  </IconButton>
+                                </Tooltip>
+                              </Stack>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
 
-            {/* Quick Actions */}
-            <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
-              <Button
-                variant="outlined"
-                startIcon={<GetApp />}
-                onClick={() => {
-                  const csvContent = "data:text/csv;charset=utf-8," + 
-                    "Name,Email,Phone,Position,Department,Applied Date,Status,Experience,Location\n" +
-                    jobApplications.map(app => 
-                      `${app.name},${app.email},${app.phone},${app.position},${app.department},${app.appliedDate},${app.status},${app.experience},${app.location}`
-                    ).join("\n");
-                  const encodedUri = encodeURI(csvContent);
-                  const link = document.createElement("a");
-                  link.setAttribute("href", encodedUri);
-                  link.setAttribute("download", "job_applications.csv");
-                  document.body.appendChild(link);
-                  link.click();
-                  document.body.removeChild(link);
-                }}
-              >
-                Export All Applications
-              </Button>
-              <Button
-                variant="outlined"
-                startIcon={<Email />}
-                onClick={() => {
-                  const newApplicants = jobApplications.filter(app => app.status === 'new');
-                  if (newApplicants.length > 0) {
-                    const emailList = newApplicants.map(app => app.email).join(';');
-                    window.open(`mailto:${emailList}?subject=Thank you for your application&body=Thank you for your interest in joining Parking in a Pinch...`, '_blank');
-                  }
-                }}
-                disabled={jobApplications.filter(app => app.status === 'new').length === 0}
-              >
-                Email New Applicants ({jobApplications.filter(app => app.status === 'new').length})
-              </Button>
-            </Stack>
+                {/* Bulk Actions */}
+                {selectedApplicationIds.length > 0 && (
+                  <Card sx={{ mt: 2 }}>
+                    <CardContent>
+                      <Stack direction="row" spacing={2} alignItems="center">
+                        <Typography variant="h6">
+                          {selectedApplicationIds.length} application{selectedApplicationIds.length > 1 ? 's' : ''} selected
+                        </Typography>
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={() => handleBulkStatusChange('reviewing')}
+                        >
+                          Mark as Reviewing
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={() => handleBulkStatusChange('interview')}
+                        >
+                          Move to Interview
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={() => handleBulkStatusChange('rejected')}
+                        >
+                          Reject
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={() => setSelectedApplicationIds([])}
+                        >
+                          Clear Selection
+                        </Button>
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Quick Actions */}
+                <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+                  <Button
+                    variant="outlined"
+                    startIcon={<GetApp />}
+                    onClick={handleExportApplications}
+                    disabled={applicationsLoading}
+                  >
+                    Export All Applications
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    startIcon={<Email />}
+                    onClick={() => {
+                      const newApplicants = jobApplications.filter(app => app.status === 'new');
+                      if (newApplicants.length > 0) {
+                        const emailList = newApplicants.map(app => app.email).join(';');
+                        window.open(`mailto:${emailList}?subject=Thank you for your application&body=Thank you for your interest in joining Parking in a Pinch...`, '_blank');
+                      }
+                    }}
+                    disabled={applicationStats?.new === 0}
+                  >
+                    Email New Applicants ({applicationStats?.new || 0})
+                  </Button>
+                </Stack>
+              </>
+            )}
           </TabPanel>
 
         </Card>
@@ -3161,19 +3268,37 @@ const AdminDashboardEnhanced: React.FC = () => {
                 </Grid>
                 <Grid item xs={12}>
                   <Typography variant="subtitle2" color="text.secondary">Status</Typography>
-                  <Chip
-                    label={selectedApplication.status.charAt(0).toUpperCase() + selectedApplication.status.slice(1)}
-                    color={selectedApplication.status === 'new' ? 'primary' : 
-                           selectedApplication.status === 'reviewing' ? 'warning' : 
-                           selectedApplication.status === 'interview' ? 'info' : 
-                           selectedApplication.status === 'hired' ? 'success' : 'error'}
-                  />
+                  <FormControl size="small" sx={{ minWidth: 120, mt: 1 }}>
+                    <Select
+                      value={selectedApplication.status}
+                      onChange={(e) => {
+                        const newStatus = e.target.value as JobApplication['status'];
+                        handleStatusChange(selectedApplication.id, newStatus);
+                        setSelectedApplication({ ...selectedApplication, status: newStatus });
+                      }}
+                      size="small"
+                    >
+                      <MenuItem value="new">New</MenuItem>
+                      <MenuItem value="reviewing">Reviewing</MenuItem>
+                      <MenuItem value="interview">Interview</MenuItem>
+                      <MenuItem value="hired">Hired</MenuItem>
+                      <MenuItem value="rejected">Rejected</MenuItem>
+                    </Select>
+                  </FormControl>
                 </Grid>
                 <Grid item xs={12}>
                   <Typography variant="subtitle2" color="text.secondary" gutterBottom>Rating</Typography>
                   <Stack direction="row" alignItems="center" spacing={1}>
                     {Array.from({ length: 5 }, (_, i) => (
-                      <IconButton key={i} size="small" disabled>
+                      <IconButton 
+                        key={i} 
+                        size="small" 
+                        onClick={() => {
+                          const newRating = i + 1;
+                          handleRatingChange(selectedApplication.id, newRating);
+                          setSelectedApplication({ ...selectedApplication, rating: newRating });
+                        }}
+                      >
                         {i < selectedApplication.rating ? <Star sx={{ color: 'warning.main' }} /> : <StarBorder sx={{ color: 'text.disabled' }} />}
                       </IconButton>
                     ))}
@@ -3184,7 +3309,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                 </Grid>
                 <Grid item xs={12}>
                   <Typography variant="subtitle2" color="text.secondary" gutterBottom>Cover Letter</Typography>
-                  <Paper sx={{ p: 2, bgcolor: 'grey.50' }}>
+                  <Paper sx={{ p: 2, bgcolor: 'grey.50', maxHeight: 300, overflow: 'auto' }}>
                     <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>
                       {selectedApplication.coverLetter}
                     </Typography>
