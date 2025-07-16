@@ -61,6 +61,7 @@ const HostResources = lazy(() => import('./pages/HostResources'));
 // Admin Pages
 const AdminLogin = lazy(() => import('./pages/AdminLogin'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboardEnhanced').catch(() => import('./pages/AdminDashboardSimple')));
+const AdminJobApplications = lazy(() => import('./pages/AdminJobApplications'));
 // 🚨 FORCE CACHE CLEAR - BUILD v2025-01-02-20:42 PST
 const AdminProtectedRoute = lazy(() => import('./components/auth/AdminProtectedRoute'));
 
@@ -322,6 +323,7 @@ function AppRoutes() {
         {/* Admin Routes */}
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminProtectedRoute redirectTo="/admin/login"><AdminDashboard /></AdminProtectedRoute>} />
+        <Route path="/admin/job-applications" element={<AdminProtectedRoute redirectTo="/admin/login"><AdminJobApplications /></AdminProtectedRoute>} />
         <Route path="/admin/cleanup-listings" element={<AdminProtectedRoute redirectTo="/admin/login"><CleanupListings /></AdminProtectedRoute>} />
         
         {/* Development Helper (only in development) */}
