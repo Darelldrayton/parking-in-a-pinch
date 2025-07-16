@@ -1,11 +1,11 @@
 import { loadStripe } from '@stripe/stripe-js';
 
-// This is a public key, so it's safe to expose
-// Using a test key for development - replace with your actual key from Stripe Dashboard
-const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51RZFGKIn7MlQnCgsh4RzLG68rWHCR3zh08NWEVfvm3kZh8M2i4jOvIOR7tFgMFlbdsBUbFohFqemLZ3k4FnhOhXT00krFrBl5c';
+// Production Stripe configuration - key must be provided via environment variables
+const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 
-if (!stripeKey || stripeKey.includes('pk_test_51...')) {
-  console.warn('⚠️ Stripe publishable key not found in environment variables. Payment functionality will not work properly.');
+if (!stripeKey || stripeKey.includes('YOUR_PRODUCTION_KEY_HERE')) {
+  console.error('🚨 PRODUCTION ERROR: Stripe publishable key not configured. Please add your production Stripe key to environment variables.');
+  console.error('💡 Set VITE_STRIPE_PUBLISHABLE_KEY=pk_live_your_key_here in your .env file');
 }
 
 const stripePromise = loadStripe(stripeKey);

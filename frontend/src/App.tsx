@@ -17,7 +17,7 @@ const Login = lazy(() => import('./pages/Login'));
 const Signup = lazy(() => import('./pages/Signup'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
-const DevHelper = lazy(() => import('./pages/DevHelper'));
+// DevHelper removed for production security
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Listings = lazy(() => import('./pages/Listings'));
@@ -38,9 +38,7 @@ const HostBookings = lazy(() => import('./pages/HostBookings'));
 const RecurringBookings = lazy(() => import('./pages/RecurringBookings'));
 const TermsAndConditions = lazy(() => import('./pages/TermsAndConditions'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
-const PaymentDebug = lazy(() => import('./pages/PaymentDebug'));
-const PaymentTest = lazy(() => import('./pages/PaymentTest'));
-const SystemMonitoring = lazy(() => import('./pages/SystemMonitoring'));
+// Test pages removed for production security
 
 // Footer Pages
 const AboutUs = lazy(() => import('./pages/AboutUs'));
@@ -65,10 +63,8 @@ const AdminJobApplications = lazy(() => import('./pages/AdminJobApplications'));
 // 🚨 FORCE CACHE CLEAR - BUILD v2025-01-02-20:42 PST
 const AdminProtectedRoute = lazy(() => import('./components/auth/AdminProtectedRoute'));
 
-// Test Pages
-const TestDeploy = lazy(() => import('./pages/TestDeploy'));
+// Keep cleanup-listings for admin use only
 const CleanupListings = lazy(() => import('./pages/CleanupListings'));
-const TestUpdate = lazy(() => import('./pages/TestUpdate'));
 
 // 🛑 ROUTING FIXED v10.0: 2024-12-30 20:19 PST - EXPLICIT IMPORT FIX
 
@@ -129,8 +125,6 @@ function AppRoutes() {
         <Route path="/listings" element={<Layout><Listings /></Layout>} />
         <Route path="/listings/:id" element={<Layout><ListingDetail /></Layout>} />
         
-        {/* Test route to debug ruler routes */}
-        <Route path="/test-update" element={<TestUpdate />} />
         
         {/* Auth Routes (redirect to dashboard if already logged in) */}
         <Route 
@@ -326,12 +320,7 @@ function AppRoutes() {
         <Route path="/admin/job-applications" element={<AdminProtectedRoute redirectTo="/admin/login"><AdminJobApplications /></AdminProtectedRoute>} />
         <Route path="/admin/cleanup-listings" element={<AdminProtectedRoute redirectTo="/admin/login"><CleanupListings /></AdminProtectedRoute>} />
         
-        {/* Development Helper (only in development) */}
-        <Route path="/dev-helper" element={<Layout><DevHelper /></Layout>} />
-        <Route path="/payment-debug" element={<Layout><PaymentDebug /></Layout>} />
-        <Route path="/payment-test" element={<Layout><PaymentTest /></Layout>} />
-        <Route path="/system-monitoring" element={<Layout><SystemMonitoring /></Layout>} />
-        <Route path="/test-deploy" element={<TestDeploy />} />
+        {/* Production routes only - test routes removed for security */}
         
         {/* Fallback Route */}
         <Route path="*" element={<Navigate to="/" replace />} />
