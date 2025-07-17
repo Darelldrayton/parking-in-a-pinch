@@ -60,7 +60,7 @@ const Login: React.FC = () => {
 
   const from = location.state?.from?.pathname || '/dashboard';
 
-  // Clear any invalid tokens when landing on login page
+  // Only clear tokens if explicitly navigated to login (not from a protected route redirect)
   React.useEffect(() => {
     // CRITICAL: Don't clear tokens if we just logged in!
     const justLoggedIn = sessionStorage.getItem('just_logged_in');
@@ -69,35 +69,30 @@ const Login: React.FC = () => {
       return;
     }
     
-    console.log('🔄 Login page mounted - checking for invalid tokens');
+    // Only clear tokens if user explicitly came to login (e.g., clicked logout or login button)
+    // Don't clear if redirected here from a protected route
+    const navigationEntries = window.performance.getEntriesByType('navigation');
+    const isDirectNavigation = navigationEntries.length > 0 && 
+                              (navigationEntries[0] as PerformanceNavigationTiming).type === 'navigate';
     
-    // If we're on the login page and didn't just login, clear any existing tokens that might be invalid
-    const currentToken = localStorage.getItem('token');
-    const currentAccessToken = localStorage.getItem('access_token');
-    
-    if (currentToken || currentAccessToken) {
-      console.log('🗑️ Found existing tokens on login page - clearing to start fresh');
+    if (isDirectNavigation || window.location.hash === '#force-clear') {
+      console.log('🔄 Direct navigation to login - clearing tokens');
+      
+      // Clear regular tokens
       localStorage.removeItem('token');
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
       localStorage.removeItem('user');
+      
+      // Clear admin tokens
+      localStorage.removeItem('admin_access_token');
+      localStorage.removeItem('admin_refresh_token');
+      localStorage.removeItem('admin_user');
+      
+      console.log('✅ Tokens cleared for fresh login');
+    } else {
+      console.log('📍 Redirected to login - keeping tokens for now');
     }
-    
-    // Clear admin tokens too (but only if we didn't just login)
-    const adminKeysToRemove = [
-      'admin_access_token',
-      'admin_refresh_token', 
-      'admin_user'
-    ];
-    
-    adminKeysToRemove.forEach(key => {
-      if (localStorage.getItem(key)) {
-        console.log(`🗑️ Removing admin token: ${key}`);
-        localStorage.removeItem(key);
-      }
-    });
-    
-    console.log('✅ All tokens cleared for fresh login');
   }, []);
 
   const {

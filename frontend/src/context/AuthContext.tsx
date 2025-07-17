@@ -94,19 +94,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // For other errors (network, 500, etc.), keep the stored credentials
         }
       } else {
-        // Clean up invalid states where we have token but no user
-        if (storedToken && !storedUser) {
-          console.log('⚠️ AuthContext: Found token without user - clearing invalid state')
-          authService.clearAuthData()
-          setToken(null)
-          setUser(null)
-        } else if (!storedToken && storedUser) {
-          console.log('⚠️ AuthContext: Found user without token - clearing invalid state')
-          localStorage.removeItem('user')
-          setUser(null)
-        } else {
-          console.log('🔍 AuthContext: No stored credentials found')
-        }
+        console.log('🔍 AuthContext: No valid credentials found')
+        // Don't aggressively clear - let the user try to login
       }
       setIsLoading(false)
     }
@@ -251,7 +240,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Force a complete page reload to clear any cached state
       console.log('🔄 AuthContext: Forcing page reload to clear cached state')
-      window.location.href = '/login'
+      // Add hash to force token clearing on login page
+      window.location.href = '/login#force-clear'
     }
   }
 

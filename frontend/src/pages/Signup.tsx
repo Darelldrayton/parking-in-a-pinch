@@ -97,28 +97,11 @@ const Signup: React.FC = () => {
 
   const defaultUserType = searchParams.get('type') === 'host' ? 'host' : 'seeker';
 
-  // Clear any invalid tokens when landing on signup page
+  // Don't clear tokens on signup page - let user stay logged in if they are
   React.useEffect(() => {
-    // Don't clear if we just signed up
-    const justLoggedIn = sessionStorage.getItem('just_logged_in');
-    if (justLoggedIn) {
-      console.log('🛑 Signup page mounted but user just signed up - NOT clearing tokens');
-      return;
-    }
-    
-    // Clear any existing tokens for fresh signup
-    const hasTokens = localStorage.getItem('token') || localStorage.getItem('access_token');
-    if (hasTokens) {
-      console.log('🗑️ Clearing existing tokens on signup page');
-      localStorage.removeItem('token');
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      localStorage.removeItem('user');
-      // Also clear admin tokens
-      localStorage.removeItem('admin_access_token');
-      localStorage.removeItem('admin_refresh_token');
-      localStorage.removeItem('admin_user');
-    }
+    console.log('📝 Signup page mounted');
+    // We don't clear tokens here anymore - if user is logged in and wants to create
+    // another account, they should explicitly log out first
   }, []);
 
   const {
