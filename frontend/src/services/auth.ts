@@ -300,9 +300,85 @@ class AuthService {
   }
 
   clearAuthData(): void {
+    // Clear authentication tokens
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
     localStorage.removeItem('user')
+    
+    // SECURITY FIX: Clear all user-specific cached data to prevent data leakage
+    const userDataKeys = [
+      'user_preferences',
+      'draft_listings', 
+      'booking_drafts',
+      'listings_cache',
+      'bookings_cache',
+      'user_profile_cache',
+      'search_cache',
+      'messages_cache',
+      'parking_performance_metrics',
+      'cachedUnreadCount',
+      'parking_app_backup', // Clear all backups containing user data
+      'user_search_history',
+      'user_favorites',
+      'user_settings'
+    ]
+    
+    userDataKeys.forEach(key => {
+      localStorage.removeItem(key)
+    })
+    
+    // Clear any cache keys that might contain user data (but not admin data)
+    Object.keys(localStorage).forEach(key => {
+      if (!key.startsWith('admin_') && (key.includes('cache') || key.includes('draft') || key.includes('user_'))) {
+        localStorage.removeItem(key)
+      }
+    })
+    
+    console.log('🔐 All user data cleared from localStorage for security')
+  }
+
+  // SECURITY FIX: Dedicated admin logout function
+  clearAdminAuthData(): void {
+    // Clear admin authentication tokens
+    localStorage.removeItem('admin_access_token')
+    localStorage.removeItem('admin_refresh_token')
+    localStorage.removeItem('admin_user')
+    
+    // Clear admin-specific cached data to prevent data leakage between admin users
+    const adminDataKeys = [
+      'admin_preferences',
+      'admin_cache',
+      'admin_debug_logs',
+      'admin_login_debug_logs',
+      'admin_error_logs',
+      'admin_dashboard_cache',
+      'admin_user_cache',
+      'admin_booking_cache',
+      'admin_listing_cache',
+      'admin_settings',
+      'admin_backup',
+      'admin_session_data'
+    ]
+    
+    adminDataKeys.forEach(key => {
+      localStorage.removeItem(key)
+    })
+    
+    // Clear any admin-specific cache keys
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('admin_') && (key.includes('cache') || key.includes('debug') || key.includes('log'))) {
+        localStorage.removeItem(key)
+      }
+    })
+    
+    // Clear session storage admin data
+    Object.keys(sessionStorage).forEach(key => {
+      if (key.startsWith('admin_')) {
+        sessionStorage.removeItem(key)
+      }
+    })
+    
+    console.log('🔐 All admin data cleared from localStorage for security')
   }
 }
 

@@ -42,10 +42,17 @@ const AdminDashboardSimple: React.FC = () => {
   }, []);
 
   const handleLogout = () => {
-    console.log('🔒 Admin logout requested');
-    localStorage.removeItem('admin_access_token');
-    localStorage.removeItem('admin_refresh_token');
-    localStorage.removeItem('admin_user');
+    console.log('🔒 Admin logout requested - clearing all admin data');
+    
+    // SECURITY FIX: Use comprehensive admin logout
+    import('../services/auth').then(({ default: authService }) => {
+      authService.clearAdminAuthData();
+    });
+    
+    // Clear API authorization header
+    delete api.defaults.headers.common['Authorization'];
+    
+    // Navigate to admin login
     window.location.href = '/admin/login';
   };
 

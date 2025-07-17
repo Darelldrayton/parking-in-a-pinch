@@ -212,10 +212,17 @@ export default function AdminDashboard() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('admin_access_token');
-    localStorage.removeItem('admin_refresh_token');
-    localStorage.removeItem('admin_user');
+    console.log('🔒 Admin logout requested - clearing all admin data');
+    
+    // SECURITY FIX: Use comprehensive admin logout
+    import('../services/auth').then(({ default: authService }) => {
+      authService.clearAdminAuthData();
+    });
+    
+    // Clear API authorization header
     delete api.defaults.headers.common['Authorization'];
+    
+    // Navigate to admin login
     navigate('/admin/login');
   };
 
