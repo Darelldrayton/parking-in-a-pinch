@@ -103,10 +103,16 @@ api.interceptors.response.use(
         return Promise.reject(error)
       }
       
-      // CRITICAL FIX: Disable JWT refresh for admin routes to prevent infinite loops
-      // BUT allow login requests to proceed
-      if (currentPath.includes('/admin') && !originalRequest.url?.includes('/login')) {
-        console.warn('🔒 Admin route detected - clearing tokens and redirecting to login')
+      // CRITICAL FIX: Only redirect to admin login if the REQUEST was for admin endpoints
+      // Check the request URL, not the current page path
+      const isAdminApiRequest = originalRequest.url?.includes('/admin/') || 
+                               originalRequest.url?.includes('/users/admin/') ||
+                               originalRequest.url?.includes('/payments/admin/') ||
+                               originalRequest.url?.includes('/listings/admin/') ||
+                               originalRequest.url?.includes('/disputes/admin/')
+      
+      if (isAdminApiRequest && !originalRequest.url?.includes('/login')) {
+        console.warn('🔒 Admin API request failed - clearing admin tokens and redirecting to admin login')
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')
         localStorage.removeItem('admin_access_token')
@@ -204,9 +210,26 @@ api.interceptors.response.use(
         }
       } else {
         // Handle regular user token refresh
-        try {
-          const refreshToken = localStorage.getItem('refresh_token')
-          if (refreshToken) {
+        const refreshToken = localStorage.getItem('refresh_token')
+        const drfToken = localStorage.getItem('token')
+        
+        // If we have a DRF token (no refresh mechanism), just redirect to login
+        if (drfToken && !refreshToken) {
+          console.log('🔑 DRF token expired - redirecting to login')
+          localStorage.removeItem('token')
+          localStorage.removeItem('access_token')
+          localStorage.removeItem('user')
+          
+          // Don't redirect if we're in the middle of login process
+          if (!sessionStorage.getItem('just_logged_in')) {
+            window.location.href = '/login'
+          }
+          return Promise.reject(error)
+        }
+        
+        // Try JWT refresh if we have a refresh token
+        if (refreshToken) {
+          try {
             const response = await axios.post(`${API_BASE_URL}/auth/token/refresh/`, {
               refresh: refreshToken
             })
@@ -218,14 +241,20 @@ api.interceptors.response.use(
             // Retry original request with new token - USE TOKEN FORMAT NOT BEARER
             originalRequest.headers.Authorization = `Token ${access}`
             return api(originalRequest)
+          } catch (refreshError) {
+            // Refresh failed, logout user
+            console.log('🔒 Token refresh failed - clearing credentials')
+            localStorage.removeItem('access_token')
+            localStorage.removeItem('refresh_token')
+            localStorage.removeItem('token')
+            localStorage.removeItem('user')
+            
+            // Don't redirect if we're in the middle of login process
+            if (!sessionStorage.getItem('just_logged_in')) {
+              window.location.href = '/login'
+            }
+            return Promise.reject(refreshError)
           }
-        } catch (refreshError) {
-          // Refresh failed, logout user
-          localStorage.removeItem('access_token')
-          localStorage.removeItem('refresh_token')
-          localStorage.removeItem('user')
-          window.location.href = '/login'
-          return Promise.reject(refreshError)
         }
       }
     }
