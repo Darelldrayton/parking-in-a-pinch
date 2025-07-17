@@ -300,21 +300,6 @@ const Login: React.FC = () => {
                       </Link>
                     </Typography>
                   </Grid>
-                  <Grid size={12}>
-                    <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 1 }}>
-                      Admin user?{' '}
-                      <Link
-                        to="/admin/login"
-                        style={{
-                          textDecoration: 'none',
-                          fontWeight: 600,
-                          color: '#1976d2'
-                        }}
-                      >
-                        Click here for admin login
-                      </Link>
-                    </Typography>
-                  </Grid>
                 </Grid>
 
 
