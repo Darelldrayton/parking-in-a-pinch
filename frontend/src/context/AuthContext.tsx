@@ -65,9 +65,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return
         }
         
-        // Also skip verification if we're on the login page
-        if (window.location.pathname === '/login') {
-          console.log('📍 AuthContext: On login page - skipping verification')
+        // Also skip verification if we're on auth pages
+        if (window.location.pathname === '/login' || window.location.pathname === '/signup') {
+          console.log('📍 AuthContext: On auth page - skipping verification')
           setIsLoading(false)
           return
         }

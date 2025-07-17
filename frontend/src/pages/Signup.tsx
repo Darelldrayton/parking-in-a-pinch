@@ -114,6 +114,10 @@ const Signup: React.FC = () => {
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
       localStorage.removeItem('user');
+      // Also clear admin tokens
+      localStorage.removeItem('admin_access_token');
+      localStorage.removeItem('admin_refresh_token');
+      localStorage.removeItem('admin_user');
     }
   }, []);
 

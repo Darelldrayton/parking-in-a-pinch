@@ -34,6 +34,18 @@ api.interceptors.request.use(
     // console.log('API Base URL:', API_BASE_URL)
     // console.log('Full URL:', `${API_BASE_URL}${config.url}`)
     
+    // CRITICAL: Don't send tokens for auth endpoints (login, signup, etc.)
+    const isAuthEndpoint = config.url?.includes('/auth/') && (
+                          config.url?.includes('/login') || 
+                          config.url?.includes('/register') ||
+                          config.url?.includes('/signup') ||
+                          config.url?.includes('auth-token'))
+    
+    if (isAuthEndpoint) {
+      console.log('🔓 Auth endpoint detected - not sending token')
+      return config
+    }
+    
     // Determine if this is an admin request
     const isAdminRequest = config.url?.includes('/admin/') || 
                           config.url?.includes('/users/admin/') ||
