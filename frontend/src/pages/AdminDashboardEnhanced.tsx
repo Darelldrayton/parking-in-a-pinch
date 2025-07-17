@@ -315,19 +315,32 @@ const AdminDashboardEnhanced: React.FC = () => {
     console.log('🔍 AdminDashboard: Starting to fetch job applications');
     setApplicationsLoading(true);
     try {
-      const [applications, stats] = await Promise.all([
-        careersService.getAllApplications(),
-        careersService.getApplicationStats()
-      ]);
-      
+      // Always fetch applications, but make stats optional
+      const applications = await careersService.getAllApplications();
       console.log('🔍 AdminDashboard: Successfully loaded', applications.length, 'applications');
-      console.log('🔍 AdminDashboard: Application stats:', stats);
-      
       setJobApplications(applications);
-      setApplicationStats(stats);
+      
+      // Try to fetch stats, but don't fail if it doesn't work
+      try {
+        const stats = await careersService.getApplicationStats();
+        console.log('🔍 AdminDashboard: Application stats:', stats);
+        setApplicationStats(stats);
+      } catch (statsError) {
+        console.warn('⚠️ AdminDashboard: Stats endpoint not available, using default stats');
+        // Set default stats if endpoint doesn't exist
+        setApplicationStats({
+          total: applications.length,
+          new: applications.filter(app => app.status === 'new').length,
+          reviewing: applications.filter(app => app.status === 'reviewing').length,
+          interview: applications.filter(app => app.status === 'interview').length,
+          hired: applications.filter(app => app.status === 'hired').length,
+          rejected: applications.filter(app => app.status === 'rejected').length,
+        });
+      }
     } catch (error) {
       console.error('❌ AdminDashboard: Error fetching job applications:', error);
       toast.error('Failed to load job applications');
+      setJobApplications([]);
     } finally {
       setApplicationsLoading(false);
     }

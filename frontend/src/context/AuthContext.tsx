@@ -79,10 +79,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       console.log('AuthContext: Starting login for:', email)
       
-      // CRITICAL: Clear all existing state first to prevent user data leakage
-      console.log('🔐 AuthContext: Clearing all existing state before login')
-      setUser(null)
-      setToken(null)
+      const response = await authService.login({ email, password })
+      console.log('AuthContext: Login response:', response)
+      
+      // CRITICAL: Clear all existing state ONLY after successful login to prevent user data leakage
+      console.log('🔐 AuthContext: Clearing previous user state after successful login')
       
       // Clear all cached data from previous users
       const cacheKeys = Object.keys(localStorage).filter(key => 
@@ -90,9 +91,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       )
       cacheKeys.forEach(key => localStorage.removeItem(key))
       
-      const response = await authService.login({ email, password })
-      console.log('AuthContext: Login response:', response)
-      
+      // Set new user state
       setUser(response.user)
       setToken(response.access || response.tokens?.access || '')
       
@@ -113,17 +112,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signup = async (data: SignupData) => {
     setIsLoading(true)
     try {
-      // CRITICAL: Clear all existing state first to prevent user data leakage
-      console.log('🔐 AuthContext: Clearing all existing state before signup')
-      setUser(null)
-      setToken(null)
-      
-      // Clear all cached data from previous users
-      const cacheKeys = Object.keys(localStorage).filter(key => 
-        key.includes('cache') || key.includes('draft') || key.includes('user_') || key.includes('booking') || key.includes('listing')
-      )
-      cacheKeys.forEach(key => localStorage.removeItem(key))
-      
       const signupData = {
         email: data.email,
         username: data.email.split('@')[0], // Generate username from email
@@ -138,6 +126,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response = await authService.signup(signupData)
       console.log('AuthContext: Signup response:', response)
       
+      // CRITICAL: Clear all existing state ONLY after successful signup to prevent user data leakage
+      console.log('🔐 AuthContext: Clearing previous user state after successful signup')
+      
+      // Clear all cached data from previous users
+      const cacheKeys = Object.keys(localStorage).filter(key => 
+        key.includes('cache') || key.includes('draft') || key.includes('user_') || key.includes('booking') || key.includes('listing')
+      )
+      cacheKeys.forEach(key => localStorage.removeItem(key))
+      
+      // Set new user state
       setUser(response.user)
       setToken(response.access || response.tokens?.access || '')
       
