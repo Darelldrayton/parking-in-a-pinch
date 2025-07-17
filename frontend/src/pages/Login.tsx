@@ -62,9 +62,16 @@ const Login: React.FC = () => {
 
   // Clear any invalid tokens when landing on login page
   React.useEffect(() => {
+    // CRITICAL: Don't clear tokens if we just logged in!
+    const justLoggedIn = sessionStorage.getItem('just_logged_in');
+    if (justLoggedIn) {
+      console.log('🛑 Login page mounted but user just logged in - NOT clearing tokens');
+      return;
+    }
+    
     console.log('🔄 Login page mounted - checking for invalid tokens');
     
-    // If we're on the login page, clear any existing tokens that might be invalid
+    // If we're on the login page and didn't just login, clear any existing tokens that might be invalid
     const currentToken = localStorage.getItem('token');
     const currentAccessToken = localStorage.getItem('access_token');
     
@@ -74,11 +81,9 @@ const Login: React.FC = () => {
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
       localStorage.removeItem('user');
-      // Also clear the just_logged_in flag
-      sessionStorage.removeItem('just_logged_in');
     }
     
-    // Clear admin tokens too
+    // Clear admin tokens too (but only if we didn't just login)
     const adminKeysToRemove = [
       'admin_access_token',
       'admin_refresh_token', 
@@ -154,10 +159,12 @@ const Login: React.FC = () => {
       // Continue with regular user login
       enqueueSnackbar('Welcome back!', { variant: 'success' });
       
-      // Clear the just_logged_in flag after a small delay to ensure navigation completes
+      // Clear the just_logged_in flag after a longer delay to ensure navigation completes
+      // This is especially important for admin redirects which may take longer
       setTimeout(() => {
+        console.log('🧹 Clearing just_logged_in flag after successful navigation');
         sessionStorage.removeItem('just_logged_in');
-      }, 1000);
+      }, 3000);
       
       navigate(from, { replace: true });
     } catch (error: any) {

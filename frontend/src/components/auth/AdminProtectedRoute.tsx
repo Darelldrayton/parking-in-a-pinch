@@ -21,6 +21,16 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({
       console.log('🔐 Current path:', window.location.pathname);
       console.log('🔐 Timestamp:', new Date().toISOString());
       
+      // Check if user just logged in - give them time to set up
+      const justLoggedIn = sessionStorage.getItem('just_logged_in');
+      if (justLoggedIn) {
+        console.log('⏳ User just logged in - waiting for tokens to settle...');
+        setTimeout(() => {
+          checkAuthentication();
+        }, 500);
+        return;
+      }
+      
       const adminToken = localStorage.getItem('admin_access_token');
       const adminUser = localStorage.getItem('admin_user');
       
