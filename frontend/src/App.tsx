@@ -115,10 +115,10 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
     return <PageLoader />;
   }
   
-  // CRITICAL FIX: Don't redirect from login page if there's any auth issue
-  // Let the login page handle clearing invalid tokens
-  if (window.location.pathname === '/login') {
-    console.log('📍 PublicRoute: On login page - allowing access regardless of auth state');
+  // CRITICAL FIX: Don't redirect from login/signup pages if there's any auth issue
+  // Let these pages handle clearing invalid tokens
+  if (window.location.pathname === '/login' || window.location.pathname === '/signup') {
+    console.log('📍 PublicRoute: On auth page - allowing access regardless of auth state');
     return <>{children}</>;
   }
   

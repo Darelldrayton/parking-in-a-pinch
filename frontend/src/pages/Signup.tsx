@@ -97,6 +97,26 @@ const Signup: React.FC = () => {
 
   const defaultUserType = searchParams.get('type') === 'host' ? 'host' : 'seeker';
 
+  // Clear any invalid tokens when landing on signup page
+  React.useEffect(() => {
+    // Don't clear if we just signed up
+    const justLoggedIn = sessionStorage.getItem('just_logged_in');
+    if (justLoggedIn) {
+      console.log('🛑 Signup page mounted but user just signed up - NOT clearing tokens');
+      return;
+    }
+    
+    // Clear any existing tokens for fresh signup
+    const hasTokens = localStorage.getItem('token') || localStorage.getItem('access_token');
+    if (hasTokens) {
+      console.log('🗑️ Clearing existing tokens on signup page');
+      localStorage.removeItem('token');
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('user');
+    }
+  }, []);
+
   const {
     register,
     control,
@@ -154,7 +174,17 @@ const Signup: React.FC = () => {
         user_type: data.user_type,
         subscribe_to_newsletter: data.subscribeToNewsletter,
       });
+      
+      // Set flag to prevent token clearing during redirect
+      sessionStorage.setItem('just_logged_in', 'true');
+      
       enqueueSnackbar('Account created successfully!', { variant: 'success' });
+      
+      // Clear the flag after navigation completes
+      setTimeout(() => {
+        sessionStorage.removeItem('just_logged_in');
+      }, 3000);
+      
       navigate('/dashboard');
     } catch (error: any) {
       enqueueSnackbar(error.message || 'Signup failed', { variant: 'error' });

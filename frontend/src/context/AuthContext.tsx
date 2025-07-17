@@ -49,6 +49,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         tokenPrefix: storedToken ? storedToken.substring(0, 8) + '...' : 'none'
       })
       
+      // CRITICAL: Both token AND user must exist for valid auth state
       if (storedToken && storedUser) {
         console.log('🔐 AuthContext: Setting stored credentials in state...')
         setToken(storedToken)
@@ -93,7 +94,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // For other errors (network, 500, etc.), keep the stored credentials
         }
       } else {
-        console.log('🔍 AuthContext: No stored credentials found')
+        // Clean up invalid states where we have token but no user
+        if (storedToken && !storedUser) {
+          console.log('⚠️ AuthContext: Found token without user - clearing invalid state')
+          authService.clearAuthData()
+          setToken(null)
+          setUser(null)
+        } else if (!storedToken && storedUser) {
+          console.log('⚠️ AuthContext: Found user without token - clearing invalid state')
+          localStorage.removeItem('user')
+          setUser(null)
+        } else {
+          console.log('🔍 AuthContext: No stored credentials found')
+        }
       }
       setIsLoading(false)
     }
