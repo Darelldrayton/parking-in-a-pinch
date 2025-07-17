@@ -1,7 +1,7 @@
 {
   "buildCommand": "cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/dist", 
-  "installCommand": "echo 'Force rebuild 2025-07-17-16:50 - Token storage fix'",
+  "installCommand": "echo 'Force rebuild 2025-07-17-16:55 - Mixed Content fix'",
   "rewrites": [
     {
       "source": "/api/(.*)",
