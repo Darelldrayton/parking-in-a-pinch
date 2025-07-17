@@ -1,7 +1,7 @@
 {
   "buildCommand": "cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/dist", 
-  "installCommand": "echo 'Force rebuild 2025-07-17-16:30 - Login fix deployed'",
+  "installCommand": "echo 'Force rebuild 2025-07-17-16:35 - API URL fix deployed'",
   "rewrites": [
     {
       "source": "/api/(.*)",
