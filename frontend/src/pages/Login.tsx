@@ -137,6 +137,12 @@ const Login: React.FC = () => {
       
       // Continue with regular user login
       enqueueSnackbar('Welcome back!', { variant: 'success' });
+      
+      // Clear the just_logged_in flag after a small delay to ensure navigation completes
+      setTimeout(() => {
+        sessionStorage.removeItem('just_logged_in');
+      }, 1000);
+      
       navigate(from, { replace: true });
     } catch (error: any) {
       enqueueSnackbar(error.message || 'Login failed', { variant: 'error' });

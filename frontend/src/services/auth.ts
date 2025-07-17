@@ -295,7 +295,13 @@ class AuthService {
   }
 
   getAccessToken(): string | null {
-    return localStorage.getItem('access_token')
+    // CRITICAL: Check both token keys for compatibility
+    const token = localStorage.getItem('token') || localStorage.getItem('access_token')
+    console.log('🔍 getAccessToken:', token ? 'found' : 'missing', { 
+      hasToken: !!localStorage.getItem('token'),
+      hasAccessToken: !!localStorage.getItem('access_token')
+    })
+    return token
   }
 
   getRefreshToken(): string | null {

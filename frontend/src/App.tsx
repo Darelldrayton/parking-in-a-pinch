@@ -87,7 +87,15 @@ const PageLoader = () => (
 
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, token, user } = useAuth();
+  
+  console.log('🔐 ProtectedRoute check:', { 
+    isAuthenticated, 
+    isLoading, 
+    hasToken: !!token,
+    hasUser: !!user,
+    path: window.location.pathname 
+  });
   
   if (isLoading) {
     return <PageLoader />;
@@ -100,8 +108,17 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();
   
+  console.log('🔍 PublicRoute check:', { isAuthenticated, isLoading, path: window.location.pathname });
+  
   if (isLoading) {
     return <PageLoader />;
+  }
+  
+  // CRITICAL FIX: Check if we just logged in to prevent redirect loops
+  const justLoggedIn = sessionStorage.getItem('just_logged_in');
+  if (justLoggedIn) {
+    console.log('⏸️ PublicRoute: Skipping redirect - user just logged in');
+    return <>{children}</>;
   }
   
   return !isAuthenticated ? <>{children}</> : <Navigate to="/dashboard" replace />;
