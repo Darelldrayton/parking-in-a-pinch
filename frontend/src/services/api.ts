@@ -67,9 +67,13 @@ api.interceptors.request.use(
     
     if (token) {
       config.headers.Authorization = `Token ${token}`
-      // console.log('✅ Using Token authentication format (v6.0):', token.substring(0, 8) + '...')
+      console.log('✅ Using Token authentication format:', token.substring(0, 8) + '...')
     } else {
-      // console.log('⚠️ No authentication token found - request will be anonymous')
+      console.log('⚠️ No authentication token found - request will be anonymous')
+      console.log('🔍 Available localStorage tokens:', {
+        token: localStorage.getItem('token') ? 'present' : 'missing',
+        access_token: localStorage.getItem('access_token') ? 'present' : 'missing'
+      })
     }
     return config
   },
@@ -209,6 +213,7 @@ api.interceptors.response.use(
             
             const { access } = response.data
             localStorage.setItem('access_token', access)
+            localStorage.setItem('token', access) // CRITICAL: Store as 'token' for API interceptor
             
             // Retry original request with new token - USE TOKEN FORMAT NOT BEARER
             originalRequest.headers.Authorization = `Token ${access}`

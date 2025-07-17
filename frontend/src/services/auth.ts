@@ -290,6 +290,7 @@ class AuthService {
 
     if (accessToken) {
       localStorage.setItem('access_token', accessToken)
+      localStorage.setItem('token', accessToken) // CRITICAL: Store as 'token' for API interceptor
     }
     if (refreshToken) {
       localStorage.setItem('refresh_token', refreshToken)
@@ -297,6 +298,12 @@ class AuthService {
     if (data.user) {
       localStorage.setItem('user', JSON.stringify(data.user))
     }
+    
+    console.log('🔐 AuthService: Stored tokens:', { 
+      access_token: accessToken ? 'present' : 'missing',
+      token: accessToken ? 'present' : 'missing',
+      refresh_token: refreshToken ? 'present' : 'missing'
+    })
   }
 
   clearAuthData(): void {
