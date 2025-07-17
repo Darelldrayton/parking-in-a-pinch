@@ -39,29 +39,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const initializeAuth = async () => {
+      console.log('🔄 AuthContext: Starting initialization...')
       const storedToken = authService.getAccessToken()
       const storedUser = authService.getStoredUser()
       
+      console.log('🔍 AuthContext: Found credentials:', {
+        hasToken: !!storedToken,
+        hasUser: !!storedUser,
+        tokenPrefix: storedToken ? storedToken.substring(0, 8) + '...' : 'none'
+      })
+      
       if (storedToken && storedUser) {
-        // console.log('🔐 AuthContext: Found stored credentials, initializing...')
+        console.log('🔐 AuthContext: Setting stored credentials in state...')
         setToken(storedToken)
         setUser(storedUser)
+        
+        // CRITICAL FIX: Skip token verification immediately after login
+        // to prevent clearing newly set credentials
+        const justLoggedIn = sessionStorage.getItem('just_logged_in')
+        if (justLoggedIn) {
+          console.log('✅ AuthContext: Skipping verification - user just logged in')
+          sessionStorage.removeItem('just_logged_in')
+          setIsLoading(false)
+          return
+        }
         
         // Try to verify token is still valid by fetching current user
         // But don't clear everything on failure - this could be a network issue
         try {
+          console.log('🔍 AuthContext: Verifying token with backend...')
           const currentUser = await authService.getCurrentUser()
           setUser(currentUser)
           localStorage.setItem('user', JSON.stringify(currentUser))
-          // console.log('✅ AuthContext: Token verified successfully')
+          console.log('✅ AuthContext: Token verified successfully')
         } catch (error) {
-          console.warn('⚠️ AuthContext: Token verification failed, but keeping stored auth (might be network issue)')
+          console.warn('⚠️ AuthContext: Token verification failed:', error)
           // Only clear if it's specifically a 401 Unauthorized error
           if (error.response?.status === 401) {
             console.log('🚪 AuthContext: 401 error - clearing invalid credentials')
             authService.clearAuthData()
             setToken(null)
             setUser(null)
+          } else {
+            console.log('📡 AuthContext: Network/server error - keeping stored credentials')
           }
           // For other errors (network, 500, etc.), keep the stored credentials
         }
@@ -93,7 +113,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Set new user state
       setUser(response.user)
-      setToken(response.access || response.tokens?.access || '')
+      // Handle both DRF token format and JWT format
+      const token = response.token || response.access || response.tokens?.access || ''
+      setToken(token)
+      console.log('🔐 AuthContext: Set token type:', response.token ? 'DRF' : 'JWT')
+      
+      // CRITICAL FIX: Set flag to skip token verification in useEffect
+      // This prevents immediate logout after successful login
+      sessionStorage.setItem('just_logged_in', 'true')
+      console.log('🎯 AuthContext: Set just_logged_in flag to prevent useEffect clearing')
       
       console.log('Welcome back!')
     } catch (error: any) {
@@ -138,6 +166,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Set new user state
       setUser(response.user)
       setToken(response.access || response.tokens?.access || '')
+      
+      // CRITICAL FIX: Set flag to skip token verification in useEffect
+      // This prevents immediate logout after successful signup
+      sessionStorage.setItem('just_logged_in', 'true')
+      console.log('🎯 AuthContext: Set just_logged_in flag to prevent useEffect clearing')
       
       console.log('Account created successfully!')
     } catch (error: any) {
