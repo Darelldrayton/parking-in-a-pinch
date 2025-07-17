@@ -30,20 +30,10 @@ export interface JobApplicationStats {
 class CareersService {
   async getAllApplications(): Promise<JobApplication[]> {
     try {
-      console.log('🚀 CAREERS SERVICE DEBUG: Making API call to /careers/applications/');
       const response = await api.get('/careers/applications/');
-      console.log('🚀 CAREERS SERVICE DEBUG: API response:', response);
-      console.log('🚀 CAREERS SERVICE DEBUG: Response data:', response.data);
-      console.log('🚀 CAREERS SERVICE DEBUG: Response data type:', typeof response.data);
-      console.log('🚀 CAREERS SERVICE DEBUG: Is array?', Array.isArray(response.data));
-      
-      const applications = response.data.results || response.data;
-      console.log('🚀 CAREERS SERVICE DEBUG: Final applications:', applications);
-      console.log('🚀 CAREERS SERVICE DEBUG: Applications count:', applications.length);
-      
-      return applications;
+      return response.data.results || response.data;
     } catch (error) {
-      console.error('🚀 CAREERS SERVICE DEBUG: Error fetching job applications:', error);
+      console.error('Error fetching job applications:', error);
       throw error;
     }
   }
@@ -60,13 +50,10 @@ class CareersService {
 
   async getApplicationStats(): Promise<JobApplicationStats> {
     try {
-      console.log('🚀 CAREERS SERVICE DEBUG: Making API call to /careers/applications/stats/');
       const response = await api.get('/careers/applications/stats/');
-      console.log('🚀 CAREERS SERVICE DEBUG: Stats API response:', response);
-      console.log('🚀 CAREERS SERVICE DEBUG: Stats data:', response.data);
       return response.data;
     } catch (error) {
-      console.error('🚀 CAREERS SERVICE DEBUG: Error fetching application stats:', error);
+      console.error('Error fetching application stats:', error);
       throw error;
     }
   }
@@ -165,11 +152,11 @@ class CareersService {
     try {
       const formData = new FormData();
       
-      // Add text fields
-      formData.append('name', applicationData.name);
-      formData.append('email', applicationData.email);
-      formData.append('phone', applicationData.phone);
-      formData.append('position', applicationData.position);
+      // Add text fields with correct backend field names
+      formData.append('applicant_name', applicationData.name);
+      formData.append('applicant_email', applicationData.email);
+      formData.append('applicant_phone', applicationData.phone);
+      formData.append('job', applicationData.position); // backend expects 'job' field
       formData.append('department', applicationData.department);
       
       if (applicationData.experience_level) {

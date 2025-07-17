@@ -314,22 +314,15 @@ const AdminDashboardEnhanced: React.FC = () => {
     
     setApplicationsLoading(true);
     try {
-      console.log('🚀 CAREERS DEBUG: Starting fetchJobApplications...');
       const [applications, stats] = await Promise.all([
         careersService.getAllApplications(),
         careersService.getApplicationStats()
       ]);
       
-      console.log('🚀 CAREERS DEBUG: Applications received:', applications);
-      console.log('🚀 CAREERS DEBUG: Applications count:', applications.length);
-      console.log('🚀 CAREERS DEBUG: Stats received:', stats);
-      
       setJobApplications(applications);
       setApplicationStats(stats);
-      
-      console.log('🚀 CAREERS DEBUG: State updated with applications');
     } catch (error) {
-      console.error('🚀 CAREERS DEBUG: Error fetching job applications:', error);
+      console.error('Error fetching job applications:', error);
       toast.error('Failed to load job applications');
     } finally {
       setApplicationsLoading(false);
