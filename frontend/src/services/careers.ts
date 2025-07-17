@@ -152,31 +152,46 @@ class CareersService {
     try {
       const formData = new FormData();
       
+      // Map job title to job ID (backend expects job ID)
+      const jobTitleToIdMap: Record<string, number> = {
+        'Founding Full-Stack Engineer': 1,
+        'Mobile Developer (iOS/Android)': 2,
+        'Head of Product': 3,
+        'UX/UI Designer': 4,
+        'Head of Marketing': 5,
+        'Growth Marketing Specialist': 6,
+        'Operations Manager': 7,
+        'Head of Sales': 8,
+        'Customer Success Manager': 9,
+        'DevOps Engineer': 10,
+        // Add more mappings as needed
+      };
+      
+      const jobId = jobTitleToIdMap[applicationData.position] || 1; // Default to job ID 1
+      
       // Add text fields with correct backend field names
       formData.append('applicant_name', applicationData.name);
       formData.append('applicant_email', applicationData.email);
       formData.append('applicant_phone', applicationData.phone);
-      formData.append('job', applicationData.position); // backend expects 'job' field
-      formData.append('department', applicationData.department);
+      formData.append('job', jobId.toString()); // Send job ID as string
       
-      if (applicationData.experience_level) {
-        formData.append('experience_level', applicationData.experience_level);
-      }
+      // Remove department field as it's not in the backend model
       
-      if (applicationData.location) {
-        formData.append('location', applicationData.location);
-      }
-      
-      if (applicationData.linkedin) {
-        formData.append('linkedin', applicationData.linkedin);
-      }
-      
-      if (applicationData.portfolio) {
-        formData.append('portfolio', applicationData.portfolio);
-      }
-      
+      // Add optional fields that match backend model
       if (applicationData.cover_letter) {
         formData.append('cover_letter', applicationData.cover_letter);
+      }
+      
+      // Add experience years (convert experience_level to years)
+      if (applicationData.experience_level) {
+        const experienceYearsMap: Record<string, string> = {
+          'Entry-level': '1',
+          'Mid-level': '3', 
+          'Mid-Senior': '5',
+          'Senior': '7'
+        };
+        const experienceYears = experienceYearsMap[applicationData.experience_level] || '3';
+        formData.append('experience_years', experienceYears);
       }
       
       // Add resume file if present
