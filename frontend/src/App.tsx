@@ -65,6 +65,7 @@ const AdminProtectedRoute = lazy(() => import('./components/auth/AdminProtectedR
 
 // Keep cleanup-listings for admin use only
 const CleanupListings = lazy(() => import('./pages/CleanupListings'));
+const ClearAllListings = lazy(() => import('./pages/ClearAllListings'));
 
 // 🛑 ROUTING FIXED v10.0: 2024-12-30 20:19 PST - EXPLICIT IMPORT FIX
 
@@ -343,6 +344,7 @@ function AppRoutes() {
         <Route path="/admin/dashboard" element={<AdminProtectedRoute redirectTo="/admin/login"><AdminDashboard /></AdminProtectedRoute>} />
         <Route path="/admin/job-applications" element={<AdminProtectedRoute redirectTo="/admin/login"><AdminJobApplications /></AdminProtectedRoute>} />
         <Route path="/admin/cleanup-listings" element={<AdminProtectedRoute redirectTo="/admin/login"><CleanupListings /></AdminProtectedRoute>} />
+        <Route path="/admin/clear-all-listings" element={<AdminProtectedRoute redirectTo="/admin/login"><ClearAllListings /></AdminProtectedRoute>} />
         
         {/* Production routes only - test routes removed for security */}
         
