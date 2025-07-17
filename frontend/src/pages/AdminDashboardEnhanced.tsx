@@ -2128,14 +2128,43 @@ const AdminDashboardEnhanced: React.FC = () => {
                         sx={{ '& .MuiTableCell-root': { position: 'relative' } }}
                       >
                         <TableCell>
-                          <Box>
-                            <Typography variant="body2" fontWeight="bold">
-                              {listing.title}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {listing.images_count} images
-                            </Typography>
-                          </Box>
+                          <Stack direction="row" alignItems="center" spacing={2}>
+                            {listing.images && listing.images.length > 0 ? (
+                              <Box sx={{ width: 60, height: 45, border: 1, borderColor: 'grey.300', borderRadius: 1, overflow: 'hidden' }}>
+                                <img 
+                                  src={listing.images[0].image || listing.images[0]} 
+                                  alt="Listing preview" 
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' }}
+                                  onClick={() => openDetailsDialog(listing)}
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                    e.currentTarget.parentElement!.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#f5f5f5;color:#999;font-size:10px;">No Image</div>';
+                                  }}
+                                />
+                              </Box>
+                            ) : (
+                              <Box sx={{ width: 60, height: 45, border: 1, borderColor: 'grey.300', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'grey.50' }}>
+                                <Typography variant="caption" color="text.secondary">No Image</Typography>
+                              </Box>
+                            )}
+                            <Box>
+                              <Typography variant="body2" fontWeight="bold">
+                                {listing.title}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {listing.images_count || listing.images?.length || 0} images
+                                {listing.images_count > 1 && (
+                                  <Button 
+                                    size="small" 
+                                    onClick={() => openDetailsDialog(listing)}
+                                    sx={{ ml: 1, minWidth: 'auto', p: 0.5, fontSize: '0.7rem' }}
+                                  >
+                                    View All
+                                  </Button>
+                                )}
+                              </Typography>
+                            </Box>
+                          </Stack>
                         </TableCell>
                         <TableCell>
                           <Box>
@@ -2859,7 +2888,13 @@ const AdminDashboardEnhanced: React.FC = () => {
                                   </IconButton>
                                 </Tooltip>
                                 <Tooltip title="View Details">
-                                  <IconButton size="small">
+                                  <IconButton 
+                                    size="small"
+                                    onClick={() => {
+                                      console.log('🚀 View Details button clicked (dispute)!', dispute.id);
+                                      openDetailsDialog(dispute);
+                                    }}
+                                  >
                                     <Visibility />
                                   </IconButton>
                                 </Tooltip>
@@ -3131,10 +3166,21 @@ const AdminDashboardEnhanced: React.FC = () => {
                                     <Visibility />
                                   </IconButton>
                                 </Tooltip>
-                                <Tooltip title="Download Resume">
+                                <Tooltip title={application.resume_url ? "Download Resume" : "No Resume"}>
                                   <IconButton
                                     size="small"
-                                    onClick={() => window.open(application.resume_url, '_blank')}
+                                    disabled={!application.resume_url}
+                                    onClick={() => {
+                                      if (application.resume_url) {
+                                        const link = document.createElement('a');
+                                        link.href = application.resume_url;
+                                        link.download = `${application.name.replace(/\s+/g, '_')}_resume.pdf`;
+                                        link.target = '_blank';
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        document.body.removeChild(link);
+                                      }
+                                    }}
                                   >
                                     <GetApp />
                                   </IconButton>
@@ -3346,14 +3392,34 @@ const AdminDashboardEnhanced: React.FC = () => {
                         Portfolio
                       </Button>
                     )}
-                    <Button
-                      variant="outlined"
-                      startIcon={<GetApp />}
-                      onClick={() => window.open(selectedApplication.resume_url, '_blank')}
-                      size="small"
-                    >
-                      Resume
-                    </Button>
+                    {selectedApplication.resume_url ? (
+                      <Button
+                        variant="outlined"
+                        startIcon={<GetApp />}
+                        onClick={() => {
+                          const link = document.createElement('a');
+                          link.href = selectedApplication.resume_url;
+                          link.download = `${selectedApplication.name.replace(/\s+/g, '_')}_resume.pdf`;
+                          link.target = '_blank';
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                        }}
+                        size="small"
+                      >
+                        Download Resume
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outlined"
+                        startIcon={<GetApp />}
+                        disabled
+                        size="small"
+                        sx={{ opacity: 0.5 }}
+                      >
+                        No Resume Uploaded
+                      </Button>
+                    )}
                   </Stack>
                 </Grid>
               </Grid>
