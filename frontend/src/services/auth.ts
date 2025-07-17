@@ -56,8 +56,9 @@ export interface SignupData {
 }
 
 export interface AuthResponse {
-  access?: string
-  refresh: string
+  access?: string // JWT format
+  refresh?: string // JWT format
+  token?: string // DRF format (simple token)
   user: User
   tokens?: {
     access: string
@@ -72,15 +73,33 @@ export interface TokenRefreshResponse {
 
 class AuthService {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    // console.log('AuthService: Attempting login with:', credentials)
-    const response = await api.post('/auth/login/', credentials)
-    // console.log('AuthService: Login response status:', response.status)
-    // console.log('AuthService: Login response data:', response.data)
+    console.log('AuthService: Attempting login with:', credentials)
+    // Try DRF token endpoint first (returns simple token)
+    console.log('🔍 Trying DRF token endpoint: /auth-token/')
+    let response
+    try {
+      response = await api.post('/auth-token/', credentials)
+      console.log('✅ DRF token endpoint success')
+    } catch (drfError) {
+      console.log('❌ DRF token endpoint failed, trying JWT endpoint')
+      console.log('DRF error:', drfError.response?.status, drfError.response?.data)
+      response = await api.post('/auth/login/', credentials)
+      console.log('✅ JWT endpoint success')
+    }
+    console.log('AuthService: Login response status:', response.status)
+    console.log('AuthService: Login response data:', response.data)
+    console.log('🔍 Token format analysis:', {
+      hasToken: !!response.data.token,
+      hasAccess: !!response.data.access,
+      hasRefresh: !!response.data.refresh,
+      tokenType: response.data.token ? (response.data.token.startsWith('eyJ') ? 'JWT' : 'DRF') : 'none',
+      accessType: response.data.access ? (response.data.access.startsWith('eyJ') ? 'JWT' : 'DRF') : 'none'
+    })
     const data = response.data
     
     // Store tokens and user data
     this.storeAuthData(data)
-    // console.log('AuthService: Auth data stored')
+    console.log('AuthService: Auth data stored')
     
     return data
   }
@@ -284,13 +303,18 @@ class AuthService {
   }
 
   private storeAuthData(data: AuthResponse): void {
-    // Handle both response formats (direct tokens or nested tokens object)
-    const accessToken = data.access || data.tokens?.access
+    // Handle both DRF token format { token: "..." } and JWT format { access: "...", refresh: "..." }
+    const drfToken = data.token // DRF format
+    const accessToken = data.access || data.tokens?.access // JWT format
     const refreshToken = data.refresh || data.tokens?.refresh
 
-    if (accessToken) {
-      localStorage.setItem('access_token', accessToken)
-      localStorage.setItem('token', accessToken) // CRITICAL: Store as 'token' for API interceptor
+    // Prefer DRF token if available (simpler format for Django)
+    const tokenToStore = drfToken || accessToken
+
+    if (tokenToStore) {
+      localStorage.setItem('access_token', tokenToStore)
+      localStorage.setItem('token', tokenToStore) // CRITICAL: Store as 'token' for API interceptor
+      console.log('🔐 Token stored:', drfToken ? 'DRF format' : 'JWT format')
     }
     if (refreshToken) {
       localStorage.setItem('refresh_token', refreshToken)
@@ -300,8 +324,9 @@ class AuthService {
     }
     
     console.log('🔐 AuthService: Stored tokens:', { 
-      access_token: accessToken ? 'present' : 'missing',
-      token: accessToken ? 'present' : 'missing',
+      drfToken: drfToken ? 'present' : 'missing',
+      accessToken: accessToken ? 'present' : 'missing',
+      tokenStored: tokenToStore ? 'present' : 'missing',
       refresh_token: refreshToken ? 'present' : 'missing'
     })
   }
