@@ -4,8 +4,8 @@ import toast from 'react-hot-toast'
 // AGGRESSIVE API FIX - FORCE DIGITALOCEAN URL v6.0 + TOKEN AUTH FIX
 // console.log('🚀 API Configuration Loading - FORCE DigitalOcean v6.0 + Token Auth Fix')
 
-// API Configuration - Use environment variable or Vercel proxy
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1'
+// API Configuration - Direct backend connection (bypassing Vercel proxy)
+const API_BASE_URL = 'https://165.227.111.160/api/v1'
 
 // REMOVED: Hardcoded production token - let users authenticate properly
 
