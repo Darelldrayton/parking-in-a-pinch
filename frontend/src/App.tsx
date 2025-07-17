@@ -114,7 +114,14 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
     return <PageLoader />;
   }
   
-  // CRITICAL FIX: Check if we just logged in to prevent redirect loops
+  // CRITICAL FIX: Don't redirect from login page if there's any auth issue
+  // Let the login page handle clearing invalid tokens
+  if (window.location.pathname === '/login') {
+    console.log('📍 PublicRoute: On login page - allowing access regardless of auth state');
+    return <>{children}</>;
+  }
+  
+  // Check if we just logged in to prevent redirect loops
   const justLoggedIn = sessionStorage.getItem('just_logged_in');
   if (justLoggedIn) {
     console.log('⏸️ PublicRoute: Skipping redirect - user just logged in');

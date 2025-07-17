@@ -60,23 +60,39 @@ const Login: React.FC = () => {
 
   const from = location.state?.from?.pathname || '/dashboard';
 
-  // Only clear conflicting admin tokens, not regular user tokens
+  // Clear any invalid tokens when landing on login page
   React.useEffect(() => {
-    console.log('🔄 Clearing conflicting admin tokens only');
-    const keysToRemove = [
+    console.log('🔄 Login page mounted - checking for invalid tokens');
+    
+    // If we're on the login page, clear any existing tokens that might be invalid
+    const currentToken = localStorage.getItem('token');
+    const currentAccessToken = localStorage.getItem('access_token');
+    
+    if (currentToken || currentAccessToken) {
+      console.log('🗑️ Found existing tokens on login page - clearing to start fresh');
+      localStorage.removeItem('token');
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('user');
+      // Also clear the just_logged_in flag
+      sessionStorage.removeItem('just_logged_in');
+    }
+    
+    // Clear admin tokens too
+    const adminKeysToRemove = [
       'admin_access_token',
       'admin_refresh_token', 
       'admin_user'
     ];
     
-    keysToRemove.forEach(key => {
+    adminKeysToRemove.forEach(key => {
       if (localStorage.getItem(key)) {
         console.log(`🗑️ Removing admin token: ${key}`);
         localStorage.removeItem(key);
       }
     });
     
-    console.log('✅ Admin tokens cleared to prevent conflicts');
+    console.log('✅ All tokens cleared for fresh login');
   }, []);
 
   const {

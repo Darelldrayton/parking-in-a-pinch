@@ -64,6 +64,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return
         }
         
+        // Also skip verification if we're on the login page
+        if (window.location.pathname === '/login') {
+          console.log('📍 AuthContext: On login page - skipping verification')
+          setIsLoading(false)
+          return
+        }
+        
         // Try to verify token is still valid by fetching current user
         // But don't clear everything on failure - this could be a network issue
         try {
