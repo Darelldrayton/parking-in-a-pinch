@@ -65,7 +65,21 @@ export const BookingsProvider: React.FC<BookingsProviderProps> = ({ children }) 
         const response = await api.get('/bookings/bookings/');
         const bookingsData = response.data.results || response.data || [];
         console.log('BookingsContext: Loaded', bookingsData.length, 'bookings');
-        setBookings(bookingsData);
+        
+        // SECURITY FIX: Validate that all bookings belong to the current user
+        const validBookings = bookingsData.filter((booking: Booking) => {
+          if (booking.user !== user.id) {
+            console.error('BookingsContext: SECURITY ISSUE - Booking', booking.id, 'belongs to user', booking.user, 'but current user is', user.id);
+            return false;
+          }
+          return true;
+        });
+        
+        if (validBookings.length !== bookingsData.length) {
+          console.error('BookingsContext: SECURITY ALERT - Filtered out', bookingsData.length - validBookings.length, 'bookings that belonged to other users');
+        }
+        
+        setBookings(validBookings);
         setDataLoaded(true);
       } catch (error) {
         console.error('BookingsContext: Error loading bookings:', error);
@@ -81,12 +95,25 @@ export const BookingsProvider: React.FC<BookingsProviderProps> = ({ children }) 
   };
 
   const refreshBookings = async () => {
+    if (!user) {
+      console.warn('BookingsContext: Cannot refresh bookings - no user authenticated');
+      return;
+    }
+    console.log('BookingsContext: Refreshing bookings for user', user.id);
     setDataLoaded(false);
     await loadBookings();
   };
 
   const getBookingById = (id: number) => {
-    return bookings.find(booking => booking.id === id);
+    const booking = bookings.find(booking => booking.id === id);
+    
+    // Additional security check
+    if (booking && user && booking.user !== user.id) {
+      console.error('BookingsContext: SECURITY ISSUE - Attempted to access booking', id, 'belonging to user', booking.user, 'but current user is', user.id);
+      return undefined;
+    }
+    
+    return booking;
   };
 
   useEffect(() => {
@@ -95,8 +122,9 @@ export const BookingsProvider: React.FC<BookingsProviderProps> = ({ children }) 
     }
   }, [user?.id, dataLoaded]);
 
-  // Reset dataLoaded when user changes
+  // Reset dataLoaded when user changes - SECURITY CRITICAL: Prevents data leakage between users
   useEffect(() => {
+    console.log('BookingsContext: User changed, clearing bookings data for security');
     setDataLoaded(false);
     setBookings([]);
   }, [user?.id]);

@@ -18,6 +18,20 @@ class MessagingService {
     // Add cache-busting timestamp to prevent stale data
     const timestamp = Date.now()
     const response = await api.get(`/messages/conversations/unread_count/?_t=${timestamp}`)
+    
+    // SECURITY FIX: Validate that the response is for the current user
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}')
+    if (response.data.user_id && currentUser.id && response.data.user_id !== currentUser.id) {
+      console.error('🚨 SECURITY ALERT: API returned data for wrong user!', {
+        responseUserId: response.data.user_id,
+        currentUserId: currentUser.id
+      })
+      // Clear potentially stale tokens and throw error
+      localStorage.removeItem('token')
+      localStorage.removeItem('access_token')
+      throw new Error('Authentication token mismatch - user data isolation violation')
+    }
+    
     return response.data
   }
 

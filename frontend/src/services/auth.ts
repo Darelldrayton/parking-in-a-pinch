@@ -300,10 +300,11 @@ class AuthService {
   }
 
   clearAuthData(): void {
-    // Clear authentication tokens
+    // Clear authentication tokens (both JWT and DRF formats)
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
     localStorage.removeItem('user')
+    localStorage.removeItem('token') // CRITICAL: Clear DRF token that causes user data leakage
     
     // SECURITY FIX: Clear all user-specific cached data to prevent data leakage
     const userDataKeys = [
