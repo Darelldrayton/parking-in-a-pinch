@@ -78,6 +78,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true)
     try {
       console.log('AuthContext: Starting login for:', email)
+      
+      // CRITICAL: Clear all existing state first to prevent user data leakage
+      console.log('🔐 AuthContext: Clearing all existing state before login')
+      setUser(null)
+      setToken(null)
+      
+      // Clear all cached data from previous users
+      const cacheKeys = Object.keys(localStorage).filter(key => 
+        key.includes('cache') || key.includes('draft') || key.includes('user_') || key.includes('booking') || key.includes('listing')
+      )
+      cacheKeys.forEach(key => localStorage.removeItem(key))
+      
       const response = await authService.login({ email, password })
       console.log('AuthContext: Login response:', response)
       
@@ -101,6 +113,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signup = async (data: SignupData) => {
     setIsLoading(true)
     try {
+      // CRITICAL: Clear all existing state first to prevent user data leakage
+      console.log('🔐 AuthContext: Clearing all existing state before signup')
+      setUser(null)
+      setToken(null)
+      
+      // Clear all cached data from previous users
+      const cacheKeys = Object.keys(localStorage).filter(key => 
+        key.includes('cache') || key.includes('draft') || key.includes('user_') || key.includes('booking') || key.includes('listing')
+      )
+      cacheKeys.forEach(key => localStorage.removeItem(key))
+      
       const signupData = {
         email: data.email,
         username: data.email.split('@')[0], // Generate username from email
@@ -169,10 +192,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('Logout error:', error)
     } finally {
+      // CRITICAL: Hard reset all state to prevent data leakage
+      console.log('🔐 AuthContext: Hard resetting all state on logout')
       setUser(null)
       setToken(null)
       setIsLoading(false)
-      console.log('Logged out successfully')
+      
+      // Force a complete page reload to clear any cached state
+      console.log('🔄 AuthContext: Forcing page reload to clear cached state')
+      window.location.href = '/login'
     }
   }
 
