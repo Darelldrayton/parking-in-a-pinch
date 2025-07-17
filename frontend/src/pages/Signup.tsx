@@ -104,6 +104,7 @@ const Signup: React.FC = () => {
     formState: { errors, isValid },
     watch,
     trigger,
+    setValue,
   } = useForm<SignupFormData>({
     resolver: yupResolver(schema),
     defaultValues: {
