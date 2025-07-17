@@ -4,12 +4,13 @@ import toast from 'react-hot-toast'
 // AGGRESSIVE API FIX - FORCE DIGITALOCEAN URL v6.0 + TOKEN AUTH FIX
 // console.log('🚀 API Configuration Loading - FORCE DigitalOcean v6.0 + Token Auth Fix')
 
-// USE VERCEL PROXY TO BYPASS HTTPS/HTTP MIXED CONTENT
-const API_BASE_URL = '/api/v1'
+// API Configuration - Use environment variable or Vercel proxy
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1'
 
 // REMOVED: Hardcoded production token - let users authenticate properly
 
-// console.log('💥 FORCED API BASE URL:', API_BASE_URL)
+console.log('🔗 API BASE URL:', API_BASE_URL)
+console.log('🌐 Environment VITE_API_URL:', import.meta.env.VITE_API_URL)
 // console.log('🔑 FORCED DRF Token Auth (Backend requires Token format, not Bearer)')
 // console.log('🎯 This should fix login + messaging on parkinginapinch.com')
 
