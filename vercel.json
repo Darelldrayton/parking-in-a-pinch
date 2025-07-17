@@ -1,7 +1,7 @@
 {
   "buildCommand": "cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/dist", 
-  "installCommand": "echo 'Force rebuild 2025-07-17-16:40 - Direct backend connection'",
+  "installCommand": "echo 'Force rebuild 2025-07-17-16:45 - HTTP backend connection'",
   "rewrites": [
     {
       "source": "/api/(.*)",
