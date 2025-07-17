@@ -312,6 +312,7 @@ const AdminDashboardEnhanced: React.FC = () => {
   const fetchJobApplications = useCallback(async () => {
     if (applicationsLoading) return;
     
+    console.log('🔍 AdminDashboard: Starting to fetch job applications');
     setApplicationsLoading(true);
     try {
       const [applications, stats] = await Promise.all([
@@ -319,10 +320,13 @@ const AdminDashboardEnhanced: React.FC = () => {
         careersService.getApplicationStats()
       ]);
       
+      console.log('🔍 AdminDashboard: Successfully loaded', applications.length, 'applications');
+      console.log('🔍 AdminDashboard: Application stats:', stats);
+      
       setJobApplications(applications);
       setApplicationStats(stats);
     } catch (error) {
-      console.error('Error fetching job applications:', error);
+      console.error('❌ AdminDashboard: Error fetching job applications:', error);
       toast.error('Failed to load job applications');
     } finally {
       setApplicationsLoading(false);
@@ -566,7 +570,13 @@ const AdminDashboardEnhanced: React.FC = () => {
         if (disputes.length === 0) fetchDisputes();
         break;
       case 7: // Career Applications
-        if (jobApplications.length === 0) fetchJobApplications();
+        console.log('🔍 AdminDashboard: Switching to careers tab, current applications:', jobApplications.length);
+        if (jobApplications.length === 0) {
+          console.log('🔍 AdminDashboard: No applications cached, fetching from API');
+          fetchJobApplications();
+        } else {
+          console.log('🔍 AdminDashboard: Using cached applications');
+        }
         break;
     }
   };

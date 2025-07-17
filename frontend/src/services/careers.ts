@@ -30,10 +30,15 @@ export interface JobApplicationStats {
 class CareersService {
   async getAllApplications(): Promise<JobApplication[]> {
     try {
+      console.log('📝 CareersService: Fetching all job applications from /careers/applications/');
       const response = await api.get('/careers/applications/');
-      return response.data.results || response.data;
+      const applications = response.data.results || response.data;
+      console.log('📝 CareersService: Received', applications.length, 'job applications');
+      console.log('📝 CareersService: Application data:', applications);
+      return applications;
     } catch (error) {
-      console.error('Error fetching job applications:', error);
+      console.error('❌ CareersService: Error fetching job applications:', error);
+      console.error('❌ CareersService: Error details:', error.response?.data || error.message);
       throw error;
     }
   }
@@ -199,11 +204,17 @@ class CareersService {
         formData.append('resume', applicationData.resume);
       }
       
+      console.log('📝 CareersService: Submitting application to /careers/applications/');
+      console.log('📝 CareersService: Form data keys:', Array.from(formData.keys()));
+      
       const response = await api.post('/careers/applications/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
+      
+      console.log('✅ CareersService: Application submitted successfully');
+      console.log('✅ CareersService: Response:', response.data);
       
       return response.data;
     } catch (error) {
