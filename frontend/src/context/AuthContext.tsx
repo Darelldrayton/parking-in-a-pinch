@@ -225,11 +225,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         })
       }, 50)
       
-      // Clear the flag after a delay
+      // Clear the flag after a delay (shorter since AdminProtectedRoute also clears it)
       setTimeout(() => {
         console.log('🧹 Clearing just_logged_in flag after signup')
         sessionStorage.removeItem('just_logged_in')
-      }, 5000)
+      }, 2000)
       
       console.log('Account created successfully!')
     } catch (error: any) {
