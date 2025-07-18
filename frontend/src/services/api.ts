@@ -46,7 +46,8 @@ api.interceptors.request.use(
     }
     
     if (token) {
-      config.headers.Authorization = `Token ${token}`
+      // Always use Bearer for JWT tokens since backend uses JWT
+      config.headers.Authorization = `Bearer ${token}`
     }
     return config
   },
@@ -105,7 +106,8 @@ api.interceptors.response.use(
           localStorage.setItem('access_token', access)
           localStorage.setItem('token', access)
           
-          originalRequest.headers.Authorization = `Token ${access}`
+          // Use Bearer for JWT tokens
+          originalRequest.headers.Authorization = `Bearer ${access}`
           return api(originalRequest)
         } catch (refreshError) {
           localStorage.removeItem('access_token')
