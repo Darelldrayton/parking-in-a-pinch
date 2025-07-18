@@ -89,6 +89,9 @@ export default function AdminLogin() {
       localStorage.setItem('admin_refresh_token', refreshToken);
       localStorage.setItem('admin_user', JSON.stringify(user));
       
+      // Set flag for AdminProtectedRoute to handle authentication properly
+      sessionStorage.setItem('just_logged_in', 'true');
+      
       toast.success('Welcome to the admin panel!');
       navigate('/admin/dashboard', { replace: true });
       
