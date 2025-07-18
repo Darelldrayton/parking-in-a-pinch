@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { 
   Box, 
@@ -252,6 +253,7 @@ interface DisputeMessage {
 
 const AdminDashboardEnhanced: React.FC = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
   const [adminUser, setAdminUser] = useState<any>(null);
   const [tabValue, setTabValue] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -490,18 +492,17 @@ const AdminDashboardEnhanced: React.FC = () => {
     
     const initDashboard = async () => {
       try {
-        // Admin auth - only use DRF tokens (admin_access_token)
-        const adminToken = localStorage.getItem('admin_access_token');
+        // CRITICAL FIX: AdminProtectedRoute already handles authentication
+        // DO NOT check authentication here to prevent infinite loops
+        console.log('✅ AdminDashboard: Initializing (auth already verified by AdminProtectedRoute)');
+        
+        // Just load the user data that AdminProtectedRoute already verified
         const adminUserData = localStorage.getItem('admin_user');
         
-        if (!adminToken || !adminUserData) {
-          console.log('❌ No admin credentials found, redirecting to login');
-          window.location.href = '/admin/login';
+        if (!adminUserData) {
+          console.log('⚠️ No admin user data found, but proceeding (AdminProtectedRoute should handle this)');
           return;
         }
-        
-        // Skip complex token validation to prevent loops
-        console.log('✅ Admin credentials found, proceeding with dashboard');
         
         // Parse user data directly without complex validation
         const userData = JSON.parse(adminUserData);
@@ -532,7 +533,7 @@ const AdminDashboardEnhanced: React.FC = () => {
         }
       } catch (error) {
         console.error('❌ Error parsing admin user data:', error);
-        window.location.href = '/admin/login';
+        navigate('/admin/login', { replace: true });
         return;
       } finally {
         console.log('🔍 Setting hasInitialized to true');
