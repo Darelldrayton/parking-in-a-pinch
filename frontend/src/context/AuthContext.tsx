@@ -94,8 +94,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // For other errors (network, 500, etc.), keep the stored credentials
         }
       } else {
-        console.log('🔍 AuthContext: No valid credentials found')
-        // Don't aggressively clear - let the user try to login
+        // Check for orphaned tokens (token without user)
+        if (storedToken && !storedUser) {
+          console.log('⚠️ AuthContext: Found token without user - clearing orphaned token')
+          authService.clearAuthData()
+          setToken(null)
+          setUser(null)
+        } else if (!storedToken && storedUser) {
+          console.log('⚠️ AuthContext: Found user without token - clearing orphaned user')
+          localStorage.removeItem('user')
+          setUser(null)
+        } else {
+          console.log('🔍 AuthContext: No stored credentials found')
+        }
       }
       setIsLoading(false)
     }
@@ -163,6 +174,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response = await authService.signup(signupData)
       console.log('AuthContext: Signup response:', response)
       
+      // Verify the response has what we need
+      if (!response.user) {
+        throw new Error('Signup response missing user data')
+      }
+      if (!response.token && !response.access && !response.tokens?.access) {
+        throw new Error('Signup response missing token data')
+      }
+      
       // CRITICAL: Clear all existing state ONLY after successful signup to prevent user data leakage
       console.log('🔐 AuthContext: Clearing previous user state after successful signup')
       
@@ -193,6 +212,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // This prevents immediate logout after successful signup
       sessionStorage.setItem('just_logged_in', 'true')
       console.log('🎯 AuthContext: Set just_logged_in flag to prevent useEffect clearing')
+      
+      // Force verify that data was stored correctly
+      setTimeout(() => {
+        const storedUser = authService.getStoredUser()
+        const storedToken = authService.getAccessToken()
+        console.log('🔍 AuthContext: Verification after signup:', {
+          storedUser: !!storedUser,
+          storedToken: !!storedToken,
+          userEmail: storedUser?.email,
+          tokenPrefix: storedToken?.substring(0, 8) + '...'
+        })
+      }, 50)
       
       // Clear the flag after a delay
       setTimeout(() => {
