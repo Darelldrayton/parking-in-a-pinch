@@ -43,6 +43,9 @@ interface FormData {
 }
 
 export default function AdminLogin() {
+  // Cache bust: v2.0 - 2025-01-18-16:00
+  console.log('🆕 NEW AdminLogin component v2.0 loaded');
+  
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
