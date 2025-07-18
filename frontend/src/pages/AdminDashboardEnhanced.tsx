@@ -1854,10 +1854,10 @@ const AdminDashboardEnhanced: React.FC = () => {
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2">
-                            {format(new Date(request.created_at), 'MMM d, yyyy')}
+                            {request.created_at ? format(new Date(request.created_at), 'MMM d, yyyy') : 'N/A'}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
-                            {format(new Date(request.created_at), 'h:mm a')}
+                            {request.created_at ? format(new Date(request.created_at), 'h:mm a') : 'N/A'}
                           </Typography>
                         </TableCell>
                         <TableCell>
@@ -2020,7 +2020,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2">
-                            {format(new Date(request.created_at), 'MMM d, yyyy')}
+                            {request.created_at ? format(new Date(request.created_at), 'MMM d, yyyy') : 'N/A'}
                           </Typography>
                         </TableCell>
                         <TableCell align="center">
@@ -2208,7 +2208,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2">
-                            {format(new Date(listing.created_at), 'MMM d, yyyy')}
+                            {listing.created_at ? format(new Date(listing.created_at), 'MMM d, yyyy') : 'N/A'}
                           </Typography>
                         </TableCell>
                         <TableCell align="center">
@@ -2875,10 +2875,10 @@ const AdminDashboardEnhanced: React.FC = () => {
                             </TableCell>
                             <TableCell>
                               <Typography variant="body2">
-                                {format(new Date(dispute.created_at), 'MMM d, yyyy')}
+                                {dispute.created_at ? format(new Date(dispute.created_at), 'MMM d, yyyy') : 'N/A'}
                               </Typography>
                               <Typography variant="caption" color="text.secondary">
-                                {format(new Date(dispute.created_at), 'h:mm a')}
+                                {dispute.created_at ? format(new Date(dispute.created_at), 'h:mm a') : 'N/A'}
                               </Typography>
                             </TableCell>
                             <TableCell>
@@ -3481,7 +3481,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="subtitle2" color="text.secondary">Submitted</Typography>
-                    <Typography variant="body1">{format(new Date(selectedItem.created_at), 'MMM d, yyyy HH:mm')}</Typography>
+                    <Typography variant="body1">{selectedItem.created_at ? format(new Date(selectedItem.created_at), 'MMM d, yyyy HH:mm') : 'N/A'}</Typography>
                   </Grid>
                   <Grid item xs={12}>
                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>Documents</Typography>
@@ -3679,7 +3679,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                     </Grid>
                     <Grid item xs={6}>
                       <Typography variant="subtitle2" color="text.secondary">Created</Typography>
-                      <Typography variant="body1">{format(new Date(selectedItem.created_at), 'MMM d, yyyy HH:mm')}</Typography>
+                      <Typography variant="body1">{selectedItem.created_at ? format(new Date(selectedItem.created_at), 'MMM d, yyyy HH:mm') : 'N/A'}</Typography>
                     </Grid>
                     
                     {editMode && (
@@ -3727,7 +3727,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="subtitle2" color="text.secondary">Submitted</Typography>
-                    <Typography variant="body1">{format(new Date(selectedItem.created_at), 'MMM d, yyyy HH:mm')}</Typography>
+                    <Typography variant="body1">{selectedItem.created_at ? format(new Date(selectedItem.created_at), 'MMM d, yyyy HH:mm') : 'N/A'}</Typography>
                   </Grid>
                   {selectedItem.customer_explanation && (
                     <Grid item xs={12}>
@@ -3964,7 +3964,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                     {replyDialog.dispute.messages.map((msg, index) => (
                       <Box key={index} sx={{ mb: 2, '&:last-child': { mb: 0 } }}>
                         <Typography variant="caption" color="text.secondary">
-                          {msg.sender_name} - {format(new Date(msg.created_at), 'MMM d, yyyy h:mm a')}
+                          {msg.sender_name} - {msg.created_at ? format(new Date(msg.created_at), 'MMM d, yyyy h:mm a') : 'N/A'}
                           {msg.is_internal && <Chip label="Internal" size="small" sx={{ ml: 1 }} />}
                         </Typography>
                         <Typography variant="body2" sx={{ mt: 0.5 }}>
