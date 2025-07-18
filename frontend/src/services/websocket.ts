@@ -30,6 +30,11 @@ class WebSocketService {
    * Connect to WebSocket server
    */
   connect(token: string) {
+    // Temporarily disable WebSocket until backend is configured
+    // TODO: Re-enable when WebSocket server is running
+    this.onConnectionStatusChange?.('disconnected');
+    return;
+    
     // Check if WebSocket is disabled (e.g., on admin pages)
     if (typeof window !== 'undefined' && (window as any).disableWebSocket) {
       // console.log('🔒 WebSocket connection disabled');

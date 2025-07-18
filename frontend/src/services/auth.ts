@@ -73,12 +73,7 @@ export interface TokenRefreshResponse {
 
 class AuthService {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    let response
-    try {
-      response = await api.post('/auth-token/', credentials)
-    } catch (drfError) {
-      response = await api.post('/auth/login/', credentials)
-    }
+    const response = await api.post('/auth/login/', credentials)
     const data = response.data
     this.storeAuthData(data)
     return data
