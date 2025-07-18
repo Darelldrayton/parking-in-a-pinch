@@ -162,17 +162,12 @@ const Signup: React.FC = () => {
         subscribe_to_newsletter: data.subscribeToNewsletter,
       });
       
-      // Set flag to prevent token clearing during redirect
-      sessionStorage.setItem('just_logged_in', 'true');
-      
       enqueueSnackbar('Account created successfully!', { variant: 'success' });
       
-      // Clear the flag after navigation completes
+      // Small delay to ensure auth state is properly set before navigation
       setTimeout(() => {
-        sessionStorage.removeItem('just_logged_in');
-      }, 3000);
-      
-      navigate('/dashboard');
+        navigate('/dashboard');
+      }, 100);
     } catch (error: any) {
       enqueueSnackbar(error.message || 'Signup failed', { variant: 'error' });
     }

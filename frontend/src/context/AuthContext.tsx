@@ -173,13 +173,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       cacheKeys.forEach(key => localStorage.removeItem(key))
       
       // Set new user state
+      console.log('🔐 AuthContext: Setting user state:', response.user)
       setUser(response.user)
-      setToken(response.access || response.tokens?.access || '')
+      
+      // Handle both DRF token format and JWT format (same as login)
+      const token = response.token || response.access || response.tokens?.access || ''
+      console.log('🔐 AuthContext: Setting token:', token ? 'present' : 'missing')
+      setToken(token)
+      console.log('🔐 AuthContext: Signup set token type:', response.token ? 'DRF' : 'JWT')
+      
+      // Verify state was set
+      console.log('🔍 AuthContext: State after signup:', {
+        hasUser: !!response.user,
+        hasToken: !!token,
+        isAuthenticated: !!response.user && !!token
+      })
       
       // CRITICAL FIX: Set flag to skip token verification in useEffect
       // This prevents immediate logout after successful signup
       sessionStorage.setItem('just_logged_in', 'true')
       console.log('🎯 AuthContext: Set just_logged_in flag to prevent useEffect clearing')
+      
+      // Clear the flag after a delay
+      setTimeout(() => {
+        console.log('🧹 Clearing just_logged_in flag after signup')
+        sessionStorage.removeItem('just_logged_in')
+      }, 5000)
       
       console.log('Account created successfully!')
     } catch (error: any) {
