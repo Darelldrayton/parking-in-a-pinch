@@ -1830,7 +1830,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                         <TableCell>
                           <Stack direction="row" alignItems="center" spacing={2}>
                             <Avatar>
-                              {request.user_display_name.charAt(0)}
+                              {request.user_display_name?.charAt(0) || 'U'}
                             </Avatar>
                             <Box>
                               <Typography variant="body2" fontWeight="bold">
@@ -3084,7 +3084,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                             <TableCell>
                               <Stack direction="row" alignItems="center" spacing={2}>
                                 <Avatar sx={{ bgcolor: 'primary.main' }}>
-                                  {application.name.charAt(0)}
+                                  {application.name?.charAt(0) || 'N'}
                                 </Avatar>
                                 <Box>
                                   <Typography variant="body2" fontWeight="bold">
