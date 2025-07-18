@@ -491,18 +491,30 @@ const AdminDashboardEnhanced: React.FC = () => {
         if (!hasLoadedDataRef.current) {
           console.log('📊 Loading data for first time...');
           hasLoadedDataRef.current = true;
-          await loadDataSafely();
+          
+          // Add timeout to prevent infinite loading
+          const loadingTimeout = setTimeout(() => {
+            console.log('⏰ Loading timeout - forcing loading to false');
+            setLoading(false);
+          }, 10000); // 10 second timeout
+          
+          try {
+            await loadDataSafely();
+          } finally {
+            clearTimeout(loadingTimeout);
+          }
         } else {
           console.log('📊 Data already loaded, skipping...');
+          setLoading(false); // Make sure loading is false when data is already loaded
         }
       } catch (error) {
         console.error('❌ Error parsing admin user data:', error);
         window.location.href = '/admin/login';
         return;
       } finally {
-        console.log('🔍 Setting loading to false and hasInitialized to true');
-        setLoading(false);
+        console.log('🔍 Setting hasInitialized to true');
         setHasInitialized(true);
+        // Don't set loading to false here - let loadDataSafely handle it
       }
     };
     
@@ -524,15 +536,22 @@ const AdminDashboardEnhanced: React.FC = () => {
     setError(null);
     
     try {
-      // Use Promise.allSettled to not fail if some APIs are down
-      const results = await Promise.allSettled([
-        fetchStats(),
-        fetchVerificationRequests(),
-        fetchRefundRequests(),
-        fetchListings(),
-        fetchDisputes(),
-        fetchJobApplications()
+      // Add timeout to API calls to prevent hanging
+      const apiCallsWithTimeout = Promise.race([
+        Promise.allSettled([
+          fetchStats(),
+          fetchVerificationRequests(),
+          fetchRefundRequests(),
+          fetchListings(),
+          fetchDisputes(),
+          fetchJobApplications()
+        ]),
+        new Promise<never>((_, reject) => 
+          setTimeout(() => reject(new Error('API calls timeout')), 8000)
+        )
       ]);
+      
+      const results = await apiCallsWithTimeout as PromiseSettledResult<any>[];
       
       // Log which APIs failed but don't block the dashboard
       results.forEach((result, index) => {
