@@ -465,20 +465,23 @@ const AdminDashboardEnhanced: React.FC = () => {
     // CRITICAL SIMPLIFICATION: Remove complex initialization
     console.log('🔍 AdminDashboard: Simple initialization');
     
-    // Just load user data and mark as not loading
+    // Just load user data
     const adminUserData = localStorage.getItem('admin_user');
     if (adminUserData) {
       try {
         const userData = JSON.parse(adminUserData);
         setAdminUser(userData);
         console.log('✅ Admin user loaded:', userData.email);
+        
+        // Now safely load dashboard data
+        loadDataSafely();
       } catch (error) {
         console.error('❌ Error parsing admin user:', error);
+        setLoadingWithDebug(false);
       }
+    } else {
+      setLoadingWithDebug(false);
     }
-    
-    // Set loading to false immediately - skip complex data loading for now
-    setLoadingWithDebug(false);
     
   }, []); // Empty dependency array - run only once
   
