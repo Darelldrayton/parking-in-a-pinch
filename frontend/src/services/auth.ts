@@ -73,46 +73,21 @@ export interface TokenRefreshResponse {
 
 class AuthService {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    console.log('AuthService: Attempting login with:', credentials)
-    // Try DRF token endpoint first (returns simple token)
-    console.log('🔍 Trying DRF token endpoint: /auth-token/')
     let response
     try {
       response = await api.post('/auth-token/', credentials)
-      console.log('✅ DRF token endpoint success')
     } catch (drfError) {
-      console.log('❌ DRF token endpoint failed, trying JWT endpoint')
-      console.log('DRF error:', drfError.response?.status, drfError.response?.data)
       response = await api.post('/auth/login/', credentials)
-      console.log('✅ JWT endpoint success')
     }
-    console.log('AuthService: Login response status:', response.status)
-    console.log('AuthService: Login response data:', response.data)
-    console.log('🔍 Token format analysis:', {
-      hasToken: !!response.data.token,
-      hasAccess: !!response.data.access,
-      hasRefresh: !!response.data.refresh,
-      tokenType: response.data.token ? (response.data.token.startsWith('eyJ') ? 'JWT' : 'DRF') : 'none',
-      accessType: response.data.access ? (response.data.access.startsWith('eyJ') ? 'JWT' : 'DRF') : 'none'
-    })
     const data = response.data
-    
-    // Store tokens and user data
     this.storeAuthData(data)
-    console.log('AuthService: Auth data stored')
-    
     return data
   }
 
   async signup(data: SignupData): Promise<AuthResponse> {
-    // console.log('AuthService: Attempting signup with:', data)
     const response = await api.post('/auth/register/', data)
-    // console.log('AuthService: Signup response status:', response.status)
-    // console.log('AuthService: Signup response data:', response.data)
-    
     const rawData = response.data
     
-    // Transform response to match expected format
     const authData: AuthResponse = {
       access: rawData.tokens?.access || rawData.access,
       refresh: rawData.tokens?.refresh || rawData.refresh,
@@ -120,12 +95,7 @@ class AuthService {
       tokens: rawData.tokens
     }
     
-    // console.log('AuthService: Transformed auth data:', authData)
-    
-    // Store tokens and user data
     this.storeAuthData(authData)
-    // console.log('AuthService: Signup auth data stored')
-    
     return authData
   }
 
@@ -295,13 +265,7 @@ class AuthService {
   }
 
   getAccessToken(): string | null {
-    // CRITICAL: Check both token keys for compatibility
-    const token = localStorage.getItem('token') || localStorage.getItem('access_token')
-    console.log('🔍 getAccessToken:', token ? 'found' : 'missing', { 
-      hasToken: !!localStorage.getItem('token'),
-      hasAccessToken: !!localStorage.getItem('access_token')
-    })
-    return token
+    return localStorage.getItem('token') || localStorage.getItem('access_token')
   }
 
   getRefreshToken(): string | null {
@@ -309,18 +273,14 @@ class AuthService {
   }
 
   private storeAuthData(data: AuthResponse): void {
-    // Handle both DRF token format { token: "..." } and JWT format { access: "...", refresh: "..." }
-    const drfToken = data.token // DRF format
-    const accessToken = data.access || data.tokens?.access // JWT format
+    const drfToken = data.token
+    const accessToken = data.access || data.tokens?.access
     const refreshToken = data.refresh || data.tokens?.refresh
-
-    // Prefer DRF token if available (simpler format for Django)
     const tokenToStore = drfToken || accessToken
 
     if (tokenToStore) {
       localStorage.setItem('access_token', tokenToStore)
-      localStorage.setItem('token', tokenToStore) // CRITICAL: Store as 'token' for API interceptor
-      console.log('🔐 Token stored:', drfToken ? 'DRF format' : 'JWT format')
+      localStorage.setItem('token', tokenToStore)
     }
     if (refreshToken) {
       localStorage.setItem('refresh_token', refreshToken)
@@ -328,23 +288,14 @@ class AuthService {
     if (data.user) {
       localStorage.setItem('user', JSON.stringify(data.user))
     }
-    
-    console.log('🔐 AuthService: Stored tokens:', { 
-      drfToken: drfToken ? 'present' : 'missing',
-      accessToken: accessToken ? 'present' : 'missing',
-      tokenStored: tokenToStore ? 'present' : 'missing',
-      refresh_token: refreshToken ? 'present' : 'missing'
-    })
   }
 
   clearAuthData(): void {
-    // Clear authentication tokens (both JWT and DRF formats)
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
     localStorage.removeItem('user')
-    localStorage.removeItem('token') // CRITICAL: Clear DRF token that causes user data leakage
+    localStorage.removeItem('token')
     
-    // SECURITY FIX: Clear all user-specific cached data to prevent data leakage
     const userDataKeys = [
       'user_preferences',
       'draft_listings', 
@@ -356,7 +307,7 @@ class AuthService {
       'messages_cache',
       'parking_performance_metrics',
       'cachedUnreadCount',
-      'parking_app_backup', // Clear all backups containing user data
+      'parking_app_backup',
       'user_search_history',
       'user_favorites',
       'user_settings'
@@ -366,14 +317,11 @@ class AuthService {
       localStorage.removeItem(key)
     })
     
-    // Clear any cache keys that might contain user data (but not admin data)
     Object.keys(localStorage).forEach(key => {
       if (!key.startsWith('admin_') && (key.includes('cache') || key.includes('draft') || key.includes('user_'))) {
         localStorage.removeItem(key)
       }
     })
-    
-    console.log('🔐 All user data cleared from localStorage for security')
   }
 
   // SECURITY FIX: Dedicated admin logout function

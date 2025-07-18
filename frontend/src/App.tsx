@@ -88,29 +88,16 @@ const PageLoader = () => (
 
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, isLoading, token, user } = useAuth();
-  
-  console.log('🔐 ProtectedRoute check:', { 
-    isAuthenticated, 
-    isLoading, 
-    hasToken: !!token,
-    hasUser: !!user,
-    userEmail: user?.email,
-    path: window.location.pathname,
-    timestamp: new Date().toISOString()
-  });
+  const { isAuthenticated, isLoading } = useAuth();
   
   if (isLoading) {
-    console.log('🔐 ProtectedRoute: Showing loader due to isLoading=true');
     return <PageLoader />;
   }
   
   if (!isAuthenticated) {
-    console.log('🔐 ProtectedRoute: Redirecting to login - not authenticated');
     return <Navigate to="/login" replace />;
   }
   
-  console.log('🔐 ProtectedRoute: Allowing access - user is authenticated');
   return <>{children}</>;
 };
 
@@ -118,24 +105,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isLoading } = useAuth();
   
-  console.log('🔍 PublicRoute check:', { isAuthenticated, isLoading, path: window.location.pathname });
-  
   if (isLoading) {
     return <PageLoader />;
-  }
-  
-  // CRITICAL FIX: Don't redirect from login/signup pages if there's any auth issue
-  // Let these pages handle clearing invalid tokens
-  if (window.location.pathname === '/login' || window.location.pathname === '/signup') {
-    console.log('📍 PublicRoute: On auth page - allowing access regardless of auth state');
-    return <>{children}</>;
-  }
-  
-  // Check if we just logged in to prevent redirect loops
-  const justLoggedIn = sessionStorage.getItem('just_logged_in');
-  if (justLoggedIn) {
-    console.log('⏸️ PublicRoute: Skipping redirect - user just logged in');
-    return <>{children}</>;
   }
   
   return !isAuthenticated ? <>{children}</> : <Navigate to="/dashboard" replace />;

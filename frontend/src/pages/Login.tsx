@@ -60,38 +60,10 @@ const Login: React.FC = () => {
 
   const from = location.state?.from?.pathname || '/dashboard';
 
-  // Only clear tokens if explicitly navigated to login (not from a protected route redirect)
   React.useEffect(() => {
-    // CRITICAL: Don't clear tokens if we just logged in!
-    const justLoggedIn = sessionStorage.getItem('just_logged_in');
-    if (justLoggedIn) {
-      console.log('🛑 Login page mounted but user just logged in - NOT clearing tokens');
-      return;
-    }
-    
-    // Only clear tokens if user explicitly came to login (e.g., clicked logout or login button)
-    // Don't clear if redirected here from a protected route
-    const navigationEntries = window.performance.getEntriesByType('navigation');
-    const isDirectNavigation = navigationEntries.length > 0 && 
-                              (navigationEntries[0] as PerformanceNavigationTiming).type === 'navigate';
-    
-    if (isDirectNavigation || window.location.hash === '#force-clear') {
-      console.log('🔄 Direct navigation to login - clearing tokens');
-      
-      // Clear regular tokens
-      localStorage.removeItem('token');
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      localStorage.removeItem('user');
-      
-      // Clear admin tokens
-      localStorage.removeItem('admin_access_token');
-      localStorage.removeItem('admin_refresh_token');
-      localStorage.removeItem('admin_user');
-      
-      console.log('✅ Tokens cleared for fresh login');
-    } else {
-      console.log('📍 Redirected to login - keeping tokens for now');
+    if (window.location.hash === '#force-clear') {
+      localStorage.clear();
+      window.location.hash = '';
     }
   }, []);
 
@@ -107,60 +79,9 @@ const Login: React.FC = () => {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    console.log('Form submitted:', data);
-    console.log('📱 Mobile device detected:', isMobile);
-    console.log('📱 User agent:', navigator.userAgent);
-    
     try {
-      console.log('About to call login...');
       await login(data.email, data.password);
-      
-      // Check if user is admin and redirect to admin login page
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      console.log('🔍 Login successful, checking user type:', { 
-        email: user.email, 
-        is_staff: user.is_staff, 
-        is_superuser: user.is_superuser 
-      });
-      
-      if (user.is_staff || user.is_superuser || user.email === 'darelldrayton93@gmail.com') {
-        console.log('🚨 Admin user detected on regular login page - copying tokens to admin storage');
-        
-        // Copy tokens to admin storage (don't clear regular tokens!)
-        const accessToken = localStorage.getItem('access_token');
-        const refreshToken = localStorage.getItem('refresh_token');
-        const userJson = localStorage.getItem('user');
-        
-        if (accessToken) {
-          localStorage.setItem('admin_access_token', accessToken);
-          console.log('✅ Copied access token to admin storage');
-        }
-        if (refreshToken) {
-          localStorage.setItem('admin_refresh_token', refreshToken);
-          console.log('✅ Copied refresh token to admin storage');
-        }
-        if (userJson) {
-          localStorage.setItem('admin_user', userJson);
-          console.log('✅ Copied user data to admin storage');
-        }
-        
-        enqueueSnackbar('Admin account detected. Redirecting to admin portal...', { variant: 'info' });
-        
-        // Redirect to admin dashboard directly (not login page)
-        navigate('/admin/dashboard', { replace: true });
-        return;
-      }
-      
-      // Continue with regular user login
       enqueueSnackbar('Welcome back!', { variant: 'success' });
-      
-      // Clear the just_logged_in flag after a longer delay to ensure navigation completes
-      // This is especially important for admin redirects which may take longer
-      setTimeout(() => {
-        console.log('🧹 Clearing just_logged_in flag after successful navigation');
-        sessionStorage.removeItem('just_logged_in');
-      }, 3000);
-      
       navigate(from, { replace: true });
     } catch (error: any) {
       enqueueSnackbar(error.message || 'Login failed', { variant: 'error' });

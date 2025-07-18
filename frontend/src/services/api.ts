@@ -9,10 +9,6 @@ const API_BASE_URL = '/api/v1'
 
 // REMOVED: Hardcoded production token - let users authenticate properly
 
-console.log('🔗 API BASE URL:', API_BASE_URL)
-console.log('🌐 Environment VITE_API_URL:', import.meta.env.VITE_API_URL)
-// console.log('🔑 FORCED DRF Token Auth (Backend requires Token format, not Bearer)')
-// console.log('🎯 This should fix login + messaging on parkinginapinch.com')
 
 // Track refresh attempts to prevent infinite loops
 let refreshAttempts = 0
@@ -30,11 +26,6 @@ const api = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
-    // console.log('API Request:', config.method?.toUpperCase(), config.url, config.data)
-    // console.log('API Base URL:', API_BASE_URL)
-    // console.log('Full URL:', `${API_BASE_URL}${config.url}`)
-    
-    // CRITICAL: Don't send tokens for auth endpoints (login, signup, etc.)
     const isAuthEndpoint = config.url?.includes('/auth/') && (
                           config.url?.includes('/login') || 
                           config.url?.includes('/register') ||
@@ -42,50 +33,20 @@ api.interceptors.request.use(
                           config.url?.includes('auth-token'))
     
     if (isAuthEndpoint) {
-      console.log('🔓 Auth endpoint detected - not sending token')
       return config
     }
     
-    // Determine if this is an admin request
-    const isAdminRequest = config.url?.includes('/admin/') || 
-                          config.url?.includes('/users/admin/') ||
-                          config.url?.includes('/payments/admin/') ||
-                          config.url?.includes('/listings/admin/') ||
-                          config.url?.includes('/disputes/admin/')
-    
+    const isAdminRequest = config.url?.includes('/admin/')
     let token = null
     
     if (isAdminRequest) {
-      // For admin requests, prefer admin token, then regular DRF token
       token = localStorage.getItem('admin_access_token') || localStorage.getItem('token')
-      if (token) {
-        const tokenType = token.includes('.') ? 'JWT format' : 'DRF format'
-        // console.log('✅ Using admin Token authentication:', token.substring(0, 8) + '...')
-        // console.log('🔍 Token appears to be:', tokenType)
-        
-        // CRITICAL: Admin endpoints need DRF tokens
-        if (tokenType === 'JWT format') {
-          console.error('❌ WARNING: Admin endpoint using JWT token - this may cause 401 errors')
-          console.error('❌ Admin endpoints require DRF tokens, not JWT tokens')
-        }
-      } else {
-        // console.log('⚠️ No admin or regular DRF token found for admin request - trying JWT fallback')
-        token = localStorage.getItem('access_token')
-      }
     } else {
-      // For regular requests, prefer DRF token over JWT
       token = localStorage.getItem('token') || localStorage.getItem('access_token')
     }
     
     if (token) {
       config.headers.Authorization = `Token ${token}`
-      console.log('✅ Using Token authentication format:', token.substring(0, 8) + '...')
-    } else {
-      console.log('⚠️ No authentication token found - request will be anonymous')
-      console.log('🔍 Available localStorage tokens:', {
-        token: localStorage.getItem('token') ? 'present' : 'missing',
-        access_token: localStorage.getItem('access_token') ? 'present' : 'missing'
-      })
     }
     return config
   },
@@ -97,36 +58,23 @@ api.interceptors.request.use(
 // Response interceptor for error handling
 api.interceptors.response.use(
   (response: AxiosResponse) => {
-    // console.log('API Response:', response.status, response.data)
-    // Reset refresh attempts on successful response
     refreshAttempts = 0
     return response
   },
   async (error: AxiosError) => {
-    console.error('API Error:', error.response?.status, error.response?.data)
     const originalRequest = error.config as any
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
       
-      // Check if we're already on login pages to prevent redirect loops
       const currentPath = window.location.pathname
       if (currentPath === '/admin/login' || currentPath === '/login') {
         return Promise.reject(error)
       }
       
-      // CRITICAL FIX: Only redirect to admin login if the REQUEST was for admin endpoints
-      // Check the request URL, not the current page path
-      const isAdminApiRequest = originalRequest.url?.includes('/admin/') || 
-                               originalRequest.url?.includes('/users/admin/') ||
-                               originalRequest.url?.includes('/payments/admin/') ||
-                               originalRequest.url?.includes('/listings/admin/') ||
-                               originalRequest.url?.includes('/disputes/admin/')
+      const isAdminApiRequest = originalRequest.url?.includes('/admin/')
       
-      if (isAdminApiRequest && !originalRequest.url?.includes('/login')) {
-        console.warn('🔒 Admin API request failed - clearing admin tokens and redirecting to admin login')
-        localStorage.removeItem('access_token')
-        localStorage.removeItem('refresh_token')
+      if (isAdminApiRequest) {
         localStorage.removeItem('admin_access_token')
         localStorage.removeItem('admin_refresh_token')
         localStorage.removeItem('admin_user')
@@ -134,153 +82,53 @@ api.interceptors.response.use(
         return Promise.reject(error)
       }
       
-      // Check refresh attempt limit to prevent infinite loops
       if (refreshAttempts >= MAX_REFRESH_ATTEMPTS) {
-        console.warn('🔒 Max refresh attempts reached - clearing tokens and redirecting')
         refreshAttempts = 0
-        localStorage.clear()
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('refresh_token')
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
         window.location.href = '/login'
         return Promise.reject(error)
       }
       
       refreshAttempts++
       
-      // On mobile, be more careful with redirects but don't block admin functionality entirely
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-      if (isMobile) {
-        console.log('📱 Mobile device detected - using mobile-friendly auth flow')
-      }
-      
-      // Determine if this was an admin request
-      const isAdminRequest = originalRequest.url?.includes('/admin/') || 
-                            originalRequest.url?.includes('/users/admin/') ||
-                            originalRequest.url?.includes('/payments/admin/') ||
-                            originalRequest.url?.includes('/listings/admin/') ||
-                            originalRequest.url?.includes('/disputes/admin/')
-      
-      if (isAdminRequest) {
-        // Handle admin token refresh
-        const adminRefreshToken = localStorage.getItem('admin_refresh_token')
-        if (adminRefreshToken) {
-          try {
-            const response = await axios.post(`${API_BASE_URL}/auth/admin/token/refresh/`, {
-              refresh: adminRefreshToken
-            })
-            
-            const { access } = response.data
-            localStorage.setItem('admin_access_token', access)
-            
-            // Retry original request with new admin token
-            originalRequest.headers.Authorization = `Token ${access}`
-            return api(originalRequest)
-          } catch (refreshError) {
-            console.error('Admin token refresh failed:', refreshError)
-            // Admin refresh failed, redirect to admin login
-            console.warn('Admin token refresh failed, clearing session')
-            
-            // Add longer delay on mobile to prevent race conditions
-            const redirectDelay = isMobile ? 300 : 100
-            setTimeout(() => {
-              localStorage.removeItem('admin_access_token')
-              localStorage.removeItem('admin_refresh_token')
-              localStorage.removeItem('admin_user')
-              
-              // Only redirect if not already redirecting
-              if (!sessionStorage.getItem('admin_redirecting')) {
-                sessionStorage.setItem('admin_redirecting', 'true')
-                if (isMobile) {
-                  console.log('📱 Mobile admin redirect to login')
-                }
-                window.location.href = '/admin/login'
-              }
-            }, redirectDelay)
-            
-            return Promise.reject(refreshError)
-          }
-        } else {
-          // No admin refresh token, redirect to admin login
-          console.warn('No admin refresh token available')
+      const refreshToken = localStorage.getItem('refresh_token')
+      if (refreshToken) {
+        try {
+          const response = await axios.post(`${API_BASE_URL}/auth/token/refresh/`, {
+            refresh: refreshToken
+          })
           
-          // Add longer delay on mobile to prevent race conditions
-          const redirectDelay = isMobile ? 300 : 100
-          setTimeout(() => {
-            localStorage.removeItem('admin_access_token')
-            localStorage.removeItem('admin_refresh_token')
-            localStorage.removeItem('admin_user')
-            
-            // Only redirect if not already redirecting
-            if (!sessionStorage.getItem('admin_redirecting')) {
-              sessionStorage.setItem('admin_redirecting', 'true')
-              if (isMobile) {
-                console.log('📱 Mobile admin redirect to login (no refresh token)')
-              }
-              window.location.href = '/admin/login'
-            }
-          }, redirectDelay)
+          const { access } = response.data
+          localStorage.setItem('access_token', access)
+          localStorage.setItem('token', access)
           
-          return Promise.reject(error)
+          originalRequest.headers.Authorization = `Token ${access}`
+          return api(originalRequest)
+        } catch (refreshError) {
+          localStorage.removeItem('access_token')
+          localStorage.removeItem('refresh_token')
+          localStorage.removeItem('token')
+          localStorage.removeItem('user')
+          window.location.href = '/login'
+          return Promise.reject(refreshError)
         }
       } else {
-        // Handle regular user token refresh
-        const refreshToken = localStorage.getItem('refresh_token')
-        const drfToken = localStorage.getItem('token')
-        
-        // If we have a DRF token (no refresh mechanism), just redirect to login
-        if (drfToken && !refreshToken) {
-          console.log('🔑 DRF token expired - redirecting to login')
-          localStorage.removeItem('token')
-          localStorage.removeItem('access_token')
-          localStorage.removeItem('user')
-          
-          // Don't redirect if we're in the middle of login process
-          if (!sessionStorage.getItem('just_logged_in')) {
-            window.location.href = '/login'
-          }
-          return Promise.reject(error)
-        }
-        
-        // Try JWT refresh if we have a refresh token
-        if (refreshToken) {
-          try {
-            const response = await axios.post(`${API_BASE_URL}/auth/token/refresh/`, {
-              refresh: refreshToken
-            })
-            
-            const { access } = response.data
-            localStorage.setItem('access_token', access)
-            localStorage.setItem('token', access) // CRITICAL: Store as 'token' for API interceptor
-            
-            // Retry original request with new token - USE TOKEN FORMAT NOT BEARER
-            originalRequest.headers.Authorization = `Token ${access}`
-            return api(originalRequest)
-          } catch (refreshError) {
-            // Refresh failed, logout user
-            console.log('🔒 Token refresh failed - clearing credentials')
-            localStorage.removeItem('access_token')
-            localStorage.removeItem('refresh_token')
-            localStorage.removeItem('token')
-            localStorage.removeItem('user')
-            
-            // Don't redirect if we're in the middle of login process
-            if (!sessionStorage.getItem('just_logged_in')) {
-              window.location.href = '/login'
-            }
-            return Promise.reject(refreshError)
-          }
-        }
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('refresh_token')
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        window.location.href = '/login'
+        return Promise.reject(error)
       }
     }
 
-    // Handle other errors
-    if (error.response?.status && error.response.status >= 400) {
+    if (error.response?.status && error.response.status >= 400 && error.response?.status !== 401) {
       const errorData = error.response?.data as any
-      const message = errorData?.detail || 
-                     errorData?.message || 
-                     'An error occurred'
-      
-      if (error.response?.status !== 401) {
-        toast.error(message)
-      }
+      const message = errorData?.detail || errorData?.message || 'An error occurred'
+      toast.error(message)
     }
 
     return Promise.reject(error)
