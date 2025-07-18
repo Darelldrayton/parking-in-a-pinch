@@ -462,96 +462,25 @@ const AdminDashboardEnhanced: React.FC = () => {
 
   // Check admin auth from localStorage
   useEffect(() => {
-    // CRITICAL FIX: Prevent multiple initializations
-    if (hasInitialized) {
-      console.log('🔍 AdminDashboard: Already initialized (state check), skipping...');
-      return;
-    }
+    // CRITICAL SIMPLIFICATION: Remove complex initialization
+    console.log('🔍 AdminDashboard: Simple initialization');
     
-    console.log('🔍 AdminDashboard: useEffect triggered - checking authentication (ONE TIME ONLY)...');
-    console.log('🔍 Path:', window.location.pathname);
-    console.log('🔍 Timestamp:', new Date().toISOString());
-    console.log('🔍 Current loading state:', loading);
-    console.log('🔍 Current adminUser state:', adminUser);
-    
-    // Disable WebSocket for admin pages to prevent infinite loops
-    if (typeof window !== 'undefined') {
-      (window as any).disableWebSocket = true;
-      console.log('🔒 WebSocket disabled for admin dashboard');
-    }
-    
-    // CRITICAL FIX: Completely separate admin auth from regular auth
-    // Only clear regular auth tokens if they exist and admin tokens are present
-    // This prevents clearing tokens during initial login
-    const hasAdminTokens = localStorage.getItem('admin_access_token');
-    if (hasAdminTokens && (localStorage.getItem('access_token') || localStorage.getItem('refresh_token'))) {
-      console.log('🔄 Clearing regular auth tokens to prevent JWT refresh loops');
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-    }
-    
-    const initDashboard = async () => {
+    // Just load user data and mark as not loading
+    const adminUserData = localStorage.getItem('admin_user');
+    if (adminUserData) {
       try {
-        // CRITICAL FIX: AdminProtectedRoute already handles authentication
-        // DO NOT check authentication here to prevent infinite loops
-        console.log('✅ AdminDashboard: Initializing (auth already verified by AdminProtectedRoute)');
-        
-        // Just load the user data that AdminProtectedRoute already verified
-        const adminUserData = localStorage.getItem('admin_user');
-        
-        if (!adminUserData) {
-          console.log('⚠️ No admin user data found, but proceeding (AdminProtectedRoute should handle this)');
-          return;
-        }
-        
-        // Parse user data directly without complex validation
         const userData = JSON.parse(adminUserData);
-        console.log('✅ Admin user loaded:', userData.email);
-        console.log('✅ Setting adminUser state...');
         setAdminUser(userData);
-        console.log('✅ Admin user state should be set now');
-        
-        // Only load data if we haven't already loaded it
-        if (!hasLoadedDataRef.current) {
-          console.log('📊 Loading data for first time...');
-          hasLoadedDataRef.current = true;
-          
-          // Add timeout to prevent infinite loading
-          const loadingTimeout = setTimeout(() => {
-            console.log('⏰ Loading timeout - forcing loading to false');
-            setLoadingWithDebug(false);
-          }, 10000); // 10 second timeout
-          
-          try {
-            await loadDataSafely();
-          } finally {
-            clearTimeout(loadingTimeout);
-          }
-        } else {
-          console.log('📊 Data already loaded, skipping...');
-          setLoadingWithDebug(false); // Make sure loading is false when data is already loaded
-        }
+        console.log('✅ Admin user loaded:', userData.email);
       } catch (error) {
-        console.error('❌ Error parsing admin user data:', error);
-        navigate('/admin/login', { replace: true });
-        return;
-      } finally {
-        console.log('🔍 Setting hasInitialized to true');
-        setHasInitialized(true);
-        // Don't set loading to false here - let loadDataSafely handle it
+        console.error('❌ Error parsing admin user:', error);
       }
-    };
+    }
     
-    initDashboard();
+    // Set loading to false immediately - skip complex data loading for now
+    setLoadingWithDebug(false);
     
-    // Cleanup function to re-enable WebSocket when leaving admin dashboard
-    return () => {
-      if (typeof window !== 'undefined') {
-        (window as any).disableWebSocket = false;
-        console.log('🔓 WebSocket re-enabled when leaving admin dashboard');
-      }
-    };
-  }, [hasInitialized]);
+  }, []); // Empty dependency array - run only once
   
   const loadDataSafely = async () => {
     console.log('📊 Loading dashboard data...');

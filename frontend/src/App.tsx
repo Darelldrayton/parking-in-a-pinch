@@ -61,8 +61,8 @@ const AdminLogin = lazy(() => import('./pages/AdminLogin').then(module => {
   console.log('🆕 AdminLogin lazy loaded - new version');
   return module;
 }));
-// TEMPORARY: Use simple dashboard to test if loop is in AdminDashboardEnhanced
-const AdminDashboard = lazy(() => import('./pages/AdminDashboardSimple'));
+// Test simplified AdminDashboardEnhanced
+const AdminDashboard = lazy(() => import('./pages/AdminDashboardEnhanced'));
 const AdminJobApplications = lazy(() => import('./pages/AdminJobApplications'));
 // 🚨 FORCE CACHE CLEAR - BUILD v2025-01-02-20:42 PST
 const AdminProtectedRoute = lazy(() => import('./components/auth/AdminProtectedRoute'));
