@@ -255,6 +255,29 @@ const AdminDashboardEnhanced: React.FC = () => {
   const [adminUser, setAdminUser] = useState<any>(null);
   const [tabValue, setTabValue] = useState(0);
   const [loading, setLoading] = useState(true);
+  
+  // 🐛 AGGRESSIVE DEBUG: Track loading state changes
+  const setLoadingWithDebug = (newLoading: boolean) => {
+    console.log('🔄 LOADING STATE CHANGE:', { 
+      from: loading, 
+      to: newLoading, 
+      timestamp: new Date().toISOString(),
+      stack: new Error().stack?.split('\n').slice(1, 4).join('\n')
+    });
+    setLoading(newLoading);
+  };
+  
+  // 🚨 EMERGENCY FALLBACK: Force loading to false after 5 seconds
+  useEffect(() => {
+    const emergencyTimeout = setTimeout(() => {
+      if (loading) {
+        console.log('🚨 EMERGENCY FALLBACK: Forcing loading to false after 5 seconds');
+        setLoadingWithDebug(false);
+      }
+    }, 5000);
+    
+    return () => clearTimeout(emergencyTimeout);
+  }, [loading]);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [verificationRequests, setVerificationRequests] = useState<VerificationRequest[]>([]);
   const [refundRequests, setRefundRequests] = useState<RefundRequest[]>([]);
@@ -495,7 +518,7 @@ const AdminDashboardEnhanced: React.FC = () => {
           // Add timeout to prevent infinite loading
           const loadingTimeout = setTimeout(() => {
             console.log('⏰ Loading timeout - forcing loading to false');
-            setLoading(false);
+            setLoadingWithDebug(false);
           }, 10000); // 10 second timeout
           
           try {
@@ -505,7 +528,7 @@ const AdminDashboardEnhanced: React.FC = () => {
           }
         } else {
           console.log('📊 Data already loaded, skipping...');
-          setLoading(false); // Make sure loading is false when data is already loaded
+          setLoadingWithDebug(false); // Make sure loading is false when data is already loaded
         }
       } catch (error) {
         console.error('❌ Error parsing admin user data:', error);
@@ -532,7 +555,7 @@ const AdminDashboardEnhanced: React.FC = () => {
   const loadDataSafely = async () => {
     console.log('📊 Loading dashboard data...');
     console.log('📊 Loading state before:', loading);
-    setLoading(true);
+    setLoadingWithDebug(true);
     setError(null);
     
     try {
@@ -570,8 +593,8 @@ const AdminDashboardEnhanced: React.FC = () => {
     } finally {
       // CRITICAL: Always stop loading, even if APIs fail
       console.log('📊 Setting loading to false in finally block');
-      setLoading(false);
-      console.log('📊 Loading state after setLoading(false):', false);
+      setLoadingWithDebug(false);
+      console.log('📊 Loading state after setLoadingWithDebug(false):', false);
     }
   };
 
@@ -1397,8 +1420,22 @@ const AdminDashboardEnhanced: React.FC = () => {
       loading, 
       adminUser: !!adminUser,
       hasInitialized,
-      reason: loading ? 'loading=true' : 'adminUser=null'
+      reason: loading ? 'loading=true' : 'adminUser=null',
+      timestamp: new Date().toISOString()
     });
+    
+    // 🐛 AGGRESSIVE DEBUG: Log this every 2 seconds to track if stuck
+    if (loading) {
+      setTimeout(() => {
+        console.log('🚨 STILL LOADING AFTER 2 SECONDS:', {
+          loading,
+          adminUser: !!adminUser,
+          hasInitialized,
+          timestamp: new Date().toISOString()
+        });
+      }, 2000);
+    }
+    
     return (
       <AdminLoadingScreen 
         message="Initializing admin panel and loading data..."
@@ -1439,7 +1476,7 @@ const AdminDashboardEnhanced: React.FC = () => {
               variant="outlined"
               startIcon={<Refresh />}
               onClick={async () => {
-                setLoading(true);
+                setLoadingWithDebug(true);
                 toast.info('Refreshing dashboard data...');
                 await Promise.all([
                   fetchStats(),
@@ -1449,7 +1486,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                   fetchDisputes(),
                   fetchUsers()
                 ]);
-                setLoading(false);
+                setLoadingWithDebug(false);
                 toast.success('Dashboard refreshed successfully!');
               }}
               disabled={loading}
