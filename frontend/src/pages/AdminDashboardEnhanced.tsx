@@ -3115,7 +3115,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                             </TableCell>
                             <TableCell>
                               <Typography variant="body2">
-                                {format(new Date(application.applied_date), 'MMM d, yyyy')}
+                                {application.applied_date ? format(new Date(application.applied_date), 'MMM d, yyyy') : 'N/A'}
                               </Typography>
                             </TableCell>
                             <TableCell>
@@ -3323,7 +3323,7 @@ const AdminDashboardEnhanced: React.FC = () => {
                 </Grid>
                 <Grid item xs={6}>
                   <Typography variant="subtitle2" color="text.secondary">Applied Date</Typography>
-                  <Typography variant="body1">{format(new Date(selectedApplication.applied_date), 'MMM d, yyyy')}</Typography>
+                  <Typography variant="body1">{selectedApplication.applied_date ? format(new Date(selectedApplication.applied_date), 'MMM d, yyyy') : 'N/A'}</Typography>
                 </Grid>
                 <Grid item xs={12}>
                   <Typography variant="subtitle2" color="text.secondary">Status</Typography>
