@@ -95,14 +95,23 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     isLoading, 
     hasToken: !!token,
     hasUser: !!user,
-    path: window.location.pathname 
+    userEmail: user?.email,
+    path: window.location.pathname,
+    timestamp: new Date().toISOString()
   });
   
   if (isLoading) {
+    console.log('🔐 ProtectedRoute: Showing loader due to isLoading=true');
     return <PageLoader />;
   }
   
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+  if (!isAuthenticated) {
+    console.log('🔐 ProtectedRoute: Redirecting to login - not authenticated');
+    return <Navigate to="/login" replace />;
+  }
+  
+  console.log('🔐 ProtectedRoute: Allowing access - user is authenticated');
+  return <>{children}</>;
 };
 
 // Public Route Component (redirect if already authenticated)

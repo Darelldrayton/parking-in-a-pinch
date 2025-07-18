@@ -143,6 +143,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       sessionStorage.setItem('just_logged_in', 'true')
       console.log('🎯 AuthContext: Set just_logged_in flag to prevent useEffect clearing')
       
+      // Verify state is actually set
+      console.log('🔍 AuthContext: Final login state check:', {
+        userSet: !!user,
+        tokenSet: !!token,
+        isAuthenticated: !!user && !!token,
+        userEmail: response.user?.email
+      })
+      
       console.log('Welcome back!')
     } catch (error: any) {
       console.error('AuthContext: Login error:', error)
@@ -314,6 +322,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('user', JSON.stringify(newUser))
   }
 
+  const isAuthenticated = !!token && !!user
+  
+  // Debug auth state changes
+  React.useEffect(() => {
+    console.log('🔍 AuthContext: State changed:', {
+      hasUser: !!user,
+      hasToken: !!token,
+      isAuthenticated,
+      isLoading,
+      userEmail: user?.email
+    })
+  }, [user, token, isAuthenticated, isLoading])
+
   const value = {
     user,
     token,
@@ -323,7 +344,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     updateUser,
     setUserState,
     isLoading,
-    isAuthenticated: !!token && !!user
+    isAuthenticated
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
