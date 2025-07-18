@@ -38,6 +38,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    // Skip auth initialization on admin pages
+    const isAdminPage = window.location.pathname.includes('/admin');
+    if (isAdminPage) {
+      console.log('🔒 AuthContext: Skipping initialization on admin page');
+      setIsLoading(false);
+      return;
+    }
+    
     // Clear any stale data on first load
     const storedToken = authService.getAccessToken()
     const storedUser = authService.getStoredUser()

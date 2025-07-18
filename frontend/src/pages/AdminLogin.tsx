@@ -81,7 +81,13 @@ export default function AdminLogin() {
         return;
       }
       
-      // Store JWT tokens for admin use
+      // CRITICAL: Clear any regular user auth data to prevent conflicts
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      
+      // Store JWT tokens for admin use only
       const accessToken = response.data.access;
       const refreshToken = response.data.refresh;
       
