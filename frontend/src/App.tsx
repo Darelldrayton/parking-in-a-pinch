@@ -115,15 +115,40 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   return !isAuthenticated ? <>{children}</> : <Navigate to="/dashboard" replace />;
 };
 
+// Admin Routes Component (bypasses regular auth)
+function AdminRoutes() {
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/dashboard" element={<AdminProtectedRoute redirectTo="/admin/login"><AdminDashboard /></AdminProtectedRoute>} />
+        <Route path="/admin/job-applications" element={<AdminProtectedRoute redirectTo="/admin/login"><AdminJobApplications /></AdminProtectedRoute>} />
+        <Route path="/admin/cleanup-listings" element={<AdminProtectedRoute redirectTo="/admin/login"><CleanupListings /></AdminProtectedRoute>} />
+        <Route path="/admin/clear-all-listings" element={<AdminProtectedRoute redirectTo="/admin/login"><ClearAllListings /></AdminProtectedRoute>} />
+        {/* Fallback for unmatched admin routes */}
+        <Route path="/admin/*" element={<Navigate to="/admin/login" replace />} />
+      </Routes>
+    </Suspense>
+  );
+}
+
 function AppRoutes() {
   const { isAuthenticated } = useAuth();
+  
+  // Don't initialize notifications on admin pages
+  const isAdminPage = window.location.pathname.includes('/admin');
 
-  // Initialize notification service when user is authenticated
+  // Initialize notification service when user is authenticated (but not on admin pages)
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !isAdminPage) {
       notificationService.initialize();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isAdminPage]);
+
+  // If this is an admin page, use separate admin routing
+  if (isAdminPage) {
+    return <AdminRoutes />;
+  }
 
   return (
     <Suspense fallback={<PageLoader />}>
@@ -322,12 +347,7 @@ function AppRoutes() {
         <Route path="/host-insurance" element={<Layout><HostInsurance /></Layout>} />
         <Route path="/host-resources" element={<Layout><HostResources /></Layout>} />
         
-        {/* Admin Routes */}
-        <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/admin/dashboard" element={<AdminProtectedRoute redirectTo="/admin/login"><AdminDashboard /></AdminProtectedRoute>} />
-        <Route path="/admin/job-applications" element={<AdminProtectedRoute redirectTo="/admin/login"><AdminJobApplications /></AdminProtectedRoute>} />
-        <Route path="/admin/cleanup-listings" element={<AdminProtectedRoute redirectTo="/admin/login"><CleanupListings /></AdminProtectedRoute>} />
-        <Route path="/admin/clear-all-listings" element={<AdminProtectedRoute redirectTo="/admin/login"><ClearAllListings /></AdminProtectedRoute>} />
+        {/* Admin Routes moved to separate AdminRoutes component */}
         
         {/* Production routes only - test routes removed for security */}
         

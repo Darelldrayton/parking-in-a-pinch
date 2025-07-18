@@ -20,6 +20,7 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({
       console.log('🔐 AdminProtectedRoute: Checking authentication (ONE TIME ONLY)...');
       console.log('🔐 Current path:', window.location.pathname);
       console.log('🔐 Timestamp:', new Date().toISOString());
+      console.log('🔐 RedirectTo prop:', redirectTo);
       
       // Check if user just logged in - give them time to set up (but only once)
       const justLoggedIn = sessionStorage.getItem('just_logged_in');
@@ -131,7 +132,8 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({
 
   // Redirect to login if not authenticated
   if (isAuthenticated === false) {
-    console.log('🚨 SECURITY: Unauthenticated access blocked, redirecting to login');
+    console.log('🚨 SECURITY: Unauthenticated access blocked, redirecting to:', redirectTo);
+    console.log('🚨 Current window location:', window.location.href);
     return <Navigate to={redirectTo} replace />;
   }
 
