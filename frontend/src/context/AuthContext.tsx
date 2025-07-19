@@ -38,9 +38,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Skip auth initialization on admin pages
+    // Skip regular auth initialization on admin pages, but allow admin login page
     const isAdminPage = window.location.pathname.includes('/admin');
-    if (isAdminPage) {
+    const isAdminLoginPage = window.location.pathname === '/admin/login';
+    if (isAdminPage && !isAdminLoginPage) {
       console.log('🔒 AuthContext: Skipping initialization on admin page');
       setIsLoading(false);
       return;
@@ -66,9 +67,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true)
     try {
       const response = await authService.login({ email, password })
-      setUser(response.user)
       const token = response.token || response.access || response.tokens?.access || ''
       setToken(token)
+      
+      // Fetch complete user profile after login to ensure we have all data including profile photo
+      try {
+        const fullUserProfile = await authService.getCurrentUser()
+        setUser(fullUserProfile)
+      } catch (error) {
+        // If fetching full profile fails, use the login response user data
+        console.warn('Failed to fetch full user profile, using login response data', error)
+        setUser(response.user)
+      }
     } catch (error: any) {
       const message = error.response?.data?.detail || 
                      error.response?.data?.non_field_errors?.[0] ||
@@ -93,9 +103,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       const response = await authService.signup(signupData)
-      setUser(response.user)
       const token = response.token || response.access || response.tokens?.access || ''
       setToken(token)
+      
+      // Fetch complete user profile after signup to ensure we have all data
+      try {
+        const fullUserProfile = await authService.getCurrentUser()
+        setUser(fullUserProfile)
+      } catch (error) {
+        // If fetching full profile fails, use the signup response user data
+        console.warn('Failed to fetch full user profile after signup, using response data', error)
+        setUser(response.user)
+      }
     } catch (error: any) {
       const message = error.response?.data?.detail || 
                      error.response?.data?.email?.[0] ||

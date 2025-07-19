@@ -36,11 +36,13 @@ api.interceptors.request.use(
       return config
     }
     
+    // Check if we're on an admin page - use admin tokens for ALL API calls on admin pages
+    const isOnAdminPage = window.location.pathname.includes('/admin')
     const isAdminRequest = config.url?.includes('/admin/')
     let token = null
     
-    if (isAdminRequest) {
-      token = localStorage.getItem('admin_access_token') || localStorage.getItem('token')
+    if (isOnAdminPage || isAdminRequest) {
+      token = localStorage.getItem('admin_access_token')
     } else {
       token = localStorage.getItem('token') || localStorage.getItem('access_token')
     }
@@ -73,9 +75,11 @@ api.interceptors.response.use(
         return Promise.reject(error)
       }
       
+      // Check if we're on an admin page OR if it's an admin API request
+      const isOnAdminPage = currentPath.includes('/admin')
       const isAdminApiRequest = originalRequest.url?.includes('/admin/')
       
-      if (isAdminApiRequest) {
+      if (isOnAdminPage || isAdminApiRequest) {
         localStorage.removeItem('admin_access_token')
         localStorage.removeItem('admin_refresh_token')
         localStorage.removeItem('admin_user')

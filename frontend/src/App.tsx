@@ -61,7 +61,7 @@ const AdminLogin = lazy(() => import('./pages/AdminLogin').then(module => {
   console.log('🆕 AdminLogin lazy loaded - new version');
   return module;
 }));
-// Test simplified AdminDashboardEnhanced
+// Use full AdminDashboard now that backend is working
 const AdminDashboard = lazy(() => import('./pages/AdminDashboardEnhanced'));
 const AdminJobApplications = lazy(() => import('./pages/AdminJobApplications'));
 // Import AdminProtectedRoute directly (not lazy) to avoid routing issues

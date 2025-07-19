@@ -267,7 +267,7 @@ def get_user_reputation_score(user):
     
     # Verification bonus
     verification_bonus = 0
-    if user.is_verified():
+    if user.is_fully_verified():
         verification_bonus = 10
     
     # Calculate weighted average

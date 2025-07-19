@@ -174,7 +174,7 @@ class UserViewSet(ModelViewSet):
             'total_reviews_as_host': user.total_reviews_as_host,
             'average_rating_as_guest': user.average_rating_as_guest,
             'total_reviews_as_guest': user.total_reviews_as_guest,
-            'is_verified': user.is_verified(),
+            'is_verified': user.is_fully_verified(),
             'verification_status': {
                 'email': user.is_email_verified,
                 'phone': user.is_phone_verified,

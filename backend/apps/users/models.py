@@ -244,7 +244,7 @@ class User(AbstractUser):
         """Check if user can book parking spots."""
         return self.user_type in [self.UserType.SEEKER, self.UserType.BOTH]
     
-    def is_verified(self):
+    def is_fully_verified(self):
         """Check if user is fully verified."""
         return self.is_email_verified and self.is_identity_verified
     

@@ -255,11 +255,21 @@ class AuthService {
   }
 
   getStoredUser(): User | null {
+    // Skip regular user data on admin pages
+    const isAdminPage = window.location.pathname.includes('/admin')
+    if (isAdminPage) {
+      return null
+    }
     const userStr = localStorage.getItem('user')
     return userStr ? JSON.parse(userStr) : null
   }
 
   getAccessToken(): string | null {
+    // Skip regular auth tokens on admin pages
+    const isAdminPage = window.location.pathname.includes('/admin')
+    if (isAdminPage) {
+      return null
+    }
     return localStorage.getItem('token') || localStorage.getItem('access_token')
   }
 
