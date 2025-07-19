@@ -355,38 +355,9 @@ export default function Careers() {
                 We're looking for passionate, talented individuals who want to make a real impact 
                 on how people move through cities. Join our mission to make parking stress-free for everyone.
               </Typography>
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                <Button
-                  variant="contained"
-                  size="large"
-                  sx={{
-                    bgcolor: 'white',
-                    px: 4,
-                    py: 1.5,
-                    '&:hover': {
-                      bgcolor: alpha(theme.palette.common.white, 0.9),
-                    },
-                  }}
-                >
-                  View Open Positions
-                </Button>
-                <Button
-                  variant="outlined"
-                  size="large"
-                  sx={{
-                    borderColor: 'white',
-                    color: 'white',
-                    px: 4,
-                    py: 1.5,
-                    '&:hover': {
-                      borderColor: 'white',
-                      bgcolor: alpha(theme.palette.common.white, 0.1),
-                    },
-                  }}
-                >
-                  Learn About Our Culture
-                </Button>
-              </Stack>
+              <Typography variant="body1" sx={{ opacity: 0.9, fontStyle: 'italic' }}>
+                Ready to build the future? Check out our open positions below.
+              </Typography>
             </Grid>
             <Grid item xs={12} md={6}>
               <Box
@@ -637,13 +608,6 @@ export default function Careers() {
                           >
                             Apply Now
                           </Button>
-                          <Button
-                            variant="outlined"
-                            size="large"
-                            fullWidth
-                          >
-                            Learn More
-                          </Button>
                         </Stack>
                       </Grid>
                     </Grid>
@@ -801,22 +765,9 @@ export default function Careers() {
           <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
             Be part of the team that's transforming urban mobility
           </Typography>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
-            <Button
-              variant="contained"
-              size="large"
-              sx={{ px: 6, py: 2, fontSize: '1.1rem' }}
-            >
-              View All Open Positions
-            </Button>
-            <Button
-              variant="outlined"
-              size="large"
-              sx={{ px: 6, py: 2, fontSize: '1.1rem' }}
-            >
-              Join Our Talent Network
-            </Button>
-          </Stack>
+          <Typography variant="body1" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+            Apply to any position above to start your journey with us!
+          </Typography>
         </Box>
       </Container>
 
