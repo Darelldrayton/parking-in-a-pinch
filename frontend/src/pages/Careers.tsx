@@ -52,6 +52,7 @@ import {
   Search,
   FilterList,
 } from '@mui/icons-material';
+import { careersService } from '../services/careers';
 
 const departments = [
   {
@@ -288,10 +289,7 @@ export default function Careers() {
     if (!selectedJob) return;
     
     try {
-      // Import the careers service
-      const { careersService } = await import('../services/careers');
-      
-      // Submit the application
+      // Submit the application using direct import
       await careersService.submitApplication({
         name: applicationData.fullName,
         email: applicationData.email,
