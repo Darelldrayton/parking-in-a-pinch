@@ -57,17 +57,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setToken(storedToken)
       setUser(storedUser)
       
-      // Refresh user data from API to ensure we have latest profile picture
-      authService.getCurrentUser()
-        .then(freshUserData => {
-          console.log('🔄 Refreshed user data with profile picture:', freshUserData);
-          setUser(freshUserData);
-          localStorage.setItem('user', JSON.stringify(freshUserData));
-        })
-        .catch(error => {
-          console.warn('Failed to refresh user data:', error);
-          // Keep using stored user data if refresh fails
-        });
+      // Only refresh user data if we haven't already done so in this session
+      const hasRefreshedThisSession = sessionStorage.getItem('auth_user_refreshed');
+      if (!hasRefreshedThisSession) {
+        authService.getCurrentUser()
+          .then(freshUserData => {
+            console.log('🔄 AuthContext: Refreshed user data with profile picture');
+            setUser(freshUserData);
+            localStorage.setItem('user', JSON.stringify(freshUserData));
+            sessionStorage.setItem('auth_user_refreshed', 'true');
+          })
+          .catch(error => {
+            console.warn('Failed to refresh user data:', error);
+            // Keep using stored user data if refresh fails
+          });
+      }
     } else {
       // Clear any partial/stale data
       authService.clearAuthData()
@@ -148,6 +152,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setUser(null)
       setToken(null)
+      // Clear session flags
+      sessionStorage.removeItem('auth_user_refreshed')
+      sessionStorage.removeItem('user_refreshed_for_profile')
       setIsLoading(false)
       window.location.href = '/login'
     }

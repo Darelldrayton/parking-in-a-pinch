@@ -75,18 +75,20 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
   const { notifications, unreadCount, markAsRead, markAllAsRead, connectionStatus } = useNotifications();
 
 
-  // Refresh user data to ensure profile picture is loaded
+  // Refresh user data to ensure profile picture is loaded - only once per session
   useEffect(() => {
-    if (isAuthenticated && user) {
-      // Refresh user data if we don't have a profile picture but should
-      if (!user.profile_picture && !user.profile_picture_url) {
-        console.log('🔄 Navigation: Refreshing user data to fetch profile picture');
-        refreshUser().catch(error => {
-          console.warn('Failed to refresh user data in Navigation:', error);
-        });
-      }
+    const hasRefreshedUser = sessionStorage.getItem('user_refreshed_for_profile');
+    
+    if (isAuthenticated && user && !hasRefreshedUser) {
+      // Only refresh once per session to avoid infinite loops
+      console.log('🔄 Navigation: One-time user data refresh for profile picture');
+      refreshUser().catch(error => {
+        console.warn('Failed to refresh user data in Navigation:', error);
+      }).finally(() => {
+        sessionStorage.setItem('user_refreshed_for_profile', 'true');
+      });
     }
-  }, [isAuthenticated, user, refreshUser, location.pathname]);
+  }, [isAuthenticated, user, refreshUser]);
 
   // Debug function to clear cached state - can be called from browser console
   useEffect(() => {
