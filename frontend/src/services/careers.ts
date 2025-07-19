@@ -203,8 +203,11 @@ class CareersService {
       console.log('✅ CareersService: Response:', response.data);
       
       return response.data;
-    } catch (error) {
-      console.error('Error submitting application:', error);
+    } catch (error: any) {
+      console.error('❌ CareersService: Error submitting application:', error);
+      console.error('❌ CareersService: Error status:', error.response?.status);
+      console.error('❌ CareersService: Error data:', error.response?.data);
+      console.error('❌ CareersService: Error headers:', error.response?.headers);
       throw error;
     }
   }
