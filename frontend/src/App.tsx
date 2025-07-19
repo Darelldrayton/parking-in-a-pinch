@@ -64,8 +64,8 @@ const AdminLogin = lazy(() => import('./pages/AdminLogin').then(module => {
 // Test simplified AdminDashboardEnhanced
 const AdminDashboard = lazy(() => import('./pages/AdminDashboardEnhanced'));
 const AdminJobApplications = lazy(() => import('./pages/AdminJobApplications'));
-// 🚨 FORCE CACHE CLEAR - BUILD v2025-01-02-20:42 PST
-const AdminProtectedRoute = lazy(() => import('./components/auth/AdminProtectedRoute'));
+// Import AdminProtectedRoute directly (not lazy) to avoid routing issues
+import AdminProtectedRoute from './components/auth/AdminProtectedRoute';
 
 // Keep cleanup-listings for admin use only
 const CleanupListings = lazy(() => import('./pages/CleanupListings'));

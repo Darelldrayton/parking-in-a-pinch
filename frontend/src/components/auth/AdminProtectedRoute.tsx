@@ -119,6 +119,9 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({
   if (isAuthenticated === false) {
     console.log('🚨 SECURITY: Unauthenticated access blocked, redirecting to:', redirectTo);
     console.log('🚨 Current window location:', window.location.href);
+    console.log('🚨 Available localStorage keys:', Object.keys(localStorage).filter(k => k.includes('admin')));
+    console.log('🚨 Admin token value:', localStorage.getItem('admin_access_token')?.substring(0, 20) + '...');
+    console.log('🚨 Admin user value:', localStorage.getItem('admin_user'));
     return <Navigate to={redirectTo} replace />;
   }
 
