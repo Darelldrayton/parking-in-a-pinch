@@ -3316,14 +3316,15 @@ const AdminDashboardEnhanced: React.FC = () => {
                                     <Visibility />
                                   </IconButton>
                                 </Tooltip>
-                                <Tooltip title={application.resume_url ? "Download Resume" : "No Resume"}>
+                                <Tooltip title={application.resume || application.resume_url ? "Download Resume" : "No Resume"}>
                                   <IconButton
                                     size="small"
-                                    disabled={!application.resume_url}
+                                    disabled={!application.resume && !application.resume_url}
                                     onClick={() => {
-                                      if (application.resume_url) {
+                                      const resumeUrl = application.resume || application.resume_url;
+                                      if (resumeUrl) {
                                         const link = document.createElement('a');
-                                        link.href = application.resume_url;
+                                        link.href = resumeUrl;
                                         link.download = `${application.name.replace(/\s+/g, '_')}_resume.pdf`;
                                         link.target = '_blank';
                                         document.body.appendChild(link);
@@ -3542,13 +3543,14 @@ const AdminDashboardEnhanced: React.FC = () => {
                         Portfolio
                       </Button>
                     )}
-                    {selectedApplication.resume_url ? (
+                    {selectedApplication.resume || selectedApplication.resume_url ? (
                       <Button
                         variant="outlined"
                         startIcon={<GetApp />}
                         onClick={() => {
+                          const resumeUrl = selectedApplication.resume || selectedApplication.resume_url;
                           const link = document.createElement('a');
-                          link.href = selectedApplication.resume_url;
+                          link.href = resumeUrl;
                           link.download = `${selectedApplication.name.replace(/\s+/g, '_')}_resume.pdf`;
                           link.target = '_blank';
                           document.body.appendChild(link);
