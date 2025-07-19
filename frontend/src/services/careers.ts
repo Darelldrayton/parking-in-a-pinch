@@ -38,11 +38,27 @@ class CareersService {
       
       // DEBUG: Show first application structure
       if (applications.length > 0) {
-        console.log('🎯 CAREER DEBUG - First application:', applications[0]);
-        console.log('🎯 CAREER DEBUG - Name field:', applications[0].name);
-        console.log('🎯 CAREER DEBUG - Phone field:', applications[0].phone);
-        console.log('🎯 CAREER DEBUG - Email field:', applications[0].email);
-        console.log('🎯 CAREER DEBUG - All fields:', Object.keys(applications[0]));
+        const app = applications[0];
+        console.log('🎯 CAREER DEBUG - First application:', app);
+        console.log('🎯 CAREER DEBUG - Name field:', app.name);
+        console.log('🎯 CAREER DEBUG - Phone field:', app.phone);
+        console.log('🎯 CAREER DEBUG - Email field:', app.email);
+        console.log('🎯 CAREER DEBUG - All fields:', Object.keys(app));
+        
+        // Check for alternative field names
+        console.log('🔍 Checking alternative field names:');
+        Object.keys(app).forEach(key => {
+          const lowerKey = key.toLowerCase();
+          if (lowerKey.includes('name') || lowerKey.includes('applicant')) {
+            console.log(`🔍   Possible name field: ${key} = ${app[key]}`);
+          }
+          if (lowerKey.includes('phone') || lowerKey.includes('mobile')) {
+            console.log(`🔍   Possible phone field: ${key} = ${app[key]}`);
+          }
+          if (lowerKey.includes('email') || lowerKey.includes('mail')) {
+            console.log(`🔍   Possible email field: ${key} = ${app[key]}`);
+          }
+        });
       }
       
       return applications;

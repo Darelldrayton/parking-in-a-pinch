@@ -2726,9 +2726,9 @@ const AdminDashboardEnhanced: React.FC = () => {
                             </TableCell>
                             <TableCell>
                               <Chip
-                                label={user.user_type || 'seeker'}
+                                label={user.user_type ? user.user_type.toLowerCase() : 'seeker'}
                                 size="small"
-                                color={user.user_type === 'host' ? 'success' : user.user_type === 'both' ? 'secondary' : 'default'}
+                                color={user.user_type?.toLowerCase() === 'host' ? 'success' : user.user_type?.toLowerCase() === 'both' ? 'secondary' : 'default'}
                               />
                             </TableCell>
                             <TableCell>{user.phone_number || 'N/A'}</TableCell>
