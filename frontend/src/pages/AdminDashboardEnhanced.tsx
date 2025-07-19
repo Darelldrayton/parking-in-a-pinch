@@ -269,17 +269,28 @@ const AdminDashboardEnhanced: React.FC = () => {
     setLoading(newLoading);
   };
   
-  // 🚨 EMERGENCY FALLBACK: Force loading to false after 5 seconds
+  // 🚨 EMERGENCY FALLBACK: Force loading to false after 3 seconds
   useEffect(() => {
     const emergencyTimeout = setTimeout(() => {
       if (loading) {
-        console.log('🚨 EMERGENCY FALLBACK: Forcing loading to false after 5 seconds');
+        console.log('🚨 EMERGENCY FALLBACK: Forcing loading to false after 3 seconds');
         setLoadingWithDebug(false);
+        // Also ensure adminUser is set if we have localStorage data
+        const adminUserData = localStorage.getItem('admin_user');
+        if (adminUserData && !adminUser) {
+          try {
+            const userData = JSON.parse(adminUserData);
+            setAdminUser(userData);
+            console.log('🚨 EMERGENCY: Set adminUser from localStorage');
+          } catch (e) {
+            console.error('🚨 EMERGENCY: Failed to parse admin user data');
+          }
+        }
       }
-    }, 5000);
+    }, 3000);
     
     return () => clearTimeout(emergencyTimeout);
-  }, [loading]);
+  }, [loading, adminUser]);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [verificationRequests, setVerificationRequests] = useState<VerificationRequest[]>([]);
   const [refundRequests, setRefundRequests] = useState<RefundRequest[]>([]);
@@ -1352,8 +1363,10 @@ const AdminDashboardEnhanced: React.FC = () => {
     console.log('🔍 SHOWING LOADING SCREEN:', { 
       loading, 
       adminUser: !!adminUser,
+      adminUserData: adminUser,
       hasInitialized,
       reason: loading ? 'loading=true' : 'adminUser=null',
+      localStorageAdminUser: localStorage.getItem('admin_user'),
       timestamp: new Date().toISOString()
     });
     
