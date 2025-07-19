@@ -2,20 +2,30 @@ import api from './api';
 
 export interface JobApplication {
   id: string | number;
-  name: string;
-  email: string;
-  phone: string;
-  position: string;
-  department: string;
-  applied_date: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  // Backend uses these field names
+  applicant_name?: string;
+  applicant_email?: string;
+  applicant_phone?: string;
+  position?: string;
+  department?: string;
+  job_title?: string;
+  applied_date?: string;
+  applied_at?: string;
   status: 'new' | 'reviewing' | 'interview' | 'hired' | 'rejected';
-  rating: number;
-  experience_level: string;
-  location: string;
+  rating?: number;
+  experience_level?: string;
+  experience_years?: number;
+  location?: string;
   linkedin?: string;
   portfolio?: string;
-  cover_letter: string;
+  cover_letter?: string;
   resume_url?: string;
+  resume?: string | null;
+  job?: number;
+  updated_at?: string;
 }
 
 export interface JobApplicationStats {

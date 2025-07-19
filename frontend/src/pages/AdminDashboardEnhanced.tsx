@@ -3137,24 +3137,24 @@ const AdminDashboardEnhanced: React.FC = () => {
                             <TableCell>
                               <Stack direction="row" alignItems="center" spacing={2}>
                                 <Avatar sx={{ bgcolor: 'primary.main' }}>
-                                  {application.name?.charAt(0) || 'N'}
+                                  {(application.applicant_name || application.name)?.charAt(0) || 'N'}
                                 </Avatar>
                                 <Box>
                                   <Typography variant="body2" fontWeight="bold">
-                                    {application.name || '[NO NAME]'}
+                                    {application.applicant_name || application.name || '[NO NAME]'}
                                   </Typography>
                                   <Typography variant="caption" color="text.secondary">
-                                    {application.email || '[NO EMAIL]'}
+                                    {application.applicant_email || application.email || '[NO EMAIL]'}
                                   </Typography>
                                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                                    {application.phone || '[NO PHONE]'}
+                                    {application.applicant_phone || application.phone || '[NO PHONE]'}
                                   </Typography>
                                 </Box>
                               </Stack>
                             </TableCell>
                             <TableCell>
                               <Typography variant="body2" fontWeight="medium">
-                                {application.position}
+                                {application.job_title || application.position || '[NO POSITION]'}
                               </Typography>
                             </TableCell>
                             <TableCell>
