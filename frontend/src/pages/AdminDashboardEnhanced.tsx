@@ -354,6 +354,9 @@ const AdminDashboardEnhanced: React.FC = () => {
       // Always fetch applications, but make stats optional
       const applications = await careersService.getAllApplications();
       console.log('🔍 AdminDashboard: Successfully loaded', applications.length, 'applications');
+      console.log('🔍 AdminDashboard: Raw API response:', applications);
+      console.log('🔍 AdminDashboard: First application sample:', applications[0]);
+      console.log('🔍 AdminDashboard: Application structure:', Object.keys(applications[0] || {}));
       setJobApplications(applications);
       
       // Try to fetch stats, but don't fail if it doesn't work
@@ -570,12 +573,8 @@ const AdminDashboardEnhanced: React.FC = () => {
         break;
       case 7: // Career Applications
         console.log('🔍 AdminDashboard: Switching to careers tab, current applications:', jobApplications.length);
-        if (jobApplications.length === 0) {
-          console.log('🔍 AdminDashboard: No applications cached, fetching from API');
-          fetchJobApplications();
-        } else {
-          console.log('🔍 AdminDashboard: Using cached applications');
-        }
+        console.log('🔍 AdminDashboard: Force fetching fresh data to debug structure');
+        fetchJobApplications();
         break;
     }
   };
@@ -791,6 +790,17 @@ const AdminDashboardEnhanced: React.FC = () => {
       console.log('🔍 Fetching users from: /users/admin/users/');
       const response = await api.get('/users/admin/users/');
       console.log('✅ Users loaded:', response.data);
+      
+      const userData = response.data.results || response.data || [];
+      console.log('👥 USER DEBUG - Total users:', userData.length);
+      
+      if (userData.length > 0) {
+        const firstUser = userData[0];
+        console.log('👥 USER DEBUG - First user:', firstUser);
+        console.log('👥 USER DEBUG - Newsletter field:', firstUser.subscribe_to_newsletter);
+        console.log('👥 USER DEBUG - User type:', firstUser.user_type);
+        console.log('👥 USER DEBUG - All fields:', Object.keys(firstUser));
+      }
       setUsers(response.data.results || response.data || []);
     } catch (err: any) {
       console.error('Users fetch error:', err);

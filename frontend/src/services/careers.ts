@@ -35,6 +35,16 @@ class CareersService {
       const applications = response.data.results || response.data;
       console.log('📝 CareersService: Received', applications.length, 'job applications');
       console.log('📝 CareersService: Application data:', applications);
+      
+      // DEBUG: Show first application structure
+      if (applications.length > 0) {
+        console.log('🎯 CAREER DEBUG - First application:', applications[0]);
+        console.log('🎯 CAREER DEBUG - Name field:', applications[0].name);
+        console.log('🎯 CAREER DEBUG - Phone field:', applications[0].phone);
+        console.log('🎯 CAREER DEBUG - Email field:', applications[0].email);
+        console.log('🎯 CAREER DEBUG - All fields:', Object.keys(applications[0]));
+      }
+      
       return applications;
     } catch (error) {
       console.error('❌ CareersService: Error fetching job applications:', error);
@@ -157,26 +167,12 @@ class CareersService {
     try {
       const formData = new FormData();
       
-      // Add required fields with correct backend field names (based on 400 error response)
-      formData.append('applicant_name', applicationData.name);
-      formData.append('applicant_email', applicationData.email);
-      formData.append('applicant_phone', applicationData.phone);
-      
-      // Map job title to job ID as backend expects 'job' field with ID
-      const jobTitleToIdMap: Record<string, number> = {
-        'Founding Full-Stack Engineer': 1,
-        'Mobile Developer (iOS/Android)': 2,
-        'Head of Product': 3,
-        'UX/UI Designer': 4,
-        'Head of Marketing': 5,
-        'Growth Marketing Specialist': 6,
-        'Operations Manager': 7,
-        'Head of Sales': 8,
-        'Customer Success Manager': 9,
-        'DevOps Engineer': 10,
-      };
-      const jobId = jobTitleToIdMap[applicationData.position] || 1;
-      formData.append('job', jobId.toString());
+      // Add required fields with correct backend field names
+      formData.append('name', applicationData.name);
+      formData.append('email', applicationData.email);
+      formData.append('phone', applicationData.phone);
+      formData.append('position', applicationData.position); // Send job title directly
+      formData.append('department', applicationData.department);
       
       // Add optional fields
       if (applicationData.experience_level) {
@@ -206,7 +202,7 @@ class CareersService {
       
       console.log('📝 CareersService: Submitting application to /careers/applications/');
       console.log('📝 CareersService: Form data keys:', Array.from(formData.keys()));
-      console.log('📝 CareersService: Job ID mapping:', applicationData.position, '->', jobId);
+      console.log('📝 CareersService: Position:', applicationData.position);
       
       const response = await api.post('/careers/applications/', formData, {
         headers: {
