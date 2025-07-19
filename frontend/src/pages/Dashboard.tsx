@@ -2328,7 +2328,7 @@ const ExistingUserDashboard: React.FC = () => {
     if (user?.id) {
       loadDashboardData();
     }
-  }, [user?.id, bookings]);
+  }, [user?.id]);
 
   const loadDashboardData = async () => {
     if (!user) return;
@@ -2340,19 +2340,38 @@ const ExistingUserDashboard: React.FC = () => {
       const userListings = listingsResponse.data.results || listingsResponse.data || [];
       setListings(userListings);
 
-      // Load user's host bookings (bookings for their listings)
+      // Load fresh booking data directly to avoid dependency loops
       const userListingIds = userListings.map(listing => listing.id);
-      const allBookings = Array.isArray(bookings) ? bookings : [];
+      let hostBookings = [];
       
-      const hostBookings = allBookings.filter(booking => {
-        let parkingSpaceId;
-        if (typeof booking.parking_space === 'number') {
-          parkingSpaceId = booking.parking_space;
-        } else if (booking.parking_space?.id) {
-          parkingSpaceId = booking.parking_space.id;
-        }
-        return parkingSpaceId && userListingIds.includes(parkingSpaceId);
-      });
+      try {
+        // Fetch fresh booking data
+        const bookingsResponse = await api.get('/bookings/bookings/');
+        const allBookings = Array.isArray(bookingsResponse.data) ? bookingsResponse.data : bookingsResponse.data?.results || [];
+        
+        hostBookings = allBookings.filter(booking => {
+          let parkingSpaceId;
+          if (typeof booking.parking_space === 'number') {
+            parkingSpaceId = booking.parking_space;
+          } else if (booking.parking_space?.id) {
+            parkingSpaceId = booking.parking_space.id;
+          }
+          return parkingSpaceId && userListingIds.includes(parkingSpaceId);
+        });
+      } catch (error) {
+        console.error('Error loading fresh booking data:', error);
+        // Fallback to context bookings if API fails
+        const allBookings = Array.isArray(bookings) ? bookings : [];
+        hostBookings = allBookings.filter(booking => {
+          let parkingSpaceId;
+          if (typeof booking.parking_space === 'number') {
+            parkingSpaceId = booking.parking_space;
+          } else if (booking.parking_space?.id) {
+            parkingSpaceId = booking.parking_space.id;
+          }
+          return parkingSpaceId && userListingIds.includes(parkingSpaceId);
+        });
+      }
       
       setHostBookings(hostBookings);
       
