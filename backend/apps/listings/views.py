@@ -44,7 +44,9 @@ class ParkingListingViewSet(viewsets.ModelViewSet):
         """Return filtered queryset based on user and action."""
         # For list view, show only approved and active listings to public
         if self.action == 'list':
-            return self.queryset.select_related('host').prefetch_related('images')
+            return self.queryset.filter(
+                approval_status=ParkingListing.ApprovalStatus.APPROVED
+            ).select_related('host').prefetch_related('images')
         
         # For detail view, show listing regardless of approval status if user is owner
         if self.action == 'retrieve':
