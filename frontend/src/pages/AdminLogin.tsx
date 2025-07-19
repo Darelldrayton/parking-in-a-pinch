@@ -91,14 +91,25 @@ export default function AdminLogin() {
       const accessToken = response.data.access;
       const refreshToken = response.data.refresh;
       
+      console.log('🔐 AdminLogin: Storing admin credentials...');
+      console.log('🔐 AdminLogin: Access token exists:', !!accessToken);
+      console.log('🔐 AdminLogin: User data:', user);
+      
       localStorage.setItem('admin_access_token', accessToken);
       localStorage.setItem('admin_refresh_token', refreshToken);
       localStorage.setItem('admin_user', JSON.stringify(user));
+      
+      // Verify storage worked
+      console.log('🔐 AdminLogin: Verification after storage:');
+      console.log('🔐 Stored admin token:', !!localStorage.getItem('admin_access_token'));
+      console.log('🔐 Stored admin user:', !!localStorage.getItem('admin_user'));
       
       // Set flag for AdminProtectedRoute to handle authentication properly
       sessionStorage.setItem('just_logged_in', 'true');
       
       toast.success('Welcome to the admin panel!');
+      
+      console.log('🔐 AdminLogin: Navigating to /admin/dashboard...');
       navigate('/admin/dashboard', { replace: true });
       
     } catch (error: any) {
