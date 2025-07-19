@@ -3141,13 +3141,13 @@ const AdminDashboardEnhanced: React.FC = () => {
                                 </Avatar>
                                 <Box>
                                   <Typography variant="body2" fontWeight="bold">
-                                    {application.name}
+                                    {application.name || '[NO NAME]'}
                                   </Typography>
                                   <Typography variant="caption" color="text.secondary">
-                                    {application.email}
+                                    {application.email || '[NO EMAIL]'}
                                   </Typography>
                                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                                    {application.phone}
+                                    {application.phone || '[NO PHONE]'}
                                   </Typography>
                                 </Box>
                               </Stack>

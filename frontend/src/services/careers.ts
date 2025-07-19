@@ -45,6 +45,12 @@ class CareersService {
         console.log('🎯 CAREER DEBUG - Email field:', app.email);
         console.log('🎯 CAREER DEBUG - All fields:', Object.keys(app));
         
+        // Show ALL field values to debug
+        console.log('🔍 ALL FIELD VALUES:');
+        Object.keys(app).forEach(key => {
+          console.log(`🔍   ${key}: ${app[key]}`);
+        });
+        
         // Check for alternative field names
         console.log('🔍 Checking alternative field names:');
         Object.keys(app).forEach(key => {
