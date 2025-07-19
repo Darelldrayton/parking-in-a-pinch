@@ -71,9 +71,22 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { toggleTheme, mode } = useThemeMode();
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout, isAuthenticated, refreshUser } = useAuth();
   const { notifications, unreadCount, markAsRead, markAllAsRead, connectionStatus } = useNotifications();
 
+
+  // Refresh user data to ensure profile picture is loaded
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      // Refresh user data if we don't have a profile picture but should
+      if (!user.profile_picture && !user.profile_picture_url) {
+        console.log('🔄 Navigation: Refreshing user data to fetch profile picture');
+        refreshUser().catch(error => {
+          console.warn('Failed to refresh user data in Navigation:', error);
+        });
+      }
+    }
+  }, [isAuthenticated, user, refreshUser, location.pathname]);
 
   // Debug function to clear cached state - can be called from browser console
   useEffect(() => {
@@ -474,7 +487,7 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
                   <Tooltip title="Open settings">
                     <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                       <VerifiedAvatar 
-                        src={getSecureImageUrl(user?.profile_image)}
+                        src={getSecureImageUrl(user?.profile_picture_url || user?.profile_picture)}
                         alt={user?.first_name}
                         isVerified={user?.is_verified || false}
                         size={40}

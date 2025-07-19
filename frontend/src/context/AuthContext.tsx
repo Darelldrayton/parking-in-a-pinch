@@ -9,6 +9,7 @@ interface AuthContextType {
   logout: () => Promise<void>
   updateUser: (userData: Partial<User>) => Promise<void>
   setUserState: (user: User) => void
+  refreshUser: () => Promise<void>
   isLoading: boolean
   isAuthenticated: boolean
 }
@@ -55,6 +56,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (storedToken && storedUser) {
       setToken(storedToken)
       setUser(storedUser)
+      
+      // Refresh user data from API to ensure we have latest profile picture
+      authService.getCurrentUser()
+        .then(freshUserData => {
+          console.log('🔄 Refreshed user data with profile picture:', freshUserData);
+          setUser(freshUserData);
+          localStorage.setItem('user', JSON.stringify(freshUserData));
+        })
+        .catch(error => {
+          console.warn('Failed to refresh user data:', error);
+          // Keep using stored user data if refresh fails
+        });
     } else {
       // Clear any partial/stale data
       authService.clearAuthData()
@@ -155,6 +168,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('user', JSON.stringify(newUser))
   }
 
+  const refreshUser = async () => {
+    try {
+      const currentUser = await authService.getCurrentUser()
+      setUser(currentUser)
+      localStorage.setItem('user', JSON.stringify(currentUser))
+    } catch (error) {
+      console.error('Failed to refresh user data:', error)
+      throw error
+    }
+  }
+
   const isAuthenticated = !!token && !!user
   
   const value = {
@@ -165,6 +189,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     logout,
     updateUser,
     setUserState,
+    refreshUser,
     isLoading,
     isAuthenticated
   }
