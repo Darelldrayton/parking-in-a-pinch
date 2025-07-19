@@ -10,24 +10,12 @@ import {
   CircularProgress,
   Stack,
   Divider,
-  Chip,
-  Tab,
-  Tabs,
-  FormControl,
-  FormLabel,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
 } from '@mui/material';
 import { 
   Lock as LockIcon, 
   CreditCard as CreditCardIcon,
-  AccountBalanceWallet,
-  Apple,
-  Android,
 } from '@mui/icons-material';
 import stripePromise, { createPaymentIntent, confirmPayment, type PaymentData } from '../../services/stripe';
-import DigitalWalletPayment from './DigitalWalletPayment';
 import toast from 'react-hot-toast';
 
 interface PaymentFormProps {
@@ -36,6 +24,7 @@ interface PaymentFormProps {
   description: string;
   onSuccess: () => void;
   onCancel: () => void;
+  onFailure?: (bookingId: number) => void;
   isMobile?: boolean;
 }
 
@@ -45,14 +34,13 @@ const PaymentFormInner: React.FC<PaymentFormProps> = ({
   description,
   onSuccess,
   onCancel,
+  onFailure,
   isMobile = false,
 }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<'express' | 'card'>('express');
-  const [showDigitalWallet, setShowDigitalWallet] = useState(true);
 
   // Debug logging
   React.useEffect(() => {
@@ -104,6 +92,10 @@ const PaymentFormInner: React.FC<PaymentFormProps> = ({
 
       if (error) {
         setError(error.message || 'Payment failed');
+        // Call failure handler to cancel the booking
+        if (onFailure) {
+          onFailure(bookingId);
+        }
       } else if (confirmedPayment && confirmedPayment.status === 'succeeded') {
         // Confirm payment on backend
         await confirmPayment(confirmedPayment.id, bookingId);
@@ -113,6 +105,10 @@ const PaymentFormInner: React.FC<PaymentFormProps> = ({
     } catch (err: any) {
       setError(err.message || 'Payment failed');
       toast.error('Payment failed. Please try again.');
+      // Call failure handler to cancel the booking
+      if (onFailure) {
+        onFailure(bookingId);
+      }
     } finally {
       setLoading(false);
     }
@@ -130,43 +126,6 @@ const PaymentFormInner: React.FC<PaymentFormProps> = ({
     },
   };
 
-  // Check if device supports digital wallets
-  useEffect(() => {
-    if (window.ApplePaySession) {
-      // Check if Apple Pay is available
-      if (ApplePaySession.canMakePayments()) {
-        console.log('Apple Pay is available');
-      }
-    }
-  }, []);
-
-  const handleAlternativePayment = async (method: 'apple' | 'google' | 'paypal') => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Simulate payment processing for alternative methods
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      if (method === 'apple') {
-        // Apple Pay integration would go here
-        toast.success('Apple Pay payment successful!');
-      } else if (method === 'google') {
-        // Google Pay integration would go here
-        toast.success('Google Pay payment successful!');
-      } else if (method === 'paypal') {
-        // PayPal integration would go here
-        toast.success('PayPal payment successful!');
-      }
-      
-      onSuccess();
-    } catch (err: any) {
-      setError(err.message || 'Payment failed');
-      toast.error('Payment failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <Card sx={{ borderRadius: 3, maxWidth: 500, mx: 'auto', boxShadow: 'none' }}>
@@ -192,55 +151,7 @@ const PaymentFormInner: React.FC<PaymentFormProps> = ({
             </Typography>
           </Box>
 
-          {/* Show Digital Wallet Option First */}
-          {showDigitalWallet && paymentMethod === 'express' ? (
-            <DigitalWalletPayment
-              amount={amount}
-              bookingId={bookingId}
-              description={description}
-              onSuccess={onSuccess}
-              onFallback={() => {
-                setPaymentMethod('card');
-                setShowDigitalWallet(false);
-              }}
-            />
-          ) : (
-            /* Payment Method Selection */
-            <FormControl component="fieldset">
-              <FormLabel component="legend" sx={{ fontWeight: 600, mb: 2 }}>
-                Payment Method
-              </FormLabel>
-              <RadioGroup
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value as any)}
-              >
-                <FormControlLabel
-                  value="express"
-                  control={<Radio />}
-                  label={
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <Stack direction="row" spacing={0.5}>
-                        <Apple />
-                        <Android />
-                      </Stack>
-                      <Typography>Express Checkout (Apple Pay / Google Pay)</Typography>
-                      <Chip label="Recommended" size="small" />
-                    </Stack>
-                  }
-                />
-                <FormControlLabel
-                  value="card"
-                  control={<Radio />}
-                  label={
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <CreditCardIcon />
-                      <Typography>Credit/Debit Card</Typography>
-                    </Stack>
-                  }
-                />
-              </RadioGroup>
-            </FormControl>
-          )}
+          {/* Only show Credit/Debit Card option in Complete Payment modal */}
 
 
           {/* Error Alert */}
@@ -250,65 +161,30 @@ const PaymentFormInner: React.FC<PaymentFormProps> = ({
             </Alert>
           )}
 
-          {/* Payment Form */}
-          {paymentMethod === 'card' ? (
-            <form onSubmit={handleSubmit}>
-              <Stack spacing={3}>
-                <Box>
-                  <Typography variant="body2" fontWeight={500} sx={{ mb: 1 }}>
-                    Card Information
-                  </Typography>
-                  <Box
-                    sx={{
-                      p: 2,
-                      border: 1,
-                      borderColor: 'divider',
-                      borderRadius: 2,
-                      '&:focus-within': {
-                        borderColor: 'primary.main',
-                      },
-                    }}
-                  >
-                    <CardElement options={cardElementOptions} />
-                  </Box>
-                </Box>
-
-                {/* Security Note */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <LockIcon sx={{ fontSize: 16, color: 'success.main' }} />
-                  <Typography variant="caption" color="text.secondary">
-                    Your payment information is encrypted and secure
-                  </Typography>
-                </Box>
-
-                {/* Buttons */}
-                <Stack direction={isMobile ? "column" : "row"} spacing={2}>
-                  <Button
-                    variant="outlined"
-                    onClick={onCancel}
-                    fullWidth
-                    disabled={loading}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    fullWidth
-                    disabled={!stripe || loading}
-                    startIcon={loading ? <CircularProgress size={20} /> : null}
-                  >
-                    {loading ? 'Processing...' : `Pay $${amount.toFixed(2)}`}
-                  </Button>
-                </Stack>
-              </Stack>
-            </form>
-          ) : (
-            /* Alternative Payment Methods */
+          {/* Payment Form - Only Credit/Debit Card */}
+          <form onSubmit={handleSubmit}>
             <Stack spacing={3}>
-              <Alert severity="info" sx={{ borderRadius: 2 }}>
-                You'll be redirected to complete your payment securely.
-              </Alert>
+              <Box>
+                <Typography variant="body2" fontWeight={500} sx={{ mb: 1 }}>
+                  Card Information
+                </Typography>
+                <Box
+                  sx={{
+                    p: 2,
+                    border: 1,
+                    borderColor: 'divider',
+                    borderRadius: 2,
+                    '&:focus-within': {
+                      borderColor: 'primary.main',
+                    },
+                  }}
+                >
+                  <CardElement options={cardElementOptions} />
+                </Box>
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                  <a href="#" style={{ color: 'inherit' }}>Autofill</a> with your saved payment method
+                </Typography>
+              </Box>
 
               {/* Security Note */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -329,17 +205,17 @@ const PaymentFormInner: React.FC<PaymentFormProps> = ({
                   Cancel
                 </Button>
                 <Button
+                  type="submit"
                   variant="contained"
                   fullWidth
-                  disabled={loading}
-                  onClick={() => handleAlternativePayment(paymentMethod as any)}
+                  disabled={!stripe || loading}
                   startIcon={loading ? <CircularProgress size={20} /> : null}
                 >
-                  {loading ? 'Processing...' : `Pay with ${paymentMethod === 'apple' ? 'Apple Pay' : paymentMethod === 'google' ? 'Google Pay' : 'PayPal'}`}
+                  {loading ? 'Processing...' : `Pay $${amount.toFixed(2)}`}
                 </Button>
               </Stack>
             </Stack>
-          )}
+          </form>
         </Stack>
       </CardContent>
     </Card>

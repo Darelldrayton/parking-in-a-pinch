@@ -18,6 +18,16 @@ import {
   ListItemIcon,
   ListItemText,
   Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  IconButton,
 } from '@mui/material';
 import {
   Work,
@@ -37,107 +47,158 @@ import {
   FitnessCenter,
   LocalHospital,
   Savings,
+  Close,
+  AttachFile,
+  Search,
+  FilterList,
 } from '@mui/icons-material';
+import { careersService } from '../services/careers';
 
 const departments = [
   {
     icon: <Engineering sx={{ fontSize: 40 }} />,
     title: 'Engineering',
     description: 'Build the future of parking technology',
-    openings: 8,
+    openings: 3,
     color: 'primary',
   },
   {
     icon: <DesignServices sx={{ fontSize: 40 }} />,
     title: 'Design',
     description: 'Create beautiful and intuitive user experiences',
-    openings: 3,
+    openings: 2,
     color: 'secondary',
   },
   {
     icon: <Campaign sx={{ fontSize: 40 }} />,
     title: 'Marketing',
     description: 'Grow our brand and reach new customers',
-    openings: 5,
+    openings: 2,
     color: 'success',
   },
   {
     icon: <Support sx={{ fontSize: 40 }} />,
     title: 'Customer Success',
     description: 'Help our users have amazing experiences',
-    openings: 4,
+    openings: 1,
     color: 'info',
   },
   {
     icon: <Business sx={{ fontSize: 40 }} />,
     title: 'Business Operations',
     description: 'Scale our operations and partnerships',
-    openings: 6,
+    openings: 1,
     color: 'warning',
   },
   {
     icon: <Work sx={{ fontSize: 40 }} />,
     title: 'Sales',
     description: 'Drive growth and expand our market reach',
-    openings: 7,
+    openings: 1,
     color: 'error',
   },
 ];
 
 const jobListings = [
   {
-    title: 'Senior Full Stack Engineer',
+    id: 1,
+    title: 'Founding Full-Stack Engineer',
     department: 'Engineering',
-    location: 'San Francisco, CA',
+    location: 'NYC, NY',
     type: 'Full-time',
     experience: 'Senior',
-    description: 'Lead development of our core platform using React, Node.js, and Python.',
-    requirements: ['5+ years full-stack experience', 'React/Node.js expertise', 'Cloud platform experience'],
+    description: 'Lead development of our core platform using React, Node.js, and Python. Shape the technical foundation of our startup.',
+    requirements: ['5+ years full-stack experience', 'React/Node.js expertise', 'Startup experience preferred'],
   },
   {
-    title: 'Product Designer',
-    department: 'Design',
-    location: 'Remote',
+    id: 2,
+    title: 'Mobile Developer (iOS/Android)',
+    department: 'Engineering',
+    location: 'NYC, NY',
     type: 'Full-time',
-    experience: 'Mid-level',
-    description: 'Design user-centered experiences for our mobile and web applications.',
-    requirements: ['3+ years product design experience', 'Figma proficiency', 'Mobile design expertise'],
+    experience: 'Mid-Senior',
+    description: 'Build native mobile apps for iOS and Android platforms.',
+    requirements: ['3+ years mobile development', 'React Native or native development', 'App Store experience'],
   },
   {
-    title: 'Growth Marketing Manager',
+    id: 3,
+    title: 'Head of Product',
+    department: 'Design',
+    location: 'NYC, NY',
+    type: 'Full-time',
+    experience: 'Senior',
+    description: 'Lead product strategy and vision for our parking marketplace platform.',
+    requirements: ['5+ years product management', 'Marketplace experience', 'Leadership experience'],
+  },
+  {
+    id: 4,
+    title: 'UX/UI Designer',
+    department: 'Design',
+    location: 'NYC, NY',
+    type: 'Full-time',
+    experience: 'Mid-Senior',
+    description: 'Design user-centered experiences for our mobile and web applications.',
+    requirements: ['3+ years product design', 'Figma proficiency', 'Mobile-first design'],
+  },
+  {
+    id: 5,
+    title: 'Head of Marketing',
     department: 'Marketing',
-    location: 'New York, NY',
+    location: 'NYC, NY',
+    type: 'Full-time',
+    experience: 'Senior',
+    description: 'Build and lead our marketing strategy for user acquisition and brand growth.',
+    requirements: ['5+ years marketing leadership', 'Growth marketing expertise', 'B2C experience'],
+  },
+  {
+    id: 6,
+    title: 'Growth Marketing Specialist',
+    department: 'Marketing',
+    location: 'NYC, NY',
     type: 'Full-time',
     experience: 'Mid-level',
     description: 'Drive user acquisition and retention through data-driven marketing campaigns.',
-    requirements: ['4+ years growth marketing', 'Analytics expertise', 'A/B testing experience'],
+    requirements: ['3+ years growth marketing', 'Analytics expertise', 'A/B testing experience'],
   },
   {
-    title: 'Customer Success Specialist',
-    department: 'Customer Success',
-    location: 'Austin, TX',
-    type: 'Full-time',
-    experience: 'Entry-level',
-    description: 'Support our host and renter communities to ensure exceptional experiences.',
-    requirements: ['2+ years customer support', 'Excellent communication', 'Problem-solving skills'],
-  },
-  {
-    title: 'DevOps Engineer',
-    department: 'Engineering',
-    location: 'Remote',
-    type: 'Full-time',
-    experience: 'Senior',
-    description: 'Build and maintain our cloud infrastructure and deployment pipelines.',
-    requirements: ['5+ years DevOps experience', 'AWS/GCP expertise', 'Kubernetes knowledge'],
-  },
-  {
-    title: 'Business Development Manager',
+    id: 7,
+    title: 'Operations Manager',
     department: 'Business Operations',
-    location: 'San Francisco, CA',
+    location: 'NYC, NY',
     type: 'Full-time',
     experience: 'Mid-level',
-    description: 'Identify and develop strategic partnerships to expand our market presence.',
-    requirements: ['3+ years BD experience', 'Partnership management', 'B2B sales background'],
+    description: 'Scale our operations and build efficient processes as we grow.',
+    requirements: ['3+ years operations experience', 'Process optimization', 'Startup experience preferred'],
+  },
+  {
+    id: 8,
+    title: 'Head of Sales',
+    department: 'Sales',
+    location: 'NYC, NY',
+    type: 'Full-time',
+    experience: 'Senior',
+    description: 'Build and lead our sales organization for B2B partnerships and enterprise clients.',
+    requirements: ['5+ years sales leadership', 'B2B sales experience', 'Team building experience'],
+  },
+  {
+    id: 9,
+    title: 'Customer Success Manager',
+    department: 'Customer Success',
+    location: 'NYC, NY',
+    type: 'Full-time',
+    experience: 'Mid-level',
+    description: 'Support our host and renter communities to ensure exceptional experiences.',
+    requirements: ['3+ years customer success', 'Excellent communication', 'Marketplace experience preferred'],
+  },
+  {
+    id: 10,
+    title: 'DevOps Engineer',
+    department: 'Engineering',
+    location: 'NYC, NY',
+    type: 'Full-time',
+    experience: 'Mid-Senior',
+    description: 'Build and maintain our cloud infrastructure and deployment pipelines.',
+    requirements: ['3+ years DevOps experience', 'AWS/GCP expertise', 'CI/CD pipeline experience'],
   },
 ];
 
@@ -196,10 +257,79 @@ const values = [
 export default function Careers() {
   const theme = useTheme();
   const [selectedDepartment, setSelectedDepartment] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [experienceFilter, setExperienceFilter] = useState('');
+  const [applicationModalOpen, setApplicationModalOpen] = useState(false);
+  const [selectedJob, setSelectedJob] = useState<any>(null);
+  const [applicationData, setApplicationData] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    linkedIn: '',
+    portfolio: '',
+    coverLetter: '',
+    resume: null as File | null,
+  });
 
-  const filteredJobs = selectedDepartment 
-    ? jobListings.filter(job => job.department === selectedDepartment)
-    : jobListings;
+  const filteredJobs = jobListings.filter(job => {
+    const matchesDepartment = !selectedDepartment || job.department === selectedDepartment;
+    const matchesSearch = !searchTerm || 
+      job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      job.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesExperience = !experienceFilter || job.experience === experienceFilter;
+    return matchesDepartment && matchesSearch && matchesExperience;
+  });
+
+  const handleApplyClick = (job: any) => {
+    setSelectedJob(job);
+    setApplicationModalOpen(true);
+  };
+
+  const handleSubmitApplication = async () => {
+    if (!selectedJob) return;
+    
+    try {
+      // Submit the application using direct import
+      await careersService.submitApplication({
+        name: applicationData.fullName,
+        email: applicationData.email,
+        phone: applicationData.phone,
+        position: selectedJob.title,
+        department: selectedJob.department,
+        experience_level: selectedJob.experience,
+        location: 'New York, NY', // Default location
+        linkedin: applicationData.linkedIn,
+        portfolio: applicationData.portfolio,
+        cover_letter: applicationData.coverLetter,
+        resume: applicationData.resume,
+      });
+      
+      // Reset form and close modal
+      setApplicationData({
+        fullName: '',
+        email: '',
+        phone: '',
+        linkedIn: '',
+        portfolio: '',
+        coverLetter: '',
+        resume: null,
+      });
+      setApplicationModalOpen(false);
+      
+      // Show success message
+      alert('Application submitted successfully! You will receive a confirmation email shortly.');
+    } catch (error) {
+      console.error('Error submitting application:', error);
+      alert('Error submitting application. Please try again.');
+    }
+  };
+
+  const handleResumeUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setApplicationData(prev => ({ ...prev, resume: file }));
+    }
+  };
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
@@ -288,10 +418,10 @@ export default function Careers() {
               <Card sx={{ textAlign: 'center', borderRadius: 3 }}>
                 <CardContent sx={{ p: 3 }}>
                   <Typography variant="h3" fontWeight={700}>
-                    150+
+                    12
                   </Typography>
                   <Typography variant="body1" color="text.secondary">
-                    Team Members
+                    Growing Team
                   </Typography>
                 </CardContent>
               </Card>
@@ -300,7 +430,7 @@ export default function Careers() {
               <Card sx={{ textAlign: 'center', borderRadius: 3 }}>
                 <CardContent sx={{ p: 3 }}>
                   <Typography variant="h3" fontWeight={700} color="secondary.main">
-                    33
+                    10
                   </Typography>
                   <Typography variant="body1" color="text.secondary">
                     Open Positions
@@ -312,10 +442,10 @@ export default function Careers() {
               <Card sx={{ textAlign: 'center', borderRadius: 3 }}>
                 <CardContent sx={{ p: 3 }}>
                   <Typography variant="h3" fontWeight={700} color="success.main">
-                    15
+                    NYC
                   </Typography>
                   <Typography variant="body1" color="text.secondary">
-                    Countries
+                    Headquarters
                   </Typography>
                 </CardContent>
               </Card>
@@ -324,10 +454,10 @@ export default function Careers() {
               <Card sx={{ textAlign: 'center', borderRadius: 3 }}>
                 <CardContent sx={{ p: 3 }}>
                   <Typography variant="h3" fontWeight={700} color="warning.main">
-                    $150M
+                    Seed
                   </Typography>
                   <Typography variant="body1" color="text.secondary">
-                    Series C Funding
+                    Stage Startup
                   </Typography>
                 </CardContent>
               </Card>
@@ -387,12 +517,58 @@ export default function Careers() {
           <Typography variant="h3" fontWeight={700} textAlign="center" gutterBottom>
             Open Positions
           </Typography>
+          
+          {/* Search and Filters */}
+          <Box sx={{ mb: 4 }}>
+            <Grid container spacing={2} alignItems="center">
+              <Grid item xs={12} md={4}>
+                <TextField
+                  fullWidth
+                  placeholder="Search jobs..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  InputProps={{
+                    startAdornment: <Search sx={{ mr: 1, color: 'text.secondary' }} />,
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} md={3}>
+                <FormControl fullWidth>
+                  <InputLabel>Experience Level</InputLabel>
+                  <Select
+                    value={experienceFilter}
+                    label="Experience Level"
+                    onChange={(e) => setExperienceFilter(e.target.value)}
+                  >
+                    <MenuItem value="">All Levels</MenuItem>
+                    <MenuItem value="Entry-level">Entry Level</MenuItem>
+                    <MenuItem value="Mid-level">Mid Level</MenuItem>
+                    <MenuItem value="Mid-Senior">Mid-Senior</MenuItem>
+                    <MenuItem value="Senior">Senior</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} md={3}>
+                <Button
+                  variant="outlined"
+                  startIcon={<FilterList />}
+                  onClick={() => {
+                    setSearchTerm('');
+                    setExperienceFilter('');
+                    setSelectedDepartment(null);
+                  }}
+                >
+                  Clear Filters
+                </Button>
+              </Grid>
+            </Grid>
+          </Box>
+          
           {selectedDepartment && (
             <Box sx={{ textAlign: 'center', mb: 4 }}>
               <Chip 
                 label={`Showing ${filteredJobs.length} positions in ${selectedDepartment}`}
                 onDelete={() => setSelectedDepartment(null)}
-                
                 sx={{ mr: 2 }}
               />
               <Button 
@@ -457,6 +633,7 @@ export default function Careers() {
                             size="large"
                             fullWidth
                             sx={{ py: 1.5 }}
+                            onClick={() => handleApplyClick(job)}
                           >
                             Apply Now
                           </Button>
@@ -642,6 +819,130 @@ export default function Careers() {
           </Stack>
         </Box>
       </Container>
+
+      {/* Application Modal */}
+      <Dialog 
+        open={applicationModalOpen} 
+        onClose={() => setApplicationModalOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="h5" fontWeight={600}>
+              Apply for {selectedJob?.title}
+            </Typography>
+            <IconButton onClick={() => setApplicationModalOpen(false)}>
+              <Close />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Full Name"
+                  value={applicationData.fullName}
+                  onChange={(e) => setApplicationData(prev => ({ ...prev, fullName: e.target.value }))}
+                  required
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Email"
+                  type="email"
+                  value={applicationData.email}
+                  onChange={(e) => setApplicationData(prev => ({ ...prev, email: e.target.value }))}
+                  required
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="Phone Number"
+                  value={applicationData.phone}
+                  onChange={(e) => setApplicationData(prev => ({ ...prev, phone: e.target.value }))}
+                  required
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  label="LinkedIn URL"
+                  value={applicationData.linkedIn}
+                  onChange={(e) => setApplicationData(prev => ({ ...prev, linkedIn: e.target.value }))}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Portfolio URL"
+                  value={applicationData.portfolio}
+                  onChange={(e) => setApplicationData(prev => ({ ...prev, portfolio: e.target.value }))}
+                  helperText="Optional - relevant for design and engineering roles"
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <Box sx={{ border: '2px dashed #ccc', borderRadius: 2, p: 3, textAlign: 'center' }}>
+                  <input
+                    accept=".pdf,.doc,.docx"
+                    style={{ display: 'none' }}
+                    id="resume-upload"
+                    type="file"
+                    onChange={handleResumeUpload}
+                  />
+                  <label htmlFor="resume-upload">
+                    <Button
+                      variant="outlined"
+                      component="span"
+                      startIcon={<AttachFile />}
+                    >
+                      Upload Resume
+                    </Button>
+                  </label>
+                  {applicationData.resume && (
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      Selected: {applicationData.resume.name}
+                    </Typography>
+                  )}
+                  <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                    PDF, DOC, or DOCX files only
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Cover Letter"
+                  multiline
+                  rows={4}
+                  value={applicationData.coverLetter}
+                  onChange={(e) => setApplicationData(prev => ({ ...prev, coverLetter: e.target.value }))}
+                  helperText="Optional - Tell us why you're interested in this role"
+                />
+              </Grid>
+            </Grid>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button 
+            onClick={() => setApplicationModalOpen(false)}
+            variant="outlined"
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSubmitApplication}
+            variant="contained"
+            disabled={!applicationData.fullName || !applicationData.email || !applicationData.phone}
+          >
+            Submit Application
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

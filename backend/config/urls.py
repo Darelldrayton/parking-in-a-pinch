@@ -85,6 +85,7 @@ urlpatterns = [
     path('api/v1/messages/', include('apps.messaging.urls')),
     path('api/v1/notifications/', include('apps.notifications.urls')),
     path('api/v1/disputes/', include('apps.disputes.urls')),
+    path('api/v1/careers/', include('apps.careers.urls')),
     # path('api/v1/location/', include('apps.location.urls')),
     # path('api/v1/qr-codes/', include('apps.qr_codes.urls')),
     # path('api/v1/analytics/', include('apps.analytics.urls')),

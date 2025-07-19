@@ -767,6 +767,211 @@ class Payout(models.Model):
         return self.payments.count()
 
 
+class PayoutRequest(models.Model):
+    """
+    Model representing manual payout requests that require admin approval.
+    """
+    
+    class RequestStatus(models.TextChoices):
+        PENDING = 'pending', _('Pending Review')
+        APPROVED = 'approved', _('Approved')
+        REJECTED = 'rejected', _('Rejected')
+        COMPLETED = 'completed', _('Completed')
+    
+    class PayoutMethod(models.TextChoices):
+        BANK_TRANSFER = 'bank_transfer', _('Bank Transfer (ACH)')
+        WIRE_TRANSFER = 'wire_transfer', _('Wire Transfer')
+        CHECK = 'check', _('Paper Check')
+        PAYPAL = 'paypal', _('PayPal')
+        ZELLE = 'zelle', _('Zelle')
+        VENMO = 'venmo', _('Venmo')
+        CASHAPP = 'cashapp', _('Cash App')
+    
+    # Relationships
+    host = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='payout_requests',
+        help_text=_('Host requesting the payout')
+    )
+    payments = models.ManyToManyField(
+        Payment,
+        related_name='payout_requests',
+        help_text=_('Payments to be included in this payout')
+    )
+    reviewed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reviewed_payout_requests',
+        help_text=_('Admin who reviewed the request')
+    )
+    
+    # Request details
+    request_id = models.CharField(
+        _('request ID'),
+        max_length=20,
+        unique=True,
+        db_index=True,
+        help_text=_('Internal request identifier')
+    )
+    requested_amount = models.DecimalField(
+        _('requested amount'),
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.01'))],
+        help_text=_('Requested payout amount')
+    )
+    approved_amount = models.DecimalField(
+        _('approved amount'),
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal('0.01'))],
+        help_text=_('Admin approved payout amount')
+    )
+    payout_method = models.CharField(
+        _('payout method'),
+        max_length=20,
+        choices=PayoutMethod.choices,
+        default=PayoutMethod.BANK_TRANSFER,
+        help_text=_('Preferred payout method')
+    )
+    status = models.CharField(
+        _('status'),
+        max_length=20,
+        choices=RequestStatus.choices,
+        default=RequestStatus.PENDING,
+        help_text=_('Current request status')
+    )
+    
+    # Bank details (for bank transfers)
+    bank_name = models.CharField(
+        _('bank name'),
+        max_length=100,
+        blank=True,
+        help_text=_('Name of the bank')
+    )
+    account_holder_name = models.CharField(
+        _('account holder name'),
+        max_length=100,
+        blank=True,
+        help_text=_('Name on the bank account')
+    )
+    account_number = models.CharField(
+        _('account number'),
+        max_length=50,
+        blank=True,
+        help_text=_('Bank account number (last 4 digits shown)')
+    )
+    routing_number = models.CharField(
+        _('routing number'),
+        max_length=20,
+        blank=True,
+        help_text=_('Bank routing number')
+    )
+    
+    # Additional information
+    host_notes = models.TextField(
+        _('host notes'),
+        blank=True,
+        help_text=_('Notes from the host')
+    )
+    admin_notes = models.TextField(
+        _('admin notes'),
+        blank=True,
+        help_text=_('Internal admin notes')
+    )
+    rejection_reason = models.TextField(
+        _('rejection reason'),
+        blank=True,
+        help_text=_('Reason for rejection if denied')
+    )
+    
+    # Related payout (after processing)
+    payout = models.OneToOneField(
+        'Payout',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='payout_request',
+        help_text=_('Associated payout after processing')
+    )
+    
+    # Timestamps
+    created_at = models.DateTimeField(_('created at'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('updated at'), auto_now=True)
+    reviewed_at = models.DateTimeField(
+        _('reviewed at'),
+        null=True,
+        blank=True,
+        help_text=_('When the request was reviewed')
+    )
+    processed_at = models.DateTimeField(
+        _('processed at'),
+        null=True,
+        blank=True,
+        help_text=_('When the payout was processed')
+    )
+    
+    class Meta:
+        db_table = 'payout_requests'
+        verbose_name = _('Payout Request')
+        verbose_name_plural = _('Payout Requests')
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status', 'created_at']),
+            models.Index(fields=['host']),
+            models.Index(fields=['request_id']),
+        ]
+    
+    def __str__(self):
+        return f"Payout Request {self.request_id} - ${self.requested_amount}"
+    
+    def save(self, *args, **kwargs):
+        if not self.request_id:
+            self.request_id = self.generate_request_id()
+        super().save(*args, **kwargs)
+    
+    def generate_request_id(self):
+        """Generate a unique request ID."""
+        return f"POR{str(uuid.uuid4())[:8].upper()}"
+    
+    @property
+    def is_pending(self):
+        """Check if request is pending review."""
+        return self.status == self.RequestStatus.PENDING
+    
+    @property
+    def is_approved(self):
+        """Check if request has been approved."""
+        return self.status == self.RequestStatus.APPROVED
+    
+    @property
+    def is_completed(self):
+        """Check if payout has been completed."""
+        return self.status == self.RequestStatus.COMPLETED
+    
+    @property
+    def can_be_approved(self):
+        """Check if request can be approved."""
+        return self.status == self.RequestStatus.PENDING
+    
+    @property
+    def final_amount(self):
+        """Get the final payout amount (approved or requested)."""
+        return self.approved_amount or self.requested_amount
+    
+    @property
+    def masked_account_number(self):
+        """Get masked account number for display."""
+        if self.account_number and len(self.account_number) > 4:
+            return f"****{self.account_number[-4:]}"
+        return self.account_number
+
+
 class RefundRequest(models.Model):
     """
     Model representing a refund request that requires admin approval.

@@ -2811,20 +2811,51 @@ const EnhancedAvailabilityCalendar: React.FC = () => {
   const [listings, setListings] = useState<any[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
+  // SECURITY FIX: Clear listings state when user changes
   useEffect(() => {
-    loadListings();
-  }, []);
+    setListings([]);
+    setSelectedListing(null);
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (user) {
+      loadListings();
+    }
+  }, [user?.id]);
 
   const loadListings = async () => {
+    if (!user) {
+      setListings([]);
+      setSelectedListing(null);
+      return;
+    }
+    
     try {
+      console.log('Dashboard: Loading listings for user', user.id);
       const response = await api.get('/listings/my-listings/');
       const listingsData = response.data.results || response.data || [];
-      setListings(listingsData);
-      if (listingsData.length > 0) {
-        setSelectedListing(listingsData[0]);
+      
+      // SECURITY FIX: Validate that all listings belong to the current user
+      const validListings = listingsData.filter((listing: any) => {
+        const listingBelongsToUser = listing.host === user.id || listing.host_id === user.id;
+        if (!listingBelongsToUser) {
+          console.error('🚨 Dashboard: SECURITY VIOLATION - Listing', listing.id, 'belongs to user', listing.host || listing.host_id, 'but current user is', user.id);
+        }
+        return listingBelongsToUser;
+      });
+      
+      if (validListings.length !== listingsData.length) {
+        console.error('🚨 Dashboard: SECURITY ALERT - Filtered out', listingsData.length - validListings.length, 'listings that belonged to other users');
+      }
+      
+      setListings(validListings);
+      if (validListings.length > 0) {
+        setSelectedListing(validListings[0]);
       }
     } catch (error) {
       console.error('Error loading listings:', error);
+      setListings([]);
+      setSelectedListing(null);
     }
   };
 
@@ -2893,21 +2924,49 @@ const EnhancedRecentActivity: React.FC = () => {
   const [activities, setActivities] = useState<any[]>([]);
   const [listings, setListings] = useState<any[]>([]);
 
+  // SECURITY FIX: Clear listings state when user changes
   useEffect(() => {
-    loadListings();
-  }, []);
+    setListings([]);
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (user) {
+      loadListings();
+    }
+  }, [user?.id]);
 
   useEffect(() => {
     generateRecentActivities();
   }, [notifications, bookings, listings]);
 
   const loadListings = async () => {
+    if (!user) {
+      setListings([]);
+      return;
+    }
+    
     try {
+      console.log('Dashboard ActivityFeed: Loading listings for user', user.id);
       const response = await api.get('/listings/my-listings/');
       const listingsData = response.data.results || response.data || [];
-      setListings(listingsData);
+      
+      // SECURITY FIX: Validate that all listings belong to the current user
+      const validListings = listingsData.filter((listing: any) => {
+        const listingBelongsToUser = listing.host === user.id || listing.host_id === user.id;
+        if (!listingBelongsToUser) {
+          console.error('🚨 Dashboard ActivityFeed: SECURITY VIOLATION - Listing', listing.id, 'belongs to user', listing.host || listing.host_id, 'but current user is', user.id);
+        }
+        return listingBelongsToUser;
+      });
+      
+      if (validListings.length !== listingsData.length) {
+        console.error('🚨 Dashboard ActivityFeed: SECURITY ALERT - Filtered out', listingsData.length - validListings.length, 'listings that belonged to other users');
+      }
+      
+      setListings(validListings);
     } catch (error) {
       console.error('Error loading listings for activity feed:', error);
+      setListings([]);
     }
   };
 

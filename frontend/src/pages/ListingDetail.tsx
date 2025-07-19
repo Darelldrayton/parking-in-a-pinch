@@ -662,7 +662,7 @@ export default function ListingDetail() {
 
           {/* Main Content */}
           <Grid item xs={12} md={8}>
-            <Stack spacing={3}>
+            <Stack spacing={2}>
               {/* Title and Basic Info */}
               <Card sx={{ borderRadius: 3 }}>
                 <CardContent sx={{ p: 3 }}>
@@ -1167,7 +1167,7 @@ export default function ListingDetail() {
         </Grid>
 
         {/* Reviews Section */}
-        <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Container maxWidth="lg" sx={{ mt: 2 }}>
           <Card sx={{ borderRadius: 3 }}>
             <CardContent sx={{ p: 4 }}>
               <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>

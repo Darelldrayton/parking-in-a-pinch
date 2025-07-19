@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { getSecureImageUrl } from '../utils/imageProxy';
+import { VerifiedAvatar } from '../components/common/VerifiedBadge';
 import {
   Box,
   Container,
@@ -61,6 +63,8 @@ interface User {
   last_name: string;
   display_name: string;
   profile_picture?: string;
+  profile_picture_url?: string;
+  is_verified?: boolean;
 }
 
 interface Message {
@@ -284,7 +288,7 @@ const Messages: React.FC = React.memo(() => {
   const [newConversationMessage, setNewConversationMessage] = useState('');
   const [mobileView, setMobileView] = useState<'conversations' | 'chat'>('conversations');
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
-  const [conversationFilter, setConversationFilter] = useState<'all' | 'renter' | 'host'>('all');
+  const [conversationFilter, setConversationFilter] = useState<'all' | 'renter' | 'host' | 'support'>('all');
   const [conversationsLoaded, setConversationsLoaded] = useState(false);
   
   // Refs
@@ -462,7 +466,7 @@ const Messages: React.FC = React.memo(() => {
         conversation: conversationId,
         sender: msg.sender?.id || msg.sender,
         sender_display_name: msg.sender?.display_name || msg.sender_display_name || 'Unknown',
-        sender_profile_picture: msg.sender?.profile_picture || msg.sender_profile_picture,
+        sender_profile_picture: msg.sender?.profile_picture_url || msg.sender?.profile_picture || msg.sender_profile_picture,
         content: msg.content,
         message_type: msg.message_type || 'text',
         status: msg.status || 'delivered',
@@ -573,22 +577,38 @@ const Messages: React.FC = React.memo(() => {
   // MEMOIZED filtering to prevent excessive re-renders
   const filteredConversationsByRole = useMemo(() => {
     console.log('🎯 Filtering conversations by role:', conversationFilter, 'from', allConversations.length);
+    console.log('🔍 Sample conversation data:', allConversations[0]);
+    
     if (conversationFilter === 'all') {
+      // Show ALL conversations including support/dispute
       return allConversations;
     } else if (conversationFilter === 'renter') {
-      // Show booking conversations where user is renter + support conversations
-      return allConversations.filter(conv => 
-        conv.user_role === 'renter' || 
-        conv.conversation_type === 'support' ||
-        conv.conversation_type === 'inquiry'
-      );
+      // Show ONLY booking conversations (not support/dispute) - filter by conversation type, not user role
+      return allConversations.filter(conv => {
+        // Accept conversations that are booking-related or have booking_id (excluding support/dispute)
+        const isBookingType = conv.conversation_type === 'booking' || 
+                             conv.conversation_type === 'inquiry' ||
+                             (conv.booking_id && conv.conversation_type !== 'support' && conv.conversation_type !== 'dispute') ||
+                             (conv.conversation_type !== 'support' && conv.conversation_type !== 'dispute' && conv.user_role === 'renter');
+        console.log('🔍 Renter filter - conv:', conv.id, 'type:', conv.conversation_type, 'booking_id:', conv.booking_id, 'user_role:', conv.user_role, 'isBookingType:', isBookingType);
+        return isBookingType;
+      });
     } else if (conversationFilter === 'host') {
-      // Show booking conversations where user is host + support conversations  
-      return allConversations.filter(conv => 
-        conv.user_role === 'host' || 
-        conv.conversation_type === 'support' ||
-        conv.conversation_type === 'inquiry'
-      );
+      // Show ONLY listing conversations (not support/dispute) - filter by conversation type, not user role  
+      return allConversations.filter(conv => {
+        const isListingType = conv.conversation_type === 'listing' || 
+                             (conv.conversation_type !== 'support' && conv.conversation_type !== 'dispute' && conv.conversation_type !== 'booking' && conv.conversation_type !== 'inquiry') ||
+                             (conv.conversation_type !== 'support' && conv.conversation_type !== 'dispute' && conv.user_role === 'host');
+        console.log('🔍 Host filter - conv:', conv.id, 'type:', conv.conversation_type, 'booking_id:', conv.booking_id, 'user_role:', conv.user_role, 'isListingType:', isListingType);
+        return isListingType;
+      });
+    } else if (conversationFilter === 'support') {
+      // Show ONLY support/dispute conversations
+      return allConversations.filter(conv => {
+        const isSupportType = conv.conversation_type === 'support' || conv.conversation_type === 'dispute';
+        console.log('🔍 Support filter - conv:', conv.id, 'type:', conv.conversation_type, 'booking_id:', conv.booking_id, 'user_role:', conv.user_role, 'isSupportType:', isSupportType);
+        return isSupportType;
+      });
     }
     return allConversations;
   }, [conversationFilter, allConversations]);
@@ -617,7 +637,7 @@ const Messages: React.FC = React.memo(() => {
         conversation: selectedConversation.id,
         sender: user?.id,
         sender_display_name: user?.first_name + ' ' + user?.last_name || 'You',
-        sender_profile_picture: user?.profile_picture,
+        sender_profile_picture: user?.profile_picture_url || user?.profile_picture,
         content: messageContent.trim(),
         message_type: 'text',
         status: 'sent',
@@ -759,8 +779,8 @@ const Messages: React.FC = React.memo(() => {
     
     filteredConversationsByRole.forEach(conversation => {
       let avatar = 'C';
-      if (conversation.other_participant?.profile_picture) {
-        avatar = conversation.other_participant.profile_picture;
+      if (conversation.other_participant?.profile_picture_url || conversation.other_participant?.profile_picture) {
+        avatar = conversation.other_participant.profile_picture_url || conversation.other_participant.profile_picture;
       } else if (conversation.other_participant?.display_name) {
         avatar = conversation.other_participant.display_name.charAt(0);
       } else if (conversation.other_participant?.first_name) {
@@ -914,6 +934,14 @@ const Messages: React.FC = React.memo(() => {
           >
             Listings
           </Button>
+          <Button
+            variant={conversationFilter === 'support' ? 'contained' : 'outlined'}
+            size="small"
+            onClick={() => setConversationFilter('support')}
+            sx={{ minWidth: 'auto', px: 2 }}
+          >
+            Support
+          </Button>
         </Stack>
       </Box>
       
@@ -1023,16 +1051,18 @@ const Messages: React.FC = React.memo(() => {
                           }
                         }}
                       >
-                        <Avatar
-                          src={typeof getConversationAvatar(conversation) === 'string' && getConversationAvatar(conversation).startsWith('http') ? getConversationAvatar(conversation) as string : undefined}
+                        <VerifiedAvatar
+                          src={getSecureImageUrl(conversation.other_participant?.profile_picture)}
+                          isVerified={conversation.other_participant?.is_verified || false}
+                          size={40}
                           sx={{
                             bgcolor: conversation.unread_count > 0 ? 'primary.main' : 'grey.400',
                             color: 'white',
                             fontWeight: 600
                           }}
                         >
-                          {typeof getConversationAvatar(conversation) === 'string' && !getConversationAvatar(conversation).startsWith('http') ? getConversationAvatar(conversation) : ''}
-                        </Avatar>
+                          {getConversationAvatar(conversation)}
+                        </VerifiedAvatar>
                       </Badge>
                     </Stack>
                   </ListItemAvatar>
@@ -1143,12 +1173,14 @@ const Messages: React.FC = React.memo(() => {
               <ArrowBackIcon />
             </IconButton>
             
-            <Avatar
-              src={selectedConversation.other_participant?.profile_picture}
+            <VerifiedAvatar
+              src={getSecureImageUrl(selectedConversation.other_participant?.profile_picture)}
+              isVerified={selectedConversation.other_participant?.is_verified || false}
+              size={40}
               sx={{ mr: 2 }}
             >
               {getConversationAvatar(selectedConversation)}
-            </Avatar>
+            </VerifiedAvatar>
             
             <Box sx={{ flex: 1 }}>
               <Typography variant="h6" fontWeight={600} color="text.primary">

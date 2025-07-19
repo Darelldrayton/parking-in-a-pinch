@@ -105,6 +105,7 @@ export default function Listings() {
   const [priceFilter, setPriceFilter] = useState('');
   const [parkingTypeFilter, setParkingTypeFilter] = useState('');
   const [listings, setListings] = useState<Listing[]>([]);
+  const [totalResults, setTotalResults] = useState(0);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [availabilityStatuses, setAvailabilityStatuses] = useState<Record<number, AvailabilityStatus>>({});
   const [advancedFilters, setAdvancedFilters] = useState<FilterOptions>({
@@ -141,7 +142,7 @@ export default function Listings() {
   useEffect(() => {
     loadListings();
     loadFavorites();
-  }, [user, selectedBorough, parkingTypeFilter, priceFilter, advancedFilters]);
+  }, [user, selectedBorough, parkingTypeFilter, priceFilter, advancedFilters, searchQuery]);
 
   // Batch availability check for ALL listings when they load
   useEffect(() => {
@@ -258,6 +259,11 @@ export default function Listings() {
       // Build comprehensive filters from current filter state
       const filters: SearchFilters = {};
       
+      // Add search query to filters
+      if (searchQuery.trim()) {
+        filters.search = searchQuery.trim();
+      }
+      
       if (selectedBorough) {
         filters.borough = selectedBorough;
       }
@@ -324,10 +330,19 @@ export default function Listings() {
       const response = await listingsService.getListings(filters);
       console.log('Listings response:', response);
       console.log('First listing rating_average:', response.results[0]?.rating_average, typeof response.results[0]?.rating_average);
-      setListings(response.results || response || []);
+      
+      if (response.results) {
+        setListings(response.results);
+        setTotalResults(response.count || response.results.length);
+      } else {
+        // Handle case where response is just an array
+        setListings(response || []);
+        setTotalResults((response || []).length);
+      }
     } catch (error) {
       console.error('Error loading listings:', error);
       setListings([]);
+      setTotalResults(0);
     } finally {
       setLoading(false);
     }
@@ -464,17 +479,8 @@ export default function Listings() {
     };
   };
 
-  // Client-side filtering for search query and availability filter
+  // Client-side filtering for availability filter only (search is now handled server-side)
   const filteredListings = listings.filter(listing => {
-    // Search query filter
-    if (searchQuery) {
-      const matchesSearch = listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        listing.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (listing.borough || '').toLowerCase().includes(searchQuery.toLowerCase());
-      
-      if (!matchesSearch) return false;
-    }
-    
     // Availability filter
     if (showOnlyAvailable) {
       const availabilityStatus = availabilityStatuses[listing.id];
@@ -570,10 +576,15 @@ export default function Listings() {
           </Typography>
           <Stack direction="row" spacing={2} alignItems="center">
             <Typography variant="h6" color="text.secondary">
-              {filteredListings.length} parking spaces in New York City
+              {showOnlyAvailable ? filteredListings.length : totalResults} parking spaces in New York City
               {showOnlyAvailable && (
                 <Typography component="span" sx={{ ml: 1, fontWeight: 600, color: 'success.main' }}>
                   (Available only)
+                </Typography>
+              )}
+              {searchQuery && !showOnlyAvailable && (
+                <Typography component="span" sx={{ ml: 1, fontStyle: 'italic' }}>
+                  for "{searchQuery}"
                 </Typography>
               )}
             </Typography>
@@ -676,6 +687,11 @@ export default function Listings() {
                 value={searchQuery}
                 onChange={(value, selectedLocation) => {
                   setSearchQuery(value);
+                  if (value) {
+                    // Clear borough filter when searching to avoid backend conflict
+                    setSelectedBorough('');
+                    setSelectedNeighborhood('');
+                  }
                   if (selectedLocation) {
                     if (selectedLocation.type === 'borough') {
                       setSelectedBorough(selectedLocation.borough || '');

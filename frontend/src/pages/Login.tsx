@@ -60,6 +60,13 @@ const Login: React.FC = () => {
 
   const from = location.state?.from?.pathname || '/dashboard';
 
+  React.useEffect(() => {
+    if (window.location.hash === '#force-clear') {
+      localStorage.clear();
+      window.location.hash = '';
+    }
+  }, []);
+
   const {
     register,
     handleSubmit,
@@ -72,28 +79,10 @@ const Login: React.FC = () => {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-  console.log('Form submitted:', data); // Add this line
-  try {
-    console.log('About to call login...'); // Add this line
-    await login(data.email, data.password);
-    // ... rest of the function
-      
-      // Check if user is admin and store admin tokens
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      if (user.is_staff || user.is_superuser) {
-        // Copy tokens to admin keys for admin dashboard
-        const accessToken = localStorage.getItem('access_token');
-        const refreshToken = localStorage.getItem('refresh_token');
-        if (accessToken) localStorage.setItem('admin_access_token', accessToken);
-        if (refreshToken) localStorage.setItem('admin_refresh_token', refreshToken);
-        localStorage.setItem('admin_user', JSON.stringify(user));
-        
-        enqueueSnackbar('Welcome to admin dashboard!', { variant: 'success' });
-        navigate('/admin/dashboard', { replace: true });
-      } else {
-        enqueueSnackbar('Welcome back!', { variant: 'success' });
-        navigate(from, { replace: true });
-      }
+    try {
+      await login(data.email, data.password);
+      enqueueSnackbar('Welcome back!', { variant: 'success' });
+      navigate(from, { replace: true });
     } catch (error: any) {
       enqueueSnackbar(error.message || 'Login failed', { variant: 'error' });
     }
@@ -241,9 +230,9 @@ const Login: React.FC = () => {
                   {isLoading ? 'Signing in...' : 'Sign In'}
                 </Button>
 
-                <Grid container justifyContent="center">
-                  <Grid size="auto">
-                    <Typography variant="body2" color="text.secondary">
+                <Grid container justifyContent="center" spacing={2}>
+                  <Grid size={12}>
+                    <Typography variant="body2" color="text.secondary" align="center">
                       Don't have an account?{' '}
                       <Link
                         to="/signup"

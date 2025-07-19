@@ -3,6 +3,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import toast from 'react-hot-toast'
+import { getSecureImageUrl } from '../utils/imageProxy'
 import {
   Box,
   Container,
@@ -61,6 +62,7 @@ import NotificationManager from '../components/notifications/NotificationManager
 import DisputeDialog from '../components/common/DisputeDialog'
 import PasswordChangeDialog from '../components/common/PasswordChangeDialog'
 import DeleteAccountDialog from '../components/common/DeleteAccountDialog'
+import { VerifiedBadge, VerifiedAvatar } from '../components/common/VerifiedBadge'
 
 const schema = yup.object({
   first_name: yup.string().required('First name is required'),
@@ -103,7 +105,7 @@ function TabPanel(props: TabPanelProps) {
 }
 
 export default function Profile() {
-  const { user, updateUser } = useAuth()
+  const { user, updateUser, setUserState } = useAuth()
   const theme = useTheme()
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -215,7 +217,10 @@ export default function Profile() {
     setPhotoUploading(true)
     try {
       const updatedUser = await authService.uploadProfilePhoto(file)
-      updateUser(updatedUser)
+      console.log('🔍 Profile photo upload - got updated user:', JSON.stringify(updatedUser, null, 2))
+      // CRITICAL FIX: Don't call updateUser() which triggers another API call
+      // Instead, directly update the AuthContext user state  
+      setUserState(updatedUser)
       toast.success('Profile photo updated successfully!')
     } catch (error: any) {
       console.error('Photo upload error:', error)
@@ -264,16 +269,18 @@ export default function Profile() {
         <Card sx={{ mb: 4, borderRadius: 3, boxShadow: theme.shadows[4] }}>
           <CardContent sx={{ p: 4 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-              <Avatar
+              <VerifiedAvatar
+                src={getSecureImageUrl(user?.profile_image)}
+                alt="Profile"
+                isVerified={user?.is_verified || false}
+                size={80}
                 sx={{
-                  width: 80,
-                  height: 80,
                   bgcolor: 'primary.main',
                   fontSize: '2rem',
                 }}
               >
-                {user?.first_name?.charAt(0) || 'U'}
-              </Avatar>
+                {!user?.profile_image && (user?.first_name?.charAt(0) || 'U')}
+              </VerifiedAvatar>
               <Box sx={{ flex: 1 }}>
                 <Typography variant="h5" fontWeight="bold" gutterBottom color="text.primary">
                   {user?.first_name} {user?.last_name}
@@ -284,15 +291,14 @@ export default function Profile() {
                 <Stack direction="row" spacing={1}>
                   <Chip 
                     label={user?.user_type?.charAt(0).toUpperCase() + user?.user_type?.slice(1) || 'Renter'} 
- 
                     size="small" 
                   />
-                  <Chip 
-                    icon={<Verified />} 
-                    label="Verified" 
-                    color="success" 
-                    size="small" 
-                  />
+                  {user?.is_verified && (
+                    <VerifiedBadge 
+                      isVerified={true}
+                      size="small"
+                    />
+                  )}
                 </Stack>
               </Box>
             </Box>
@@ -333,17 +339,18 @@ export default function Profile() {
                 <Grid container spacing={3}>
                   <Grid size={12}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                      <Avatar
-                        src={user?.profile_picture || undefined}
+                      <VerifiedAvatar
+                        src={getSecureImageUrl(user?.profile_image)}
+                        alt="Profile"
+                        isVerified={user?.is_verified || false}
+                        size={100}
                         sx={{
-                          width: 100,
-                          height: 100,
                           bgcolor: 'primary.main',
                           fontSize: '2.5rem',
                         }}
                       >
-                        {!user?.profile_picture && (user?.first_name?.charAt(0) || 'U')}
-                      </Avatar>
+                        {!user?.profile_image && (user?.first_name?.charAt(0) || 'U')}
+                      </VerifiedAvatar>
                       {isEditing && (
                         <Box>
                           <input
@@ -364,7 +371,7 @@ export default function Profile() {
                               {photoUploading ? 'Uploading...' : 'Change Photo'}
                             </Button>
                           </label>
-                          {user?.profile_picture && (
+                          {(user?.profile_image || user?.profile_picture_url || user?.profile_picture) && (
                             <Button
                               variant="outlined"
                               color="error"

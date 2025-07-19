@@ -9,14 +9,32 @@ interface AdminProtectedRouteProps {
 
 const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({ 
   children, 
-  redirectTo = '/ruler/login' 
+  redirectTo = '/admin/login' 
 }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // CRITICAL FIX: Only check authentication once
+    let mounted = true;
+    
     const checkAuthentication = async () => {
+      if (!mounted) return;
+      
       console.log('🔐 AdminProtectedRoute: Checking authentication...');
+      console.log('🔐 Current path:', window.location.pathname);
+      console.log('🔐 Timestamp:', new Date().toISOString());
+      console.log('🔐 RedirectTo prop:', redirectTo);
+      console.log('🔐 Current state:', { isAuthenticated, isLoading });
+      
+      // Check if user just logged in
+      const justLoggedIn = sessionStorage.getItem('just_logged_in');
+      if (justLoggedIn) {
+        console.log('⏳ User just logged in - clearing flag and proceeding...');
+        // Clear the flag immediately to prevent issues
+        sessionStorage.removeItem('just_logged_in');
+        // Don't return early - continue with authentication check
+      }
       
       const adminToken = localStorage.getItem('admin_access_token');
       const adminUser = localStorage.getItem('admin_user');
@@ -25,7 +43,7 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({
       console.log('🔐 Admin user exists:', !!adminUser);
       
       if (!adminToken || !adminUser) {
-        console.log('❌ No admin credentials found');
+        console.log('❌ No admin credentials found - redirecting to login');
         setIsAuthenticated(false);
         setIsLoading(false);
         return;
@@ -35,44 +53,23 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({
         const userData = JSON.parse(adminUser);
         console.log('🔐 Checking user:', userData.email);
         
-        // For owner account, bypass additional checks
-        if (userData.email === 'darelldrayton93@gmail.com') {
-          console.log('✅ Owner account verified');
+        // SIMPLIFIED: Just check if user is staff/superuser
+        // Skip API verification to prevent loops
+        if (userData.is_staff || userData.is_superuser) {
+          console.log('✅ Admin user verified - granting access');
+          console.log('✅ User details:', { 
+            email: userData.email, 
+            is_staff: userData.is_staff, 
+            is_superuser: userData.is_superuser 
+          });
           setIsAuthenticated(true);
           setIsLoading(false);
           return;
-        }
-
-        // For other users, verify token with backend
-        try {
-          const response = await fetch('/api/v1/auth/verify/', {
-            headers: {
-              'Authorization': `Bearer ${adminToken}`,
-              'Content-Type': 'application/json'
-            }
-          });
-
-          if (response.ok) {
-            console.log('✅ Token verified with backend');
-            setIsAuthenticated(true);
-          } else {
-            console.log('❌ Token verification failed:', response.status);
-            // Clear invalid tokens
-            localStorage.removeItem('admin_access_token');
-            localStorage.removeItem('admin_refresh_token');
-            localStorage.removeItem('admin_user');
-            setIsAuthenticated(false);
-          }
-        } catch (verifyError) {
-          console.warn('⚠️ Token verification failed, but allowing owner access:', verifyError);
-          // If verification endpoint doesn't exist, still allow access for staff/superuser
-          if (userData.is_staff || userData.is_superuser) {
-            console.log('✅ Staff/superuser access granted');
-            setIsAuthenticated(true);
-          } else {
-            console.log('❌ Non-staff user denied access');
-            setIsAuthenticated(false);
-          }
+        } else {
+          console.log('❌ User is not admin - denying access');
+          setIsAuthenticated(false);
+          setIsLoading(false);
+          return;
         }
       } catch (parseError) {
         console.error('❌ Error parsing admin user data:', parseError);
@@ -83,10 +80,16 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({
       }
 
       setIsLoading(false);
+      console.log('🔐 Authentication check completed - will not run again');
     };
 
     checkAuthentication();
-  }, []);
+    
+    // Cleanup function
+    return () => {
+      mounted = false;
+    };
+  }, []); // EMPTY DEPENDENCY ARRAY - RUN ONLY ONCE
 
   // Show loading while checking authentication
   if (isLoading) {
@@ -114,12 +117,18 @@ const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({
 
   // Redirect to login if not authenticated
   if (isAuthenticated === false) {
-    console.log('🚨 SECURITY: Unauthenticated access blocked, redirecting to login');
+    console.log('🚨 SECURITY: Unauthenticated access blocked, redirecting to:', redirectTo);
+    console.log('🚨 Current window location:', window.location.href);
+    console.log('🚨 Available localStorage keys:', Object.keys(localStorage).filter(k => k.includes('admin')));
+    console.log('🚨 Admin token value:', localStorage.getItem('admin_access_token')?.substring(0, 20) + '...');
+    console.log('🚨 Admin user value:', localStorage.getItem('admin_user'));
     return <Navigate to={redirectTo} replace />;
   }
 
   // Render protected content if authenticated
   console.log('✅ SECURITY: Admin access granted, rendering dashboard');
+  console.log('✅ Current pathname:', window.location.pathname);
+  console.log('✅ Expected pathname: /admin/dashboard');
   return <>{children}</>;
 };
 

@@ -25,6 +25,9 @@ import {
   Fade,
   Zoom,
   alpha,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -62,14 +65,12 @@ interface Listing {
   reviews_count?: number;
 }
 
-const popularLocations = [
-  'Downtown',
-  'Airport',
-  'Stadium',
-  'University',
-  'Shopping Mall',
-  'Hospital',
-  'Train Station',
+const boroughOptions = [
+  { value: 'Manhattan', label: 'Manhattan' },
+  { value: 'Brooklyn', label: 'Brooklyn' },
+  { value: 'Queens', label: 'Queens' },
+  { value: 'Bronx', label: 'Bronx' },
+  { value: 'Staten Island', label: 'Staten Island' },
 ];
 
 // Memoized ListingCard component to prevent unnecessary re-renders
@@ -148,6 +149,7 @@ function Home() {
   const [error, setError] = useState<string | null>(null);
   const [searchLocation, setSearchLocation] = useState<string | null>('');
   const [searchDate, setSearchDate] = useState('');
+  const [availableCount, setAvailableCount] = useState<number>(0);
 
   // Redirect to dashboard if user is logged in
   useEffect(() => {
@@ -171,9 +173,23 @@ function Home() {
     }
   }, []);
 
+  const loadAvailableCount = useCallback(async () => {
+    try {
+      const response = await getListings({ 
+        is_available: true,
+        limit: 1000 // Get all available spots to count them
+      });
+      setAvailableCount(response.count || response.results?.length || 0);
+    } catch (err) {
+      console.error('Error loading available count:', err);
+      setAvailableCount(0);
+    }
+  }, []);
+
   useEffect(() => {
     // Only load once on mount
     loadFeaturedListings();
+    loadAvailableCount();
   }, []); // Empty dependency array
 
   const handleSearch = useCallback(() => {
@@ -407,9 +423,13 @@ function Home() {
                     <Grid size={{ xs: 12, md: 6 }}>
                       <Autocomplete
                         freeSolo
-                        options={popularLocations}
+                        options={boroughOptions}
+                        getOptionLabel={(option) => typeof option === 'string' ? option : option.label}
                         value={searchLocation}
-                        onChange={(_, value) => setSearchLocation(value)}
+                        onChange={(_, value) => {
+                          const locationValue = typeof value === 'string' ? value : value?.label || '';
+                          setSearchLocation(locationValue);
+                        }}
                         PaperComponent={({ children, ...props }) => (
                           <Paper 
                             {...props} 
@@ -427,15 +447,36 @@ function Home() {
                             {children}
                           </Paper>
                         )}
+                        renderOption={(props, option) => (
+                          <ListItem {...props} key={typeof option === 'string' ? option : option.value}>
+                            <ListItemIcon>
+                              <LocationOn sx={{ color: 'primary.main' }} />
+                            </ListItemIcon>
+                            <ListItemText 
+                              primary={typeof option === 'string' ? option : option.label}
+                              sx={{ mr: 1 }}
+                            />
+                            <Chip 
+                              label="Borough" 
+                              size="small" 
+                              sx={{ 
+                                bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                color: 'primary.main',
+                                fontWeight: 600,
+                                fontSize: '0.7rem'
+                              }} 
+                            />
+                          </ListItem>
+                        )}
                         renderInput={(params) => (
                           <TextField
                             {...params}
-                            placeholder="Where do you need parking?"
+                            placeholder="Select NYC Borough..."
                             InputProps={{
                               ...params.InputProps,
                               startAdornment: (
                                 <InputAdornment position="start">
-                                  <LocationOn  />
+                                  <LocationOn sx={{ color: 'primary.main' }} />
                                 </InputAdornment>
                               ),
                               sx: {
@@ -577,8 +618,9 @@ function Home() {
                   variant="contained"
                   size="large"
                   onClick={() => navigate('/listings?filter=available')}
+                  disabled={loading}
                   sx={{
-                    bgcolor: 'success.main',
+                    bgcolor: availableCount > 0 ? 'success.main' : 'grey.500',
                     color: 'white',
                     fontWeight: 600,
                     fontSize: '1.1rem',
@@ -588,7 +630,7 @@ function Home() {
                     boxShadow: theme.shadows[8],
                     transition: 'all 0.3s ease',
                     '&:hover': {
-                      bgcolor: 'success.dark',
+                      bgcolor: availableCount > 0 ? 'success.dark' : 'grey.600',
                       transform: 'translateY(-2px)',
                       boxShadow: theme.shadows[12],
                       '&:before': {
@@ -619,7 +661,7 @@ function Home() {
                         height: 12,
                         borderRadius: '50%',
                         bgcolor: 'white',
-                        animation: 'pulse 2s infinite',
+                        animation: availableCount > 0 ? 'pulse 2s infinite' : 'none',
                         '@keyframes pulse': {
                           '0%': { opacity: 1 },
                           '50%': { opacity: 0.5 },
@@ -627,7 +669,7 @@ function Home() {
                         }
                       }}
                     />
-                    6 Available Now
+                    {loading ? 'Loading...' : availableCount > 0 ? `${availableCount} Available Now` : 'No spots available'}
                   </Box>
                 </Button>
 

@@ -80,6 +80,25 @@ class User(AbstractUser):
         default=False,
         help_text=_('Whether identity has been verified')
     )
+    is_verified = models.BooleanField(
+        _('verified user'),
+        default=False,
+        help_text=_('Whether user has been manually verified by admin (shows verification badge)')
+    )
+    verified_at = models.DateTimeField(
+        _('verified at'),
+        null=True,
+        blank=True,
+        help_text=_('When the user was verified by admin')
+    )
+    verified_by = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='verified_users',
+        help_text=_('Admin who verified this user')
+    )
     
     # Driver information
     driver_license_number = models.CharField(
@@ -205,6 +224,7 @@ class User(AbstractUser):
             models.Index(fields=['stripe_customer_id']),
             models.Index(fields=['is_email_verified']),
             models.Index(fields=['is_identity_verified']),
+            models.Index(fields=['is_verified']),
             models.Index(fields=['created_at']),
         ]
     

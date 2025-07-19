@@ -31,7 +31,6 @@ export default function Footer() {
       { label: 'About Us', path: '/about' },
       { label: 'How It Works', path: '/how-it-works' },
       { label: 'Careers', path: '/careers' },
-      { label: 'Press', path: '/press' },
     ],
     support: [
       { label: 'Help Center', path: '/help' },
@@ -48,7 +47,6 @@ export default function Footer() {
     host: [
       { label: 'Become a Host', path: '/signup?type=host' },
       { label: 'Host Guidelines', path: '/host-guidelines' },
-      { label: 'Host Insurance', path: '/host-insurance' },
       { label: 'Host Resources', path: '/host-resources' },
     ],
   };

@@ -42,6 +42,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { useSnackbar } from 'notistack';
+import { LegalDisclaimer } from '../components/legal/LegalDisclaimer';
 
 interface SignupFormData {
   first_name: string;
@@ -96,6 +97,13 @@ const Signup: React.FC = () => {
 
   const defaultUserType = searchParams.get('type') === 'host' ? 'host' : 'seeker';
 
+  // Don't clear tokens on signup page - let user stay logged in if they are
+  React.useEffect(() => {
+    console.log('📝 Signup page mounted');
+    // We don't clear tokens here anymore - if user is logged in and wants to create
+    // another account, they should explicitly log out first
+  }, []);
+
   const {
     register,
     control,
@@ -103,6 +111,7 @@ const Signup: React.FC = () => {
     formState: { errors, isValid },
     watch,
     trigger,
+    setValue,
   } = useForm<SignupFormData>({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -152,8 +161,13 @@ const Signup: React.FC = () => {
         user_type: data.user_type,
         subscribe_to_newsletter: data.subscribeToNewsletter,
       });
+      
       enqueueSnackbar('Account created successfully!', { variant: 'success' });
-      navigate('/dashboard');
+      
+      // Small delay to ensure auth state is properly set before navigation
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 100);
     } catch (error: any) {
       enqueueSnackbar(error.message || 'Signup failed', { variant: 'error' });
     }
@@ -463,31 +477,14 @@ const Signup: React.FC = () => {
                         />
                       </Grid>
 
-                      {/* Terms and Conditions */}
+                      {/* Legal Terms Agreement */}
                       <Grid size={12}>
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              {...register('agreeToTerms')}
-                              
-                            />
-                          }
-                          label={
-                            <Typography variant="body2">
-                              I agree to the{' '}
-                              <Link
-                                to="/terms"
-                              >
-                                Terms and Conditions
-                              </Link>{' '}
-                              and{' '}
-                              <Link
-                                to="/privacy"
-                              >
-                                Privacy Policy
-                              </Link>
-                            </Typography>
-                          }
+                        <LegalDisclaimer
+                          type="signup"
+                          required={true}
+                          onAccept={(accepted) => {
+                            setValue('agreeToTerms', accepted);
+                          }}
                         />
                         {errors.agreeToTerms && (
                           <FormHelperText error>{errors.agreeToTerms.message}</FormHelperText>

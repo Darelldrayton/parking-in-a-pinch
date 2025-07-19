@@ -17,42 +17,54 @@ export const listingsService = {
   async getListings(filters?: SearchFilters): Promise<ListingsResponse> {
     const params = new URLSearchParams()
     
-    // Basic filters
-    if (filters?.borough) params.append('borough', filters.borough)
-    if (filters?.parking_type?.length) {
-      filters.parking_type.forEach(type => params.append('space_type', type))
+    // If there's a search query, use it as the primary filter
+    if (filters?.search) {
+      // Smart search: try multiple search strategies for better results
+      let searchResults = await this.smartSearch(filters.search)
+      if (searchResults) {
+        return searchResults
+      }
+      // Fallback to original search if smart search fails
+      params.append('search', filters.search)
+      // Don't include borough when searching - it's already included in the search
+    } else {
+      // Only include other filters when not searching
+      if (filters?.borough) params.append('borough', filters.borough)
+      if (filters?.parking_type?.length) {
+        filters.parking_type.forEach(type => params.append('space_type', type))
+      }
+      if (filters?.vehicle_type) params.append('max_vehicle_size', filters.vehicle_type)
+      
+      // Price filters
+      if (filters?.min_price) params.append('min_price', filters.min_price.toString())
+      if (filters?.max_price) params.append('max_price', filters.max_price.toString())
+      
+      // Amenities filter - send as comma-separated string
+      if (filters?.amenities?.length) {
+        params.append('amenities', filters.amenities.join(','))
+      }
+      
+      // Individual amenity filters for more precise control
+      if (filters?.amenities?.includes('covered')) params.append('is_covered', 'true')
+      if (filters?.amenities?.includes('security')) params.append('has_security', 'true')
+      if (filters?.amenities?.includes('electric_charging')) params.append('has_ev_charging', 'true')
+      if (filters?.amenities?.includes('cctv')) params.append('has_cctv', 'true')
+      if (filters?.amenities?.includes('car_wash')) params.append('has_car_wash', 'true')
+      
+      // Availability filters
+      if (filters?.start_date) params.append('start_date', filters.start_date)
+      if (filters?.end_date) params.append('end_date', filters.end_date)
+      if (filters?.start_time) params.append('start_time', filters.start_time)
+      if (filters?.end_time) params.append('end_time', filters.end_time)
+      
+      // Special filters
+      if (filters?.instant_book_only) params.append('instant_book', 'true')
+      if (filters?.available_now) params.append('available_now', 'true')
+      if (filters?.available_today) params.append('available_today', 'true')
+      if (filters?.available_this_week) params.append('available_this_week', 'true')
+      if (filters?.wheelchair_accessible) params.append('wheelchair_accessible', 'true')
+      if (filters?.min_rating) params.append('min_rating', filters.min_rating.toString())
     }
-    if (filters?.vehicle_type) params.append('max_vehicle_size', filters.vehicle_type)
-    
-    // Price filters
-    if (filters?.min_price) params.append('min_price', filters.min_price.toString())
-    if (filters?.max_price) params.append('max_price', filters.max_price.toString())
-    
-    // Amenities filter - send as comma-separated string
-    if (filters?.amenities?.length) {
-      params.append('amenities', filters.amenities.join(','))
-    }
-    
-    // Individual amenity filters for more precise control
-    if (filters?.amenities?.includes('covered')) params.append('is_covered', 'true')
-    if (filters?.amenities?.includes('security')) params.append('has_security', 'true')
-    if (filters?.amenities?.includes('electric_charging')) params.append('has_ev_charging', 'true')
-    if (filters?.amenities?.includes('cctv')) params.append('has_cctv', 'true')
-    if (filters?.amenities?.includes('car_wash')) params.append('has_car_wash', 'true')
-    
-    // Availability filters
-    if (filters?.start_date) params.append('start_date', filters.start_date)
-    if (filters?.end_date) params.append('end_date', filters.end_date)
-    if (filters?.start_time) params.append('start_time', filters.start_time)
-    if (filters?.end_time) params.append('end_time', filters.end_time)
-    
-    // Special filters
-    if (filters?.instant_book_only) params.append('instant_book', 'true')
-    if (filters?.available_now) params.append('available_now', 'true')
-    if (filters?.available_today) params.append('available_today', 'true')
-    if (filters?.available_this_week) params.append('available_this_week', 'true')
-    if (filters?.wheelchair_accessible) params.append('wheelchair_accessible', 'true')
-    if (filters?.min_rating) params.append('min_rating', filters.min_rating.toString())
 
     const queryString = params.toString()
     const url = `/listings/${queryString ? `?${queryString}` : ''}`
@@ -183,6 +195,65 @@ export const listingsService = {
 
     const response = await api.get<ParkingListing[]>(`/listings/nearby/?${params}`)
     return response.data
+  },
+
+  // Smart search: handles complex location queries with fallback strategies
+  async smartSearch(searchQuery: string): Promise<ListingsResponse | null> {
+    const originalQuery = searchQuery.trim()
+    
+    // Try the original query first
+    try {
+      const params = new URLSearchParams()
+      params.append('search', originalQuery)
+      const response = await api.get<ListingsResponse>(`/listings/?${params}`)
+      
+      // If we got results, return them
+      if (response.data.count > 0) {
+        return response.data
+      }
+    } catch (error) {
+      console.log('Original search failed:', error)
+    }
+
+    // If original query failed or returned 0 results, try smart alternatives
+    const searchStrategies = [
+      // Remove commas and extra spaces
+      originalQuery.replace(/,/g, ' ').replace(/\s+/g, ' ').trim(),
+      
+      // Try just the last part (often the borough/city)
+      ...originalQuery.split(',').map(part => part.trim()).filter(Boolean).reverse(),
+      
+      // Try just the first part (often the neighborhood)
+      ...originalQuery.split(',').map(part => part.trim()).filter(Boolean),
+      
+      // Remove common words and try again
+      originalQuery.replace(/\b(park|avenue|street|ave|st|blvd|boulevard|road|rd|lane|ln)\b/gi, '').replace(/\s+/g, ' ').trim(),
+    ]
+
+    // Remove duplicates and empty strings
+    const uniqueStrategies = [...new Set(searchStrategies)].filter(strategy => 
+      strategy && strategy !== originalQuery && strategy.length > 1
+    )
+
+    // Try each strategy
+    for (const strategy of uniqueStrategies) {
+      try {
+        const params = new URLSearchParams()
+        params.append('search', strategy)
+        const response = await api.get<ListingsResponse>(`/listings/?${params}`)
+        
+        if (response.data.count > 0) {
+          console.log(`Smart search success: "${originalQuery}" -> "${strategy}" (${response.data.count} results)`)
+          return response.data
+        }
+      } catch (error) {
+        console.log(`Search strategy "${strategy}" failed:`, error)
+        continue
+      }
+    }
+
+    // If all strategies failed, return null to fall back to original logic
+    return null
   },
 }
 

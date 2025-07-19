@@ -53,6 +53,13 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   useEffect(() => {
     if (!isAuthenticated || !user) return;
 
+    // Skip WebSocket setup on admin pages to prevent infinite loops
+    const isAdminPage = window.location.pathname.includes('/admin');
+    if (isAdminPage) {
+      console.log('🔒 Skipping WebSocket setup on admin page');
+      return;
+    }
+
     // Only fetch on initial load, not on every navigation
     if (!hasInitiallyLoaded) {
       fetchNotifications();

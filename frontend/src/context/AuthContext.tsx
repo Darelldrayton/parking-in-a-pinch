@@ -8,6 +8,7 @@ interface AuthContextType {
   signup: (data: SignupData) => Promise<void>
   logout: () => Promise<void>
   updateUser: (userData: Partial<User>) => Promise<void>
+  setUserState: (user: User) => void
   isLoading: boolean
   isAuthenticated: boolean
 }
@@ -37,48 +38,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const initializeAuth = async () => {
-      const storedToken = authService.getAccessToken()
-      const storedUser = authService.getStoredUser()
-      
-      if (storedToken && storedUser) {
-        setToken(storedToken)
-        setUser(storedUser)
-        
-        // Verify token is still valid by fetching current user
-        try {
-          const currentUser = await authService.getCurrentUser()
-          setUser(currentUser)
-          localStorage.setItem('user', JSON.stringify(currentUser))
-        } catch (error) {
-          // Token is invalid, clear storage
-          await logout()
-        }
-      }
-      setIsLoading(false)
+    // Skip auth initialization on admin pages
+    const isAdminPage = window.location.pathname.includes('/admin');
+    if (isAdminPage) {
+      console.log('🔒 AuthContext: Skipping initialization on admin page');
+      setIsLoading(false);
+      return;
     }
     
-    initializeAuth()
+    // Clear any stale data on first load
+    const storedToken = authService.getAccessToken()
+    const storedUser = authService.getStoredUser()
+    
+    // Only trust both token and user if both exist
+    if (storedToken && storedUser) {
+      setToken(storedToken)
+      setUser(storedUser)
+    } else {
+      // Clear any partial/stale data
+      authService.clearAuthData()
+    }
+    
+    setIsLoading(false)
   }, [])
 
   const login = async (email: string, password: string) => {
     setIsLoading(true)
     try {
-      console.log('AuthContext: Starting login for:', email)
       const response = await authService.login({ email, password })
-      console.log('AuthContext: Login response:', response)
-      
       setUser(response.user)
-      setToken(response.access || response.tokens?.access || '')
-      
-      console.log('Welcome back!')
+      const token = response.token || response.access || response.tokens?.access || ''
+      setToken(token)
     } catch (error: any) {
-      console.error('AuthContext: Login error:', error)
-      console.error('AuthContext: Error response:', error.response)
       const message = error.response?.data?.detail || 
                      error.response?.data?.non_field_errors?.[0] ||
                      'Login failed. Please check your credentials.'
-      console.error('AuthContext: Error message:', message)
       throw new Error(message)
     } finally {
       setIsLoading(false)
@@ -90,7 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const signupData = {
         email: data.email,
-        username: data.email.split('@')[0], // Generate username from email
+        username: data.email.split('@')[0],
         password: data.password,
         password2: data.password2 || data.password,
         first_name: data.first_name,
@@ -98,51 +92,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user_type: data.user_type
       }
       
-      console.log('AuthContext: Starting signup with:', signupData)
       const response = await authService.signup(signupData)
-      console.log('AuthContext: Signup response:', response)
-      
       setUser(response.user)
-      setToken(response.access || response.tokens?.access || '')
-      
-      console.log('Account created successfully!')
+      const token = response.token || response.access || response.tokens?.access || ''
+      setToken(token)
     } catch (error: any) {
-      console.error('AuthContext: Signup error:', error)
-      console.error('AuthContext: Signup error response:', error.response)
-      
-      // Extract error message from various possible formats
-      let message = 'Signup failed. Please try again.'
-      
-      if (error.response?.data) {
-        const data = error.response.data
-        console.log('AuthContext: Error data:', data)
-        
-        // Check for various error formats
-        if (data.error) {
-          // Handle nested error object
-          if (typeof data.error === 'object') {
-            const errorKeys = Object.keys(data.error)
-            if (errorKeys.length > 0) {
-              const firstError = data.error[errorKeys[0]]
-              message = Array.isArray(firstError) ? firstError[0] : firstError
-            }
-          } else {
-            message = data.error
-          }
-        } else if (data.detail) {
-          message = data.detail
-        } else if (data.email?.[0]) {
-          message = data.email[0]
-        } else if (data.password?.[0]) {
-          message = data.password[0]
-        } else if (data.username?.[0]) {
-          message = data.username[0]
-        } else if (data.non_field_errors?.[0]) {
-          message = data.non_field_errors[0]
-        }
-      }
-      
-      console.error('AuthContext: Final error message:', message)
+      const message = error.response?.data?.detail || 
+                     error.response?.data?.email?.[0] ||
+                     error.response?.data?.password?.[0] ||
+                     'Signup failed. Please try again.'
       throw new Error(message)
     } finally {
       setIsLoading(false)
@@ -159,7 +117,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null)
       setToken(null)
       setIsLoading(false)
-      console.log('Logged out successfully')
+      window.location.href = '/login'
     }
   }
 
@@ -167,13 +125,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const updatedUser = await authService.updateProfile(userData)
       setUser(updatedUser)
-      console.log('Profile updated successfully!')
     } catch (error: any) {
       const message = error.response?.data?.detail || 'Failed to update profile'
       throw new Error(message)
     }
   }
 
+  const setUserState = (newUser: User) => {
+    setUser(newUser)
+    localStorage.setItem('user', JSON.stringify(newUser))
+  }
+
+  const isAuthenticated = !!token && !!user
+  
   const value = {
     user,
     token,
@@ -181,8 +145,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signup,
     logout,
     updateUser,
+    setUserState,
     isLoading,
-    isAuthenticated: !!token && !!user
+    isAuthenticated
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

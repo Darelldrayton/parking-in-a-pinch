@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -14,8 +15,6 @@ import {
   Paper,
 } from '@mui/material';
 import {
-  LocationOn,
-  DirectionsCar,
   People,
   NaturePeople as Eco,
   Security,
@@ -24,28 +23,18 @@ import {
 
 const teamMembers = [
   {
-    name: 'Sarah Johnson',
+    name: 'Jiminique Lee',
     role: 'CEO & Co-Founder',
-    bio: 'Former urban planning expert with 10+ years experience in smart city solutions.',
-    avatar: 'SJ',
+    bio: 'Jiminique brings a unique blend of business acumen and community-focused leadership to Parking in a Pinch. With a passion for solving real-world problems through technology, she recognized the untapped potential in residential parking spaces.',
+    quote: 'Every empty driveway is an opportunity to strengthen our communities while solving a real problem.',
+    avatar: 'JL',
   },
   {
-    name: 'Mike Chen',
+    name: 'Darell Drayton',
     role: 'CTO & Co-Founder',
-    bio: 'Tech veteran specializing in location-based services and mobile platforms.',
-    avatar: 'MC',
-  },
-  {
-    name: 'Emily Rodriguez',
-    role: 'VP of Operations',
-    bio: 'Operations specialist focused on seamless user experiences and community building.',
-    avatar: 'ER',
-  },
-  {
-    name: 'David Park',
-    role: 'Lead Designer',
-    bio: 'UX/UI designer passionate about creating intuitive and accessible digital experiences.',
-    avatar: 'DP',
+    bio: 'Darell is the technical mastermind behind Parking in a Pinch\'s innovative platform. With expertise in full-stack development and a keen eye for user experience, he\'s building the technology that makes peer-to-peer parking sharing seamless and secure.',
+    quote: 'Technology should make life easier, not harder. We\'re building a platform that just works.',
+    avatar: 'DD',
   },
 ];
 
@@ -73,14 +62,23 @@ const values = [
 ];
 
 const stats = [
-  { number: '50,000+', label: 'Happy Users' },
-  { number: '15,000+', label: 'Parking Spaces' },
-  { number: '500,000+', label: 'Bookings Completed' },
-  { number: '25+', label: 'Cities Served' },
+  { number: 'Jan 2025', label: 'Founded' },
+  { number: 'New York', label: 'Launching In' },
+  { number: 'Growing', label: 'Community' },
+  { number: 'Early Stage', label: 'Startup' },
 ];
 
 export default function AboutUs() {
   const theme = useTheme();
+  const navigate = useNavigate();
+
+  const handleBecomeEarlyUser = () => {
+    navigate('/login');
+  };
+
+  const handleShareYourSpace = () => {
+    navigate('/login');
+  };
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
@@ -89,44 +87,24 @@ export default function AboutUs() {
         sx={{
           background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
           color: 'white',
-          py: 8,
+          py: 6,
           mb: 6,
         }}
       >
         <Container maxWidth="lg">
-          <Grid container spacing={4} alignItems="center">
-            <Grid item xs={12} md={6}>
-              <Typography variant="h2" component="h1" fontWeight={700} gutterBottom>
-                About Parking in a Pinch
-              </Typography>
-              <Typography variant="h5" sx={{ opacity: 0.9, mb: 4 }}>
-                Revolutionizing urban parking through community-driven solutions
-              </Typography>
-              <Typography variant="body1" sx={{ opacity: 0.8, fontSize: '1.1rem' }}>
-                We're on a mission to solve urban parking challenges by connecting people who need parking 
-                with those who have spaces to share. Founded in 2023, we believe that the best solutions 
-                come from empowering communities to help each other.
-              </Typography>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Box
-                sx={{
-                  position: 'relative',
-                  height: 400,
-                  background: `linear-gradient(45deg, ${alpha(theme.palette.secondary.main, 0.1)}, ${alpha(theme.palette.primary.light, 0.1)})`,
-                  borderRadius: 3,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Stack direction="row" spacing={2}>
-                  <LocationOn sx={{ fontSize: 60, opacity: 0.7 }} />
-                  <DirectionsCar sx={{ fontSize: 60, opacity: 0.5 }} />
-                </Stack>
-              </Box>
-            </Grid>
-          </Grid>
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography variant="h2" component="h1" fontWeight={700} gutterBottom color="white">
+              About Parking in a Pinch
+            </Typography>
+            <Typography variant="h5" sx={{ opacity: 0.9, mb: 4, color: 'white' }}>
+              Revolutionizing urban parking through community-driven solutions
+            </Typography>
+            <Typography variant="body1" sx={{ opacity: 0.8, fontSize: '1.1rem', color: 'white', maxWidth: '800px', mx: 'auto' }}>
+              We're on a mission to solve urban parking challenges by connecting people who need parking 
+              with those who have spaces to share. Founded in early 2025, we believe that the best solutions 
+              come from empowering communities to help each other.
+            </Typography>
+          </Box>
         </Container>
       </Box>
 
@@ -156,8 +134,8 @@ export default function AboutUs() {
               Our Story
             </Typography>
             <Typography variant="body1" paragraph sx={{ fontSize: '1.1rem' }}>
-              Parking in a Pinch was born out of frustration with urban parking challenges. Our founders, 
-              Sarah and Mike, were tired of circling blocks for 20 minutes looking for parking, only to 
+              Parking in a Pinch was born in January 2025 out of a shared frustration with urban parking challenges. Our founders, 
+              Jiminique and Darell, were tired of the daily struggle of circling blocks for 20 minutes looking for parking, only to 
               see empty driveways and unused parking spaces everywhere.
             </Typography>
             <Typography variant="body1" paragraph sx={{ fontSize: '1.1rem' }}>
@@ -166,8 +144,9 @@ export default function AboutUs() {
               unused spaces, we're making cities more efficient and communities stronger.
             </Typography>
             <Typography variant="body1" sx={{ fontSize: '1.1rem' }}>
-              Today, we're proud to serve thousands of users across multiple cities, facilitating millions 
-              of dollars in earnings for hosts while providing convenient, affordable parking for drivers.
+              As a newly launched startup, we're excited to be serving our first users in New York, with ambitious plans to expand 
+              across multiple cities. Our vision is to facilitate millions in earnings for hosts while providing convenient, 
+              affordable parking for drivers everywhere.
             </Typography>
           </Grid>
           <Grid item xs={12} md={6}>
@@ -233,38 +212,53 @@ export default function AboutUs() {
         {/* Team Section */}
         <Box sx={{ mb: 8 }}>
           <Typography variant="h3" fontWeight={700} textAlign="center" gutterBottom>
-            Meet Our Team
+            Meet Our Founding Team
           </Typography>
           <Typography variant="h6" textAlign="center" color="text.secondary" sx={{ mb: 6 }}>
-            The passionate people building the future of urban parking
+            The visionaries building the future of urban parking
           </Typography>
-          <Grid container spacing={4}>
+          <Grid container spacing={4} justifyContent="center">
             {teamMembers.map((member, index) => (
-              <Grid item xs={12} sm={6} md={3} key={index}>
+              <Grid item xs={12} md={6} key={index}>
                 <Card sx={{ textAlign: 'center', borderRadius: 3, height: '100%' }}>
                   <CardContent sx={{ p: 4 }}>
                     <Avatar
                       sx={{
-                        width: 80,
-                        height: 80,
+                        width: 100,
+                        height: 100,
                         bgcolor: 'primary.main',
-                        fontSize: '2rem',
+                        fontSize: '2.5rem',
                         fontWeight: 600,
                         mx: 'auto',
-                        mb: 2,
+                        mb: 3,
                       }}
                     >
                       {member.avatar}
                     </Avatar>
-                    <Typography variant="h6" fontWeight={600} gutterBottom>
+                    <Typography variant="h5" fontWeight={600} gutterBottom>
                       {member.name}
                     </Typography>
-                    <Typography variant="subtitle1" gutterBottom>
+                    <Typography variant="h6" color="primary.main" gutterBottom>
                       {member.role}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body1" color="text.secondary" paragraph>
                       {member.bio}
                     </Typography>
+                    {member.quote && (
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontStyle: 'italic', 
+                          color: 'primary.main',
+                          backgroundColor: alpha(theme.palette.primary.main, 0.05),
+                          p: 2,
+                          borderRadius: 2,
+                          mt: 2
+                        }}
+                      >
+                        "{member.quote}"
+                      </Typography>
+                    )}
                   </CardContent>
                 </Card>
               </Grid>
@@ -284,25 +278,45 @@ export default function AboutUs() {
           }}
         >
           <Typography variant="h3" fontWeight={700} gutterBottom>
-            Join Our Community
+            Join Our Journey
           </Typography>
           <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
-            Whether you're looking for parking or have a space to share, we'd love to have you!
+            As a startup founded in 2025, we're just getting started on our mission to revolutionize urban parking. We're actively looking for:
           </Typography>
+          <Grid container spacing={2} sx={{ mb: 4, textAlign: 'left' }}>
+            <Grid item xs={12} sm={6}>
+              <Typography variant="body1" sx={{ mb: 1 }}>
+                • Early adopters who want to be part of the parking revolution
+              </Typography>
+              <Typography variant="body1" sx={{ mb: 1 }}>
+                • Hosts ready to earn from their unused parking spaces
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Typography variant="body1" sx={{ mb: 1 }}>
+                • Community ambassadors to help us expand to new neighborhoods
+              </Typography>
+              <Typography variant="body1" sx={{ mb: 1 }}>
+                • Feedback from users to help us build the best possible platform
+              </Typography>
+            </Grid>
+          </Grid>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
             <Button
               variant="contained"
               size="large"
+              onClick={handleBecomeEarlyUser}
               sx={{ px: 4, py: 1.5 }}
             >
-              Find Parking
+              Become an Early User
             </Button>
             <Button
               variant="outlined"
               size="large"
+              onClick={handleShareYourSpace}
               sx={{ px: 4, py: 1.5 }}
             >
-              Become a Host
+              Share Your Space
             </Button>
           </Stack>
         </Paper>

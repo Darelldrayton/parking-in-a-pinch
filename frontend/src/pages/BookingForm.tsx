@@ -56,6 +56,7 @@ import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import availabilityService from '../services/availability';
 import AvailabilityTimeline from '../components/common/AvailabilityTimeline';
+import { LegalDisclaimer } from '../components/legal/LegalDisclaimer';
 
 // Availability types
 interface AvailabilityRequest {
@@ -213,6 +214,7 @@ export default function BookingForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [checkoutData, setCheckoutData] = useState<any>(null);
+  const [legalTermsAccepted, setLegalTermsAccepted] = useState(false);
   const [availabilityStatus, setAvailabilityStatus] = useState<{
     loading: boolean;
     available: boolean | null;
@@ -877,6 +879,14 @@ export default function BookingForm() {
                       </Grid>
                     )}
 
+                    {/* Legal Disclaimer */}
+                    <Grid item xs={12}>
+                      <LegalDisclaimer
+                        type="booking"
+                        required={true}
+                        onAccept={setLegalTermsAccepted}
+                      />
+                    </Grid>
 
                     {/* Submit Button */}
                     <Grid item xs={12}>
@@ -889,7 +899,8 @@ export default function BookingForm() {
                           isSubmitting || 
                           !listing.is_active || 
                           availabilityStatus.loading ||
-                          availabilityStatus.available === false
+                          availabilityStatus.available === false ||
+                          !legalTermsAccepted
                         }
                         startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : <CheckCircle />}
                         sx={{
@@ -903,7 +914,9 @@ export default function BookingForm() {
                           ? 'Preparing Checkout...' 
                           : availabilityStatus.available === false
                             ? 'Time Slot Unavailable'
-                            : 'Proceed to Checkout'
+                            : !legalTermsAccepted
+                              ? 'Accept Terms to Continue'
+                              : 'Proceed to Checkout'
                         }
                       </Button>
                     </Grid>

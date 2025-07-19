@@ -17,7 +17,7 @@ const Login = lazy(() => import('./pages/Login'));
 const Signup = lazy(() => import('./pages/Signup'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
-const DevHelper = lazy(() => import('./pages/DevHelper'));
+// DevHelper removed for production security
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Listings = lazy(() => import('./pages/Listings'));
@@ -38,8 +38,7 @@ const HostBookings = lazy(() => import('./pages/HostBookings'));
 const RecurringBookings = lazy(() => import('./pages/RecurringBookings'));
 const TermsAndConditions = lazy(() => import('./pages/TermsAndConditions'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
-const PaymentDebug = lazy(() => import('./pages/PaymentDebug'));
-const SystemMonitoring = lazy(() => import('./pages/SystemMonitoring'));
+// Test pages removed for production security
 
 // Footer Pages
 const AboutUs = lazy(() => import('./pages/AboutUs'));
@@ -58,21 +57,21 @@ const HostInsurance = lazy(() => import('./pages/HostInsurance'));
 const HostResources = lazy(() => import('./pages/HostResources'));
 
 // Admin Pages
-const AdminLogin = lazy(() => import('./pages/AdminLogin'));
+const AdminLogin = lazy(() => import('./pages/AdminLogin').then(module => {
+  console.log('🆕 AdminLogin lazy loaded - new version');
+  return module;
+}));
+// Test simplified AdminDashboardEnhanced
 const AdminDashboard = lazy(() => import('./pages/AdminDashboardEnhanced'));
-const RulerDashboard = lazy(() => import('./pages/RulerDashboardRealAPIs'));
-// 🚨 FORCE CACHE CLEAR - BUILD v2025-01-02-20:42 PST
-const AdminProtectedRoute = lazy(() => import('./components/auth/AdminProtectedRoute'));
+const AdminJobApplications = lazy(() => import('./pages/AdminJobApplications'));
+// Import AdminProtectedRoute directly (not lazy) to avoid routing issues
+import AdminProtectedRoute from './components/auth/AdminProtectedRoute';
 
-// Test Pages
-const TestDeploy = lazy(() => import('./pages/TestDeploy'));
+// Keep cleanup-listings for admin use only
 const CleanupListings = lazy(() => import('./pages/CleanupListings'));
-const RulerTest = lazy(() => import('./pages/RulerTest'));
-const TestUpdate = lazy(() => import('./pages/TestUpdate'));
+const ClearAllListings = lazy(() => import('./pages/ClearAllListings'));
 
 // 🛑 ROUTING FIXED v10.0: 2024-12-30 20:19 PST - EXPLICIT IMPORT FIX
-// 🎯 /ruler/dashboard -> RulerDashboard -> ./pages/RulerDashboardFixed
-// 🚨 STOP LOADING AdminDashboardEnhanced AT /ruler/dashboard!
 
 // Loading component
 const PageLoader = () => (
@@ -99,7 +98,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <PageLoader />;
   }
   
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return <>{children}</>;
 };
 
 // Public Route Component (redirect if already authenticated)
@@ -113,15 +116,40 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   return !isAuthenticated ? <>{children}</> : <Navigate to="/dashboard" replace />;
 };
 
+// Admin Routes Component (bypasses regular auth)
+function AdminRoutes() {
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/dashboard" element={<AdminProtectedRoute redirectTo="/admin/login"><AdminDashboard /></AdminProtectedRoute>} />
+        <Route path="/admin/job-applications" element={<AdminProtectedRoute redirectTo="/admin/login"><AdminJobApplications /></AdminProtectedRoute>} />
+        <Route path="/admin/cleanup-listings" element={<AdminProtectedRoute redirectTo="/admin/login"><CleanupListings /></AdminProtectedRoute>} />
+        <Route path="/admin/clear-all-listings" element={<AdminProtectedRoute redirectTo="/admin/login"><ClearAllListings /></AdminProtectedRoute>} />
+        {/* Fallback for unmatched admin routes */}
+        <Route path="/admin/*" element={<Navigate to="/admin/login" replace />} />
+      </Routes>
+    </Suspense>
+  );
+}
+
 function AppRoutes() {
   const { isAuthenticated } = useAuth();
+  
+  // Don't initialize notifications on admin pages
+  const isAdminPage = window.location.pathname.includes('/admin');
 
-  // Initialize notification service when user is authenticated
+  // Initialize notification service when user is authenticated (but not on admin pages)
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !isAdminPage) {
       notificationService.initialize();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isAdminPage]);
+
+  // If this is an admin page, use separate admin routing
+  if (isAdminPage) {
+    return <AdminRoutes />;
+  }
 
   return (
     <Suspense fallback={<PageLoader />}>
@@ -131,9 +159,6 @@ function AppRoutes() {
         <Route path="/listings" element={<Layout><Listings /></Layout>} />
         <Route path="/listings/:id" element={<Layout><ListingDetail /></Layout>} />
         
-        {/* Test route to debug ruler routes */}
-        <Route path="/ruler-test" element={<RulerTest />} />
-        <Route path="/test-update" element={<TestUpdate />} />
         
         {/* Auth Routes (redirect to dashboard if already logged in) */}
         <Route 
@@ -323,20 +348,9 @@ function AppRoutes() {
         <Route path="/host-insurance" element={<Layout><HostInsurance /></Layout>} />
         <Route path="/host-resources" element={<Layout><HostResources /></Layout>} />
         
-        {/* Admin Routes - 🚨 SECURITY FIXED - DEMO DATA REMOVED */}
-        <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/ruler/login" element={<AdminLogin />} />
-        <Route path="/admin/dashboard" element={<AdminProtectedRoute redirectTo="/admin/login"><AdminDashboard /></AdminProtectedRoute>} />
-        <Route path="/ruler/dashboard" element={<AdminProtectedRoute redirectTo="/ruler/login"><RulerDashboard /></AdminProtectedRoute>} />
-        {/* 🚨 DEBUGGING: If you see AdminDashboardEnhanced in console, the routing is still wrong */}
-        <Route path="/admin/cleanup-listings" element={<AdminProtectedRoute redirectTo="/admin/login"><CleanupListings /></AdminProtectedRoute>} />
-        <Route path="/ruler/cleanup-listings" element={<AdminProtectedRoute redirectTo="/ruler/login"><CleanupListings /></AdminProtectedRoute>} />
+        {/* Admin Routes moved to separate AdminRoutes component */}
         
-        {/* Development Helper (only in development) */}
-        <Route path="/dev-helper" element={<Layout><DevHelper /></Layout>} />
-        <Route path="/payment-debug" element={<Layout><PaymentDebug /></Layout>} />
-        <Route path="/system-monitoring" element={<Layout><SystemMonitoring /></Layout>} />
-        <Route path="/test-deploy" element={<TestDeploy />} />
+        {/* Production routes only - test routes removed for security */}
         
         {/* Fallback Route */}
         <Route path="*" element={<Navigate to="/" replace />} />
@@ -346,10 +360,19 @@ function AppRoutes() {
 }
 
 function App() {
-  console.log('🚀 App component rendering - v2025-01-02-20:42-PST...');
-  console.log('Current path:', window.location.pathname);
-  console.log('🎯 Routes available: /ruler/login, /ruler/dashboard, /ruler/cleanup-listings');
-  console.log('🔄 CACHE CLEARED - NEW BUILD FORCED...');
+  // console.log('🚀 App component rendering - v2025-01-02-20:42-PST...');
+  // console.log('Current path:', window.location.pathname);
+  // console.log('🎯 Routes available: /admin/login, /admin/dashboard, /admin/cleanup-listings');
+  // console.log('🔄 CACHE CLEARED - NEW BUILD FORCED...');
+  
+  // Completely disable notifications and WebSocket on admin pages
+  const isAdminPage = window.location.pathname.includes('/admin');
+  
+  if (isAdminPage) {
+    // console.log('🔒 ADMIN PAGE DETECTED - DISABLING WEBSOCKET AND NOTIFICATIONS');
+    // Disable WebSocket globally for admin pages
+    (window as any).disableWebSocket = true;
+  }
   
   return (
     <ThemeModeProvider>
@@ -363,13 +386,21 @@ function App() {
           autoHideDuration={4000}
         >
           <AuthProvider>
-            <NotificationProvider>
+            {!isAdminPage ? (
+              <NotificationProvider>
+                <BookingsProvider>
+                  <Router>
+                    <AppRoutes />
+                  </Router>
+                </BookingsProvider>
+              </NotificationProvider>
+            ) : (
               <BookingsProvider>
                 <Router>
                   <AppRoutes />
                 </Router>
               </BookingsProvider>
-            </NotificationProvider>
+            )}
           </AuthProvider>
         </SnackbarProvider>
       </LocalizationProvider>

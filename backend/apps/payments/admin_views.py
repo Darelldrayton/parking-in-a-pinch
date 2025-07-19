@@ -6,11 +6,18 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
 from django.db import transaction
+from django.http import HttpResponse
 import logging
+import csv
+import io
 
-from .models import RefundRequest, Refund
+from .models import RefundRequest, Refund, PayoutRequest, Payout
 from .services import PaymentService
-from .serializers import RefundRequestSerializer, RefundRequestDetailSerializer
+from .serializers import (
+    RefundRequestSerializer, RefundRequestDetailSerializer,
+    PayoutRequestSerializer, PayoutRequestDetailSerializer,
+    ApprovePayoutSerializer, RejectPayoutSerializer, CompletePayoutSerializer
+)
 
 logger = logging.getLogger(__name__)
 
@@ -252,3 +259,326 @@ class RefundRequestViewSet(viewsets.ModelViewSet):
         }
         
         return Response(stats)
+
+
+class PayoutRequestViewSet(viewsets.ModelViewSet):
+    """
+    Admin viewset for managing payout requests
+    """
+    serializer_class = PayoutRequestSerializer
+    permission_classes = []  # Temporarily disabled for admin dashboard
+    
+    def get_queryset(self):
+        """
+        Only admins and staff can view payout requests
+        """
+        return PayoutRequest.objects.select_related(
+            'host', 
+            'reviewed_by',
+            'payout'
+        ).prefetch_related('payments').order_by('-created_at')
+    
+    def get_serializer_class(self):
+        """
+        Use detailed serializer for retrieve action
+        """
+        if self.action == 'retrieve':
+            return PayoutRequestDetailSerializer
+        return PayoutRequestSerializer
+    
+    @action(detail=True, methods=['post'])
+    def approve(self, request, pk=None):
+        """
+        Approve a payout request
+        """
+        payout_request = self.get_object()
+        
+        if not payout_request.can_be_approved:
+            return Response(
+                {'error': 'This payout request cannot be approved'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        serializer = ApprovePayoutSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            with transaction.atomic():
+                # Get approval details from request
+                approved_amount = serializer.validated_data.get('approved_amount')
+                admin_notes = serializer.validated_data.get('admin_notes', '')
+                
+                # Validate approved amount
+                if approved_amount is not None:
+                    if approved_amount <= 0 or approved_amount > payout_request.requested_amount:
+                        return Response(
+                            {'error': 'Invalid approved amount'}, 
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                else:
+                    approved_amount = payout_request.requested_amount
+                
+                # Update payout request
+                payout_request.status = PayoutRequest.RequestStatus.APPROVED
+                payout_request.approved_amount = approved_amount
+                payout_request.admin_notes = admin_notes
+                payout_request.reviewed_by = request.user
+                payout_request.reviewed_at = timezone.now()
+                payout_request.save()
+                
+                logger.info(f"Payout request {payout_request.request_id} approved by {request.user.email}")
+                
+                # Return updated request
+                serializer = PayoutRequestDetailSerializer(payout_request)
+                return Response({
+                    'message': 'Payout request approved successfully',
+                    'payout_request': serializer.data
+                })
+                
+        except Exception as e:
+            logger.error(f"Error approving payout request: {str(e)}")
+            return Response(
+                {'error': f'Failed to approve payout: {str(e)}'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    @action(detail=True, methods=['post'])
+    def reject(self, request, pk=None):
+        """
+        Reject a payout request
+        """
+        payout_request = self.get_object()
+        
+        if not payout_request.can_be_approved:
+            return Response(
+                {'error': 'This payout request cannot be rejected'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        serializer = RejectPayoutSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Get rejection details
+            rejection_reason = serializer.validated_data.get('rejection_reason')
+            admin_notes = serializer.validated_data.get('admin_notes', '')
+            
+            # Update payout request
+            payout_request.status = PayoutRequest.RequestStatus.REJECTED
+            payout_request.rejection_reason = rejection_reason
+            payout_request.admin_notes = admin_notes
+            payout_request.reviewed_by = request.user
+            payout_request.reviewed_at = timezone.now()
+            payout_request.save()
+            
+            logger.info(f"Payout request {payout_request.request_id} rejected by {request.user.email}")
+            
+            # Return updated request
+            serializer = PayoutRequestDetailSerializer(payout_request)
+            return Response({
+                'message': 'Payout request rejected',
+                'payout_request': serializer.data
+            })
+            
+        except Exception as e:
+            logger.error(f"Error rejecting payout request: {str(e)}")
+            return Response(
+                {'error': f'Failed to reject payout: {str(e)}'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    @action(detail=True, methods=['post'])
+    def complete(self, request, pk=None):
+        """
+        Mark a payout request as completed (after payment is sent)
+        """
+        payout_request = self.get_object()
+        
+        if payout_request.status != PayoutRequest.RequestStatus.APPROVED:
+            return Response(
+                {'error': 'Only approved payout requests can be marked as completed'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        serializer = CompletePayoutSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            with transaction.atomic():
+                # Get completion details
+                admin_notes = serializer.validated_data.get('admin_notes', '')
+                stripe_payout_id = serializer.validated_data.get('stripe_payout_id', '')
+                
+                # Create a payout record
+                payout = Payout.objects.create(
+                    host=payout_request.host,
+                    amount=payout_request.final_amount,
+                    status=Payout.PayoutStatus.PAID,
+                    period_start=timezone.now() - timezone.timedelta(days=30),  # Default period
+                    period_end=timezone.now(),
+                    description=f"Manual payout for request {payout_request.request_id}",
+                    admin_notes=admin_notes,
+                    stripe_payout_id=stripe_payout_id,
+                    processed_at=timezone.now()
+                )
+                
+                # Add payments to the payout
+                payout.payments.set(payout_request.payments.all())
+                
+                # Update payout request
+                payout_request.status = PayoutRequest.RequestStatus.COMPLETED
+                payout_request.payout = payout
+                payout_request.processed_at = timezone.now()
+                if admin_notes:
+                    payout_request.admin_notes = f"{payout_request.admin_notes}\n{admin_notes}".strip()
+                payout_request.save()
+                
+                logger.info(f"Payout request {payout_request.request_id} completed by {request.user.email}")
+                
+                # Return updated request
+                serializer = PayoutRequestDetailSerializer(payout_request)
+                return Response({
+                    'message': 'Payout marked as completed',
+                    'payout_request': serializer.data
+                })
+                
+        except Exception as e:
+            logger.error(f"Error completing payout request: {str(e)}")
+            return Response(
+                {'error': f'Failed to complete payout: {str(e)}'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    @action(detail=False, methods=['get'])
+    def pending(self, request):
+        """
+        Get all pending payout requests
+        """
+        pending_requests = self.get_queryset().filter(
+            status=PayoutRequest.RequestStatus.PENDING
+        )
+        
+        serializer = self.get_serializer(pending_requests, many=True)
+        return Response({
+            'count': pending_requests.count(),
+            'results': serializer.data
+        })
+    
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        """
+        Get payout request statistics
+        """
+        # Get all payout requests
+        all_payouts = PayoutRequest.objects.all()
+        
+        # Calculate time-based stats
+        one_week_ago = timezone.now() - timezone.timedelta(days=7)
+        one_month_ago = timezone.now() - timezone.timedelta(days=30)
+        
+        stats = {
+            'total_requests': all_payouts.count(),
+            'pending_requests': all_payouts.filter(status=PayoutRequest.RequestStatus.PENDING).count(),
+            'approved_requests': all_payouts.filter(status=PayoutRequest.RequestStatus.APPROVED).count(),
+            'rejected_requests': all_payouts.filter(status=PayoutRequest.RequestStatus.REJECTED).count(),
+            'completed_requests': all_payouts.filter(status=PayoutRequest.RequestStatus.COMPLETED).count(),
+            'recent_requests': all_payouts.filter(
+                created_at__gte=one_week_ago
+            ).count(),
+            'monthly_requests': all_payouts.filter(
+                created_at__gte=one_month_ago
+            ).count(),
+            'total_requested_amount': sum(
+                float(req.requested_amount or 0) 
+                for req in all_payouts
+            ),
+            'total_approved_amount': sum(
+                float(req.approved_amount or req.requested_amount or 0) 
+                for req in all_payouts.filter(status__in=[
+                    PayoutRequest.RequestStatus.APPROVED,
+                    PayoutRequest.RequestStatus.COMPLETED
+                ])
+            ),
+            'total_pending_amount': sum(
+                float(req.requested_amount or 0) 
+                for req in all_payouts.filter(status=PayoutRequest.RequestStatus.PENDING)
+            ),
+            'total_completed_amount': sum(
+                float(req.final_amount or 0) 
+                for req in all_payouts.filter(status=PayoutRequest.RequestStatus.COMPLETED)
+            ),
+        }
+        
+        return Response(stats)
+    
+    @action(detail=False, methods=['get'])
+    def export_approved(self, request):
+        """
+        Export all approved payout requests to Excel/CSV format
+        """
+        # Get approved and completed payout requests
+        approved_requests = self.get_queryset().filter(
+            status__in=[
+                PayoutRequest.RequestStatus.APPROVED,
+                PayoutRequest.RequestStatus.COMPLETED
+            ]
+        ).order_by('-created_at')
+        
+        # Create response
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="approved_payout_requests_{timezone.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+        
+        # Create CSV writer
+        writer = csv.writer(response)
+        
+        # Write header
+        writer.writerow([
+            'Request ID',
+            'Host Name',
+            'Host Email',
+            'Requested Amount',
+            'Approved Amount',
+            'Final Amount',
+            'Payout Method',
+            'Status',
+            'Bank Name',
+            'Account Holder',
+            'Account Number (Masked)',
+            'Routing Number',
+            'Payment Count',
+            'Host Notes',
+            'Admin Notes',
+            'Created Date',
+            'Reviewed Date',
+            'Processed Date',
+            'Reviewed By'
+        ])
+        
+        # Write data rows
+        for request in approved_requests:
+            writer.writerow([
+                request.request_id,
+                request.host.get_full_name() or f"{request.host.first_name} {request.host.last_name}".strip(),
+                request.host.email,
+                f"${float(request.requested_amount):.2f}",
+                f"${float(request.approved_amount or request.requested_amount):.2f}",
+                f"${float(request.final_amount):.2f}",
+                request.get_payout_method_display(),
+                request.get_status_display(),
+                request.bank_name or '',
+                request.account_holder_name or '',
+                f"****{request.account_number[-4:]}" if request.account_number and len(request.account_number) >= 4 else '',
+                request.routing_number or '',
+                request.payments.count(),
+                request.host_notes or '',
+                request.admin_notes or '',
+                request.created_at.strftime('%Y-%m-%d %H:%M:%S') if request.created_at else '',
+                request.reviewed_at.strftime('%Y-%m-%d %H:%M:%S') if request.reviewed_at else '',
+                request.processed_at.strftime('%Y-%m-%d %H:%M:%S') if request.processed_at else '',
+                request.reviewed_by.email if request.reviewed_by else ''
+            ])
+        
+        return response
