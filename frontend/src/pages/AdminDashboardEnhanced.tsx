@@ -590,7 +590,7 @@ const AdminDashboardEnhanced: React.FC = () => {
           console.warn('Admin stats API not available:', e);
           return { data: null, status: e.response?.status || 503 };
         }),
-        api.get('/users/admin/stats/').catch(e => {
+        api.get('/users/admin/users/stats/').catch(e => {
           console.warn('Users stats API not available:', e);
           return { data: null, status: e.response?.status || 503 };
         }),
