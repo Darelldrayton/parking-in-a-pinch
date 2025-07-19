@@ -130,7 +130,7 @@ const hostSteps = [
     description: 'All renters are verified and transactions are secure.',
     details: [
       'All users undergo identity verification',
-      'Insurance coverage for qualifying bookings',
+      'Secure platform with verified users and transactions',
       'Secure payment processing with automatic deposits',
       '24/7 customer support for any issues',
     ],
@@ -161,8 +161,8 @@ const features = [
   },
   {
     icon: <CheckCircle sx={{ fontSize: 32 }} />,
-    title: 'Insurance Coverage',
-    description: 'Qualifying bookings include liability insurance protection.',
+    title: 'Peace of Mind',
+    description: 'Every booking is protected with verified hosts and secure transactions.',
   },
   {
     icon: <Payment sx={{ fontSize: 32 }} />,
@@ -380,7 +380,7 @@ export default function HowItWorks() {
               </Typography>
               <Typography variant="body1" paragraph>
                 All hosts are verified, and many listings include security features like cameras, 
-                lighting, and gated access. We also provide insurance coverage for qualifying bookings.
+                lighting, and gated access. Our platform ensures secure transactions and verified users.
               </Typography>
 
               <Typography variant="h6" fontWeight={600} gutterBottom>
