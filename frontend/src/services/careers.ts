@@ -157,12 +157,26 @@ class CareersService {
     try {
       const formData = new FormData();
       
-      // Add required fields with correct backend field names
-      formData.append('name', applicationData.name);
-      formData.append('email', applicationData.email);
-      formData.append('phone', applicationData.phone);
-      formData.append('position', applicationData.position); // Send job title directly
-      formData.append('department', applicationData.department);
+      // Add required fields with correct backend field names (based on 400 error response)
+      formData.append('applicant_name', applicationData.name);
+      formData.append('applicant_email', applicationData.email);
+      formData.append('applicant_phone', applicationData.phone);
+      
+      // Map job title to job ID as backend expects 'job' field with ID
+      const jobTitleToIdMap: Record<string, number> = {
+        'Founding Full-Stack Engineer': 1,
+        'Mobile Developer (iOS/Android)': 2,
+        'Head of Product': 3,
+        'UX/UI Designer': 4,
+        'Head of Marketing': 5,
+        'Growth Marketing Specialist': 6,
+        'Operations Manager': 7,
+        'Head of Sales': 8,
+        'Customer Success Manager': 9,
+        'DevOps Engineer': 10,
+      };
+      const jobId = jobTitleToIdMap[applicationData.position] || 1;
+      formData.append('job', jobId.toString());
       
       // Add optional fields
       if (applicationData.experience_level) {
@@ -192,6 +206,7 @@ class CareersService {
       
       console.log('📝 CareersService: Submitting application to /careers/applications/');
       console.log('📝 CareersService: Form data keys:', Array.from(formData.keys()));
+      console.log('📝 CareersService: Job ID mapping:', applicationData.position, '->', jobId);
       
       const response = await api.post('/careers/applications/', formData, {
         headers: {
