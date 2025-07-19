@@ -51,10 +51,10 @@ const AdminDashboardSimple: React.FC = () => {
     try {
       console.log('📊 Loading basic admin data...');
       
-      // Use public endpoints that are working
+      // Use working endpoints
       const [listingsRes, careersRes] = await Promise.all([
-        api.get('/api/listings/').catch(err => ({ data: { results: [] } })),
-        api.get('/api/careers/applications/').catch(err => ({ data: [] }))
+        api.get('/listings/').catch(err => ({ data: { results: [] } })),
+        api.get('/careers/applications/').catch(err => ({ data: [] }))
       ]);
       
       const listingsData = listingsRes.data.results || listingsRes.data || [];
