@@ -75,20 +75,33 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
   const { notifications, unreadCount, markAsRead, markAllAsRead, connectionStatus } = useNotifications();
 
 
-  // Refresh user data to ensure profile picture is loaded - only once per session
+  // Refresh user data to ensure profile picture is loaded - DEBUG VERSION  
   useEffect(() => {
-    const hasRefreshedUser = sessionStorage.getItem('user_refreshed_for_profile');
-    
-    if (isAuthenticated && user && !hasRefreshedUser) {
-      // Only refresh once per session to avoid infinite loops
-      console.log('🔄 Navigation: One-time user data refresh for profile picture');
-      refreshUser().catch(error => {
+    if (isAuthenticated && user) {
+      console.log('🔄 Navigation: Checking if profile refresh needed');
+      console.log('Current user data:', user);
+      
+      // Always refresh for debugging (will revert this)
+      refreshUser().then(() => {
+        console.log('✅ Navigation: User data refreshed successfully');
+      }).catch(error => {
         console.warn('Failed to refresh user data in Navigation:', error);
-      }).finally(() => {
-        sessionStorage.setItem('user_refreshed_for_profile', 'true');
       });
     }
-  }, [isAuthenticated, user, refreshUser]);
+  }, [isAuthenticated, refreshUser]); // Removed user dependency to avoid loops
+
+  // Debug user profile photo data
+  useEffect(() => {
+    if (user) {
+      console.log('🖼️ Profile photo debug:', {
+        profile_picture: user.profile_picture,
+        profile_picture_url: user.profile_picture_url,
+        profile_image: user.profile_image,
+        first_name: user.first_name,
+        full_user: user
+      });
+    }
+  }, [user]);
 
   // Debug function to clear cached state - can be called from browser console
   useEffect(() => {

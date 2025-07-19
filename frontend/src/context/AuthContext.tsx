@@ -62,7 +62,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!hasRefreshedThisSession) {
         authService.getCurrentUser()
           .then(freshUserData => {
-            console.log('🔄 AuthContext: Refreshed user data with profile picture');
+            console.log('🔄 AuthContext: Refreshed user data with profile picture:', freshUserData);
+            console.log('🖼️ AuthContext: Profile picture fields:', {
+              profile_picture: freshUserData.profile_picture,
+              profile_picture_url: freshUserData.profile_picture_url,
+              profile_image: freshUserData.profile_image
+            });
             setUser(freshUserData);
             localStorage.setItem('user', JSON.stringify(freshUserData));
             sessionStorage.setItem('auth_user_refreshed', 'true');
