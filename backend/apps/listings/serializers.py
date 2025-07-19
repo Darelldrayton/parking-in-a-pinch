@@ -55,7 +55,7 @@ class ParkingListingSerializer(serializers.ModelSerializer):
             'is_covered', 'has_ev_charging', 'has_security', 'is_instant_book',
             'has_lighting', 'has_cctv', 'has_gated_access', 'is_handicap_accessible',
             'has_valet_service', 'has_car_wash',
-            'max_vehicle_size', 'instructions', 'is_active', 'host', 'images', 
+            'max_vehicle_size', 'instructions', 'is_active', 'approval_status', 'host', 'images', 
             'rating_average', 'total_reviews', 'amenities', 'availability_schedule',
             'images_unlocked', 'unlock_message',
             'created_at', 'updated_at'
