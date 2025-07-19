@@ -269,12 +269,13 @@ const AdminDashboardEnhanced: React.FC = () => {
     setLoading(newLoading);
   };
   
-  // 🚨 EMERGENCY FALLBACK: Force loading to false after 3 seconds
+  // 🚨 EMERGENCY FALLBACK: Force loading to false after 15 seconds (more reasonable for 500 errors)
   useEffect(() => {
     const emergencyTimeout = setTimeout(() => {
       if (loading) {
-        console.log('🚨 EMERGENCY FALLBACK: Forcing loading to false after 3 seconds');
+        console.log('🚨 EMERGENCY FALLBACK: Forcing loading to false after 15 seconds - likely server issues');
         setLoadingWithDebug(false);
+        setError('Dashboard loading took too long - there may be server issues. Showing dashboard with limited functionality.');
         // Also ensure adminUser is set if we have localStorage data
         const adminUserData = localStorage.getItem('admin_user');
         if (adminUserData && !adminUser) {
@@ -287,7 +288,7 @@ const AdminDashboardEnhanced: React.FC = () => {
           }
         }
       }
-    }, 3000);
+    }, 15000);
     
     return () => clearTimeout(emergencyTimeout);
   }, [loading, adminUser]);
@@ -364,9 +365,14 @@ const AdminDashboardEnhanced: React.FC = () => {
         const stats = await careersService.getApplicationStats();
         console.log('🔍 AdminDashboard: Application stats:', stats);
         setApplicationStats(stats);
-      } catch (statsError) {
-        console.warn('⚠️ AdminDashboard: Stats endpoint not available, using default stats');
-        // Set default stats if endpoint doesn't exist
+      } catch (statsError: any) {
+        const status = statsError.response?.status;
+        if (status >= 500) {
+          console.error(`🚨 Career application stats API returned ${status} - backend service issue`);
+        } else {
+          console.warn('⚠️ AdminDashboard: Stats endpoint not available, using default stats');
+        }
+        // Set default stats if endpoint doesn't exist or fails
         setApplicationStats({
           total: applications.length,
           new: applications.filter(app => app.status === 'new').length,
@@ -376,9 +382,15 @@ const AdminDashboardEnhanced: React.FC = () => {
           rejected: applications.filter(app => app.status === 'rejected').length,
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ AdminDashboard: Error fetching job applications:', error);
-      toast.error('Failed to load job applications');
+      const status = error.response?.status;
+      if (status >= 500) {
+        console.error(`🚨 Career applications API returned ${status} - backend service issue`);
+        toast.error('Career applications temporarily unavailable due to server issues');
+      } else {
+        toast.error('Failed to load job applications');
+      }
       setJobApplications([]);
     } finally {
       setApplicationsLoading(false);
@@ -500,13 +512,13 @@ const AdminDashboardEnhanced: React.FC = () => {
   }, []); // Empty dependency array - run only once
   
   const loadDataSafely = async () => {
-    console.log('📊 Loading dashboard data...');
+    console.log('📊 Loading dashboard data with enhanced resilience...');
     console.log('📊 Loading state before:', loading);
     setLoadingWithDebug(true);
     setError(null);
     
     try {
-      // Add timeout to API calls to prevent hanging
+      // Add timeout to API calls to prevent hanging - increased to 10s for 500 errors
       const apiCallsWithTimeout = Promise.race([
         Promise.allSettled([
           fetchStats(),
@@ -517,26 +529,44 @@ const AdminDashboardEnhanced: React.FC = () => {
           fetchJobApplications()
         ]),
         new Promise<never>((_, reject) => 
-          setTimeout(() => reject(new Error('API calls timeout')), 8000)
+          setTimeout(() => reject(new Error('API calls timeout after 10 seconds')), 10000)
         )
       ]);
       
       const results = await apiCallsWithTimeout as PromiseSettledResult<any>[];
       
-      // Log which APIs failed but don't block the dashboard
+      // Enhanced logging for API status
+      const apiNames = ['Stats', 'Verification Requests', 'Refund Requests', 'Listings', 'Disputes', 'Job Applications'];
+      let failedApis = 0;
+      let serverErrorApis = 0;
+      
       results.forEach((result, index) => {
-        const apiNames = ['Stats', 'Verification Requests', 'Refund Requests', 'Listings', 'Disputes', 'Job Applications'];
         if (result.status === 'rejected') {
-          console.warn(`❌ ${apiNames[index]} API failed:`, result.reason);
+          failedApis++;
+          const error = result.reason;
+          const status = error?.response?.status;
+          if (status >= 500) {
+            serverErrorApis++;
+            console.error(`🚨 ${apiNames[index]} API failed with ${status} - server error:`, error.message);
+          } else {
+            console.warn(`❌ ${apiNames[index]} API failed:`, error?.message || result.reason);
+          }
         } else {
           console.log(`✅ ${apiNames[index]} API succeeded`);
         }
       });
       
-      console.log('📊 Dashboard data loading complete');
+      // Set appropriate error message based on failure types
+      if (serverErrorApis > 0) {
+        setError(`Dashboard partially loaded - ${serverErrorApis} service(s) temporarily unavailable due to server issues. Core functionality should still work.`);
+      } else if (failedApis > 0) {
+        setError(`Dashboard partially loaded - ${failedApis} service(s) currently unavailable. Some features may be limited.`);
+      }
+      
+      console.log(`📊 Dashboard data loading complete - ${6 - failedApis}/6 APIs loaded successfully`);
     } catch (error) {
       console.error('❌ Critical dashboard error:', error);
-      setError('Some dashboard features may be limited due to connectivity issues.');
+      setError('Dashboard loading encountered issues. Some features may be limited due to connectivity problems.');
     } finally {
       // CRITICAL: Always stop loading, even if APIs fail
       console.log('📊 Setting loading to false in finally block');
@@ -581,42 +611,59 @@ const AdminDashboardEnhanced: React.FC = () => {
 
   const fetchStats = async () => {
     try {
-      console.log('📊 Fetching real data from admin APIs with correct endpoints...');
+      console.log('📊 Fetching real data from admin APIs with graceful error handling...');
       
-      // Use the correct admin endpoints that exist in the backend
+      // Use the correct admin endpoints with enhanced 500 error handling
       const [adminStatsRes, usersRes, verificationsRes, listingsRes, refundsRes, payoutsRes, disputesRes] = await Promise.all([
         api.get('/admin/dashboard-stats/').catch(e => {
-          console.warn('Admin stats API not available:', e);
-          return { data: null, status: e.response?.status || 503 };
+          console.warn('Admin stats API not available:', e.response?.status || 'network', e.message);
+          return { data: null, status: e.response?.status || 503, error: e.message };
         }),
         api.get('/users/admin/users/stats/').catch(e => {
-          console.warn('Users stats API not available:', e);
-          return { data: null, status: e.response?.status || 503 };
+          console.warn('Users stats API not available:', e.response?.status || 'network', e.message);
+          return { data: null, status: e.response?.status || 503, error: e.message };
         }),
         api.get('/users/admin/verification-requests/stats/').catch(e => {
-          console.warn('Verification stats API not available:', e);
-          return { data: null, status: e.response?.status || 503 };
+          console.warn('Verification stats API not available:', e.response?.status || 'network', e.message);
+          return { data: null, status: e.response?.status || 503, error: e.message };
         }),
         api.get('/listings/admin/stats/').catch(e => {
-          console.warn('Listings stats API not available:', e);
-          return { data: null, status: e.response?.status || 503 };
+          console.warn('Listings stats API not available:', e.response?.status || 'network', e.message);
+          return { data: null, status: e.response?.status || 503, error: e.message };
         }),
         api.get('/payments/admin/refund-requests/stats/').catch(e => {
-          console.warn('Refunds stats API not available:', e);
-          return { data: null, status: e.response?.status || 503 };
+          console.warn('Refunds stats API not available:', e.response?.status || 'network', e.message);
+          return { data: null, status: e.response?.status || 503, error: e.message };
         }),
         api.get('/payments/admin/payout-requests/stats/').catch(e => {
-          console.warn('Payouts stats API not available:', e);
-          return { data: null, status: e.response?.status || 503 };
+          console.warn('Payouts stats API not available:', e.response?.status || 'network', e.message);
+          return { data: null, status: e.response?.status || 503, error: e.message };
         }),
         api.get('/disputes/admin/stats/').catch(e => {
-          console.warn('Disputes stats API not available:', e);
-          return { data: null, status: e.response?.status || 503 };
+          console.warn('Disputes stats API not available:', e.response?.status || 'network', e.message);
+          return { data: null, status: e.response?.status || 503, error: e.message };
         })
       ]);
 
       let realStats = null;
 
+      // Check if any APIs returned 500 errors and log them
+      const apiErrors = [
+        { name: 'Admin Stats', res: adminStatsRes },
+        { name: 'Users Stats', res: usersRes },
+        { name: 'Verifications Stats', res: verificationsRes },
+        { name: 'Listings Stats', res: listingsRes },
+        { name: 'Refunds Stats', res: refundsRes },
+        { name: 'Payouts Stats', res: payoutsRes },
+        { name: 'Disputes Stats', res: disputesRes }
+      ];
+      
+      apiErrors.forEach(({ name, res }) => {
+        if (res.status >= 500) {
+          console.error(`🚨 ${name} API returned ${res.status} error - backend service issue`);
+        }
+      });
+      
       // If the consolidated admin stats endpoint works, use it
       console.log('🔍 Admin stats response status:', adminStatsRes.status);
       console.log('🔍 Admin stats response data:', adminStatsRes.data);
@@ -714,12 +761,16 @@ const AdminDashboardEnhanced: React.FC = () => {
       setVerificationRequests(response.data.results || []);
     } catch (err: any) {
       console.warn('Verification requests fetch error:', err);
-      if (err.response?.status === 401) {
+      const status = err.response?.status;
+      if (status === 401) {
         console.warn('⚠️ Admin session expired for verification requests');
-      } else if (err.response?.status === 404) {
+      } else if (status === 404) {
         console.warn('⚠️ Admin verification API not available (404) - endpoint might not exist');
+      } else if (status >= 500) {
+        console.error(`🚨 Admin verification API returned ${status} - backend service issue`);
+        toast.error('Verification requests temporarily unavailable due to server issues');
       } else {
-        console.warn(`⚠️ Admin verification API not available (${err.response?.status || 'unknown'})`);
+        console.warn(`⚠️ Admin verification API not available (${status || 'unknown'})`);
       }
       setVerificationRequests([]);
     }
@@ -733,12 +784,16 @@ const AdminDashboardEnhanced: React.FC = () => {
       setRefundRequests(response.data.results || []);
     } catch (err: any) {
       console.warn('Refund requests fetch error:', err);
-      if (err.response?.status === 401) {
+      const status = err.response?.status;
+      if (status === 401) {
         console.warn('⚠️ Admin session expired for refund requests');
-      } else if (err.response?.status === 404) {
+      } else if (status === 404) {
         console.warn('⚠️ Admin refund API not available (404) - this endpoint should exist!');
+      } else if (status >= 500) {
+        console.error(`🚨 Admin refund API returned ${status} - backend service issue`);
+        toast.error('Refund requests temporarily unavailable due to server issues');
       } else {
-        console.warn(`⚠️ Admin refund API failed (${err.response?.status || 'unknown'})`);
+        console.warn(`⚠️ Admin refund API failed (${status || 'unknown'})`);
       }
       setRefundRequests([]);
     }
@@ -751,8 +806,23 @@ const AdminDashboardEnhanced: React.FC = () => {
       try {
         response = await api.get('/listings/admin/');
       } catch (err: any) {
-        console.warn(`⚠️ Admin listings API not available (${err.response?.status}), trying regular listings API`);
-        response = await api.get('/listings/');
+        const status = err.response?.status;
+        if (status >= 500) {
+          console.error(`🚨 Admin listings API returned ${status} - backend service issue`);
+          toast.error('Listings temporarily unavailable due to server issues');
+          setListings([]);
+          return;
+        }
+        console.warn(`⚠️ Admin listings API not available (${status}), trying regular listings API`);
+        try {
+          response = await api.get('/listings/');
+        } catch (fallbackErr: any) {
+          if (fallbackErr.response?.status >= 500) {
+            console.error(`🚨 Regular listings API also returned ${fallbackErr.response?.status} - backend service issue`);
+            toast.error('All listings endpoints temporarily unavailable due to server issues');
+          }
+          throw fallbackErr;
+        }
       }
       
       const data = response.data;
@@ -777,8 +847,12 @@ const AdminDashboardEnhanced: React.FC = () => {
       setListings(adminListings); // Show all listings from API
     } catch (err: any) {
       console.warn('Listings fetch error:', err);
-      if (err.response?.status === 401) {
+      const status = err.response?.status;
+      if (status === 401) {
         console.warn('⚠️ Admin session expired for listings');
+      } else if (status >= 500) {
+        console.error(`🚨 Listings API returned ${status} - backend service issue`);
+        // Don't show additional toast if already shown above
       }
       setListings([]);
     }
@@ -804,14 +878,20 @@ const AdminDashboardEnhanced: React.FC = () => {
       setUsers(response.data.results || response.data || []);
     } catch (err: any) {
       console.error('Users fetch error:', err);
-      if (err.response?.status === 401) {
+      const status = err.response?.status;
+      if (status === 401) {
         setError('⚠️ Session expired. Your admin login session has expired. Please log in again to continue.');
         setTimeout(() => {
           adminTokenUtils.clearAdminSession();
         }, 3000);
         return;
-      } else if (err.response?.status === 404) {
+      } else if (status === 404) {
         console.warn('⚠️ Admin users API not available (404) - endpoint might not exist');
+      } else if (status >= 500) {
+        console.error(`🚨 Users API returned ${status} - backend service issue`);
+        toast.error('User management temporarily unavailable due to server issues');
+        setUsers([]);
+        return;
       }
       setError(`Failed to fetch users: ${err.message}`);
       setUsers([]);
@@ -834,12 +914,16 @@ const AdminDashboardEnhanced: React.FC = () => {
       setDisputes(data.results || data || []); // Try both data.results and direct data
     } catch (err: any) {
       console.warn('Disputes fetch error:', err);
-      if (err.response?.status === 401) {
+      const status = err.response?.status;
+      if (status === 401) {
         console.warn('⚠️ Admin session expired for disputes');
-      } else if (err.response?.status === 404) {
+      } else if (status === 404) {
         console.warn('⚠️ Disputes API not available (404)');
+      } else if (status >= 500) {
+        console.error(`🚨 Disputes API returned ${status} - backend service issue`);
+        toast.error('Disputes temporarily unavailable due to server issues');
       } else {
-        console.warn(`⚠️ Disputes API failed (${err.response?.status || 'unknown'})`);
+        console.warn(`⚠️ Disputes API failed (${status || 'unknown'})`);
       }
       setDisputes([]);
     } finally {
@@ -1499,8 +1583,16 @@ const AdminDashboardEnhanced: React.FC = () => {
         )}
 
         
-        {!error && stats && Object.keys(stats).length > 0 && (
+        {/* Always show dashboard content - even with limited data */}
+        {(
           <>
+            {/* Dashboard Status Info */}
+            {(!stats || Object.keys(stats).length === 0) && (
+              <Alert severity="warning" sx={{ mb: 3 }}>
+                Dashboard statistics are currently unavailable due to backend service issues. 
+                Core functionality like booking search and management tools are still available below.
+              </Alert>
+            )}
             
             {/* Large Booking Search Section */}
             <Card 
