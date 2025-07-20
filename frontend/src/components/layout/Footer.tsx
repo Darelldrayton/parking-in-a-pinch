@@ -45,7 +45,7 @@ export default function Footer() {
       { label: 'Accessibility', path: '/accessibility' },
     ],
     host: [
-      { label: 'Become a Host', path: '/signup?type=host' },
+      { label: 'Become a Host', path: '/become-host' },
       { label: 'Host Guidelines', path: '/host-guidelines' },
       { label: 'Host Resources', path: '/host-resources' },
     ],
