@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -29,6 +30,7 @@ import {
 
 export default function ContactUs() {
   const theme = useTheme();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -260,7 +262,12 @@ export default function ContactUs() {
                   <Typography variant="body2" color="text.secondary" paragraph>
                     Check out our Help Center for instant answers to common questions.
                   </Typography>
-                  <Button variant="outlined" fullWidth startIcon={<Support />}>
+                  <Button 
+                    variant="outlined" 
+                    fullWidth 
+                    startIcon={<Support />}
+                    onClick={() => navigate('/help')}
+                  >
                     Visit Help Center
                   </Button>
                 </CardContent>

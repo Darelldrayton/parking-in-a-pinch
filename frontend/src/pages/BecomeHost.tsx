@@ -118,24 +118,31 @@ const steps = [
 
 const testimonials = [
   {
-    name: 'Sarah M.',
-    location: 'San Francisco, CA',
-    earnings: '$450/month',
-    quote: 'I love earning extra income from my driveway while helping my neighbors find convenient parking.',
+    name: 'Maria G.',
+    location: 'Queens, NY',
+    earnings: '$420/month',
+    quote: 'Living near the subway in Astoria, my driveway is perfect for commuters. Easy extra income!',
     rating: 5,
   },
   {
-    name: 'Mike R.',
-    location: 'Austin, TX',
-    earnings: '$320/month',
-    quote: 'The platform is so easy to use, and the support team is incredibly helpful.',
+    name: 'James R.',
+    location: 'Brooklyn, NY',
+    earnings: '$380/month',
+    quote: 'Williamsburg parking is expensive - I help neighbors save money while earning from my unused spot.',
     rating: 5,
   },
   {
     name: 'Emily L.',
-    location: 'New York, NY',
+    location: 'Manhattan, NY',
     earnings: '$680/month',
-    quote: 'My parking space in Manhattan is in high demand. Great way to monetize unused space!',
+    quote: 'My parking space in the Upper West Side is in high demand. Great way to monetize unused space!',
+    rating: 5,
+  },
+  {
+    name: 'Carlos M.',
+    location: 'Bronx, NY',
+    earnings: '$290/month',
+    quote: 'Near Yankee Stadium, my space is perfect for game days and events. Consistent bookings!',
     rating: 5,
   },
 ];
@@ -461,7 +468,7 @@ export default function BecomeHost() {
           
           <Grid container spacing={4}>
             {testimonials.map((testimonial, index) => (
-              <Grid item xs={12} md={4} key={index}>
+              <Grid item xs={12} sm={6} md={3} key={index}>
                 <Card sx={{ borderRadius: 3, height: '100%' }}>
                   <CardContent sx={{ p: 4 }}>
                     <Stack direction="row" spacing={1} sx={{ mb: 2 }}>

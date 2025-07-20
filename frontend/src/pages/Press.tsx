@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -62,6 +63,7 @@ const pressReleases = [
     excerpt: 'Leading parking marketplace platform announces major funding round led by Sequoia Capital to expand operations to 50 new cities worldwide.',
     readTime: '3 min read',
     featured: true,
+    link: 'https://example.com/press/series-c-funding',
   },
   {
     title: 'Partnership with Major Urban Cities to Reduce Parking Congestion',
@@ -70,6 +72,7 @@ const pressReleases = [
     excerpt: 'Strategic partnerships with San Francisco, New York, and Chicago aim to reduce urban parking congestion by 25% through innovative technology solutions.',
     readTime: '4 min read',
     featured: true,
+    link: 'https://example.com/press/urban-partnerships',
   },
   {
     title: 'Parking in a Pinch Launches AI-Powered Dynamic Pricing',
@@ -78,6 +81,7 @@ const pressReleases = [
     excerpt: 'New machine learning algorithms optimize parking prices in real-time based on demand, location, and events, increasing host earnings by 30% on average.',
     readTime: '2 min read',
     featured: false,
+    link: 'https://example.com/press/ai-dynamic-pricing',
   },
   {
     title: 'Company Reaches 5 Million Active Users Milestone',
@@ -86,6 +90,7 @@ const pressReleases = [
     excerpt: 'Platform growth accelerates with 5 million active users across 200+ cities, facilitating over 50 million parking sessions to date.',
     readTime: '3 min read',
     featured: false,
+    link: 'https://example.com/press/5-million-users',
   },
   {
     title: 'Sustainability Initiative: Carbon-Neutral Parking by 2025',
@@ -94,6 +99,7 @@ const pressReleases = [
     excerpt: 'Comprehensive environmental program includes EV charging partnerships and carbon offset programs for all platform transactions.',
     readTime: '5 min read',
     featured: false,
+    link: 'https://example.com/press/sustainability-initiative',
   },
   {
     title: 'Acquisition of Smart Parking Analytics Startup',
@@ -197,6 +203,20 @@ const companyStats = [
 
 export default function Press() {
   const theme = useTheme();
+  const navigate = useNavigate();
+
+  const handlePressKitDownload = () => {
+    // Simulate press kit download
+    const link = document.createElement('a');
+    link.href = 'data:application/pdf;base64,JVBERi0xLjQKJdPr6eEKMSAwIG9iago8PAovVGl0bGUgKFBhcmtpbmcgaW4gYSBQaW5jaCAtIFByZXNzIEtpdCkKL0NyZWF0b3IgKFBhcmtpbmcgaW4gYSBQaW5jaCkKL1Byb2R1Y2VyIChQYXJraW5nIGluIGEgUGluY2gpCi9DcmVhdGlvbkRhdGUgKEQ6MjAyNDAxMDEwMDAwMDBaKQo+PgplbmRvYmoKeHJlZgowIDIKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDA5IDAwMDAwIG4gCnRyYWlsZXIKPDwKL1NpemUgMgovUm9vdCAxIDAgUgo+PgpzdGFydHhyZWYKMTA5CiUlRU9G';
+    link.download = 'parking-in-a-pinch-press-kit.pdf';
+    link.click();
+  };
+
+  const handleSubscribePress = () => {
+    // Navigate to contact page with press inquiry
+    navigate('/contact?inquiry=press');
+  };
   const [tabValue, setTabValue] = useState(0);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -306,7 +326,11 @@ export default function Press() {
                         <Typography variant="caption" color="text.secondary">
                           {release.readTime}
                         </Typography>
-                        <Button variant="outlined" size="small">
+                        <Button 
+                          variant="outlined" 
+                          size="small"
+                          onClick={() => window.open(release.link, '_blank')}
+                        >
                           Read More
                         </Button>
                       </Stack>
@@ -346,7 +370,11 @@ export default function Press() {
                           </Typography>
                         </Grid>
                         <Grid item xs={12} md={4}>
-                          <Button variant="outlined" fullWidth>
+                          <Button 
+                            variant="outlined" 
+                            fullWidth
+                            onClick={() => window.open(release.link, '_blank')}
+                          >
                             Read Full Release
                           </Button>
                         </Grid>
@@ -497,6 +525,7 @@ export default function Press() {
                       variant="contained"
                       startIcon={<Download />}
                       fullWidth
+                      onClick={handlePressKitDownload}
                     >
                       Download
                     </Button>
@@ -561,6 +590,7 @@ export default function Press() {
             <Button
               variant="contained"
               size="large"
+              onClick={handleSubscribePress}
               sx={{
                 bgcolor: 'white',
                 color: 'primary.main',
@@ -576,6 +606,7 @@ export default function Press() {
             <Button
               variant="outlined"
               size="large"
+              onClick={handlePressKitDownload}
               sx={{
                 borderColor: 'white',
                 color: 'white',

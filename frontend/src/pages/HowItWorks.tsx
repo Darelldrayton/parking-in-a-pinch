@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -173,6 +174,7 @@ const features = [
 
 export default function HowItWorks() {
   const theme = useTheme();
+  const navigate = useNavigate();
   const [tabValue, setTabValue] = useState(0);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -423,6 +425,7 @@ export default function HowItWorks() {
             <Button
               variant="contained"
               size="large"
+              onClick={() => navigate('/listings')}
               sx={{ px: 4, py: 1.5 }}
             >
               Find Parking Now
@@ -430,6 +433,7 @@ export default function HowItWorks() {
             <Button
               variant="outlined"
               size="large"
+              onClick={() => navigate('/become-host')}
               sx={{ px: 4, py: 1.5 }}
             >
               List Your Space
