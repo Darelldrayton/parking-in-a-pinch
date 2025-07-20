@@ -76,8 +76,7 @@ class ParkingListingFilter(django_filters.FilterSet):
                 models.Q(title__icontains=value) |
                 models.Q(description__icontains=value) |
                 models.Q(address__icontains=value) |
-                models.Q(borough__icontains=value) |
-                models.Q(neighborhood__icontains=value)
+                models.Q(borough__icontains=value)
             ).distinct()
         return queryset
     
