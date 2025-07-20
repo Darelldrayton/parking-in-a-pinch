@@ -71,8 +71,26 @@ class ParkingListingFilter(django_filters.FilterSet):
         """
         Enhanced search filter that searches across multiple fields with weighting.
         """
-        # Temporarily disabled to debug production issue
-        return queryset
+        if not value:
+            return queryset
+        
+        # Search across title, description, address, and borough fields only
+        # These fields are confirmed to exist in the database model
+        search_query = models.Q()
+        
+        # Split search terms for better matching
+        search_terms = value.strip().split()
+        
+        for term in search_terms:
+            term_query = (
+                models.Q(title__icontains=term) |
+                models.Q(description__icontains=term) |
+                models.Q(address__icontains=term) |
+                models.Q(borough__icontains=term)
+            )
+            search_query &= term_query
+        
+        return queryset.filter(search_query)
     
     def filter_space_types(self, queryset, name, value):
         """
