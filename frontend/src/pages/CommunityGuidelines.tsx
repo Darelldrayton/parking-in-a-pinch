@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -179,6 +180,7 @@ const consequences = [
 
 export default function CommunityGuidelines() {
   const theme = useTheme();
+  const navigate = useNavigate();
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
@@ -531,6 +533,7 @@ export default function CommunityGuidelines() {
               variant="contained"
               size="large"
               startIcon={<Support />}
+              onClick={() => navigate('/contact?inquiry=community')}
               sx={{ px: 4, py: 1.5 }}
             >
               Contact Community Team
@@ -539,6 +542,7 @@ export default function CommunityGuidelines() {
               variant="outlined"
               size="large"
               startIcon={<Report />}
+              onClick={() => navigate('/contact?inquiry=report')}
               sx={{ px: 4, py: 1.5 }}
             >
               Report a Violation

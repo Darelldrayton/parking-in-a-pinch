@@ -36,7 +36,7 @@ export default function Footer() {
       { label: 'Help Center', path: '/help' },
       { label: 'Contact Us', path: '/contact' },
       { label: 'Safety', path: '/safety' },
-      { label: 'Community Guidelines', path: '/guidelines' },
+      { label: 'Community Guidelines', path: '/community-guidelines' },
     ],
     legal: [
       { label: 'Terms and Conditions', path: '/terms' },
