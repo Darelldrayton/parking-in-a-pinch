@@ -71,9 +71,7 @@ class ParkingListingFilter(django_filters.FilterSet):
         """
         Enhanced search filter that searches across multiple fields with weighting.
         """
-        if value:
-            # Simplified search to debug the issue
-            return queryset.filter(borough__icontains=value).distinct()
+        # Temporarily disabled to debug production issue
         return queryset
     
     def filter_space_types(self, queryset, name, value):
