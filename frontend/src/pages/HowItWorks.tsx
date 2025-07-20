@@ -433,7 +433,7 @@ export default function HowItWorks() {
             <Button
               variant="outlined"
               size="large"
-              onClick={() => navigate('/become-host')}
+              onClick={() => navigate('/create-listing')}
               sx={{ px: 4, py: 1.5 }}
             >
               List Your Space
