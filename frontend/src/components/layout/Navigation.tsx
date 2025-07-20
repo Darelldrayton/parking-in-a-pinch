@@ -75,62 +75,16 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
   const { notifications, unreadCount, markAsRead, markAllAsRead, connectionStatus } = useNotifications();
 
 
-  // Refresh user data to ensure profile picture is loaded - DEBUG VERSION  
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      console.log('🔄 Navigation: Checking if profile refresh needed');
-      console.log('Current user data:', user);
-      
-      // Always refresh for debugging (will revert this)
-      refreshUser().then(() => {
-        console.log('✅ Navigation: User data refreshed successfully');
-      }).catch(error => {
-        console.warn('Failed to refresh user data in Navigation:', error);
-      });
-    }
-  }, [isAuthenticated, refreshUser]); // Removed user dependency to avoid loops
+  // No auto-refresh needed - user data loaded from AuthContext is sufficient
 
-  // Debug user profile photo data
-  useEffect(() => {
-    if (user) {
-      console.log('🖼️ Profile photo debug:', {
-        profile_picture: user.profile_picture,
-        profile_picture_url: user.profile_picture_url,
-        profile_image: user.profile_image,
-        first_name: user.first_name,
-        full_user: user
-      });
-    }
-  }, [user]);
-
-  // Debug function to clear cached state - can be called from browser console
+  // Debug helpers for message count troubleshooting
   useEffect(() => {
     (window as any).debugMessageCount = () => {
       console.log('=== MESSAGE COUNT DEBUG ===');
       console.log('Current unread message count state:', unreadMessageCount);
       console.log('User:', user);
       console.log('Is authenticated:', isAuthenticated);
-      console.log('localStorage access_token:', !!localStorage.getItem('access_token'));
-      console.log('localStorage token:', !!localStorage.getItem('token'));
-      console.log('localStorage user:', localStorage.getItem('user'));
-      
-      // Force refresh unread count
-      console.log('Forcing unread count refresh...');
-      messagingService.getUnreadCount().then(response => {
-        console.log('Fresh API response:', response);
-        setUnreadMessageCount(response.unread_count);
-      }).catch(error => {
-        console.log('API error:', error);
-        setUnreadMessageCount(0);
-      });
     };
-
-    (window as any).clearMessageCache = () => {
-      console.log('Clearing message count cache...');
-      setUnreadMessageCount(0);
-      localStorage.removeItem('cachedUnreadCount'); // In case any other code caches this
-    };
-
   }, [unreadMessageCount, user, isAuthenticated]);
 
   // Fetch unread message count
@@ -502,7 +456,7 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
                   <Tooltip title="Open settings">
                     <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                       <VerifiedAvatar 
-                        src={getSecureImageUrl(user?.profile_picture_url || user?.profile_picture)}
+                        src={getSecureImageUrl(user?.profile_image)}
                         alt={user?.first_name}
                         isVerified={user?.is_verified || false}
                         size={40}
