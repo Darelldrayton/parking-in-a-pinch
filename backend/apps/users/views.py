@@ -26,7 +26,7 @@ class UserViewSet(ModelViewSet):
     """
     ViewSet for managing users.
     """
-    queryset = User.objects.filter(is_deleted=False)
+    queryset = User.objects.filter(is_deleted=False).select_related('profile')
     permission_classes = [permissions.IsAuthenticated]
     
     def get_serializer_class(self):
