@@ -57,7 +57,7 @@ export default function ContactUs() {
     try {
       // Create a dispute with the contact form data
       const disputeData = {
-        dispute_type: 'general',
+        dispute_type: 'other',
         subject: formData.subject,
         description: `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`,
         priority: 'medium',
