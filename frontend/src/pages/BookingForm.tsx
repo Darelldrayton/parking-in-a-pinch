@@ -415,30 +415,6 @@ export default function BookingForm() {
     return 0;
   };
 
-  const createBookingDirectly = async (checkoutData: any) => {
-    try {
-      const response = await api.post('/bookings/', {
-        listing: checkoutData.listing.id,
-        start_time: checkoutData.formData.start_time.toISOString(),
-        end_time: checkoutData.formData.end_time.toISOString(),
-        total_amount: checkoutData.pricing.total,
-        status: 'confirmed',
-        payment_status: 'completed',
-        vehicle_make: checkoutData.formData.vehicle_make || '',
-        vehicle_model: checkoutData.formData.vehicle_model || '',
-        vehicle_color: checkoutData.formData.vehicle_color || '',
-        vehicle_license_plate: checkoutData.formData.vehicle_license_plate || '',
-        notes: checkoutData.formData.notes || ''
-      });
-
-      toast.success('Booking created successfully!');
-      navigate('/dashboard');
-    } catch (error: any) {
-      console.error('Error creating booking:', error);
-      toast.error('Failed to create booking');
-    }
-  };
-
   const calculateTotal = () => {
     const duration = calculateDuration();
     if (listing && duration > 0) {
@@ -498,9 +474,9 @@ export default function BookingForm() {
         pricing,
       };
 
-      console.log('✅ Creating booking directly without payment:', checkoutData);
-      // Create booking directly without payment checkout
-      await createBookingDirectly(checkoutData);
+      console.log('✅ Navigating to checkout page with data:', checkoutData);
+      // Navigate to checkout page immediately
+      navigate('/checkout', { state: checkoutData });
     } catch (error: any) {
       console.error('Error preparing checkout:', error);
       toast.error('Failed to prepare checkout');
