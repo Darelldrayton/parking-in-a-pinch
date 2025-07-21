@@ -64,6 +64,7 @@ export default function ContactUs() {
         refund_requested: false
       };
 
+      console.log('Sending dispute data:', disputeData);
       const response = await api.post('/disputes/', disputeData);
       
       toast.success('Your message has been sent successfully!');
@@ -83,6 +84,7 @@ export default function ContactUs() {
       
     } catch (error: any) {
       console.error('Error submitting contact form:', error);
+      console.error('Error response data:', error.response?.data);
       toast.error('Failed to send message. Please try again.');
     } finally {
       setLoading(false);
