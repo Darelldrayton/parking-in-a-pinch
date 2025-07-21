@@ -64,7 +64,7 @@ export default function ContactUs() {
         refund_requested: false
       };
 
-      const response = await api.post('/disputes/disputes/', disputeData);
+      const response = await api.post('/disputes/', disputeData);
       
       toast.success('Your message has been sent successfully!');
       setSubmitted(true);
