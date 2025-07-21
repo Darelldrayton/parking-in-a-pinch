@@ -361,11 +361,17 @@ export default function Careers() {
                   size="large"
                   sx={{
                     bgcolor: 'white',
+                    color: 'primary.main',
                     px: 4,
                     py: 1.5,
                     '&:hover': {
                       bgcolor: alpha(theme.palette.common.white, 0.9),
                     },
+                  }}
+                  onClick={() => {
+                    document.getElementById('open-positions')?.scrollIntoView({ 
+                      behavior: 'smooth' 
+                    });
                   }}
                 >
                   View Open Positions
@@ -382,6 +388,11 @@ export default function Careers() {
                       borderColor: 'white',
                       bgcolor: alpha(theme.palette.common.white, 0.1),
                     },
+                  }}
+                  onClick={() => {
+                    document.getElementById('company-values')?.scrollIntoView({ 
+                      behavior: 'smooth' 
+                    });
                   }}
                 >
                   Learn About Our Culture
@@ -513,7 +524,7 @@ export default function Careers() {
         </Box>
 
         {/* Job Listings */}
-        <Box sx={{ mb: 8 }}>
+        <Box id="open-positions" sx={{ mb: 8 }}>
           <Typography variant="h3" fontWeight={700} textAlign="center" gutterBottom>
             Open Positions
           </Typography>
@@ -641,6 +652,11 @@ export default function Careers() {
                             variant="outlined"
                             size="large"
                             fullWidth
+                            onClick={() => {
+                              document.getElementById('hiring-process')?.scrollIntoView({ 
+                                behavior: 'smooth' 
+                              });
+                            }}
                           >
                             Learn More
                           </Button>
@@ -686,6 +702,7 @@ export default function Careers() {
 
         {/* Company Values */}
         <Paper
+          id="company-values"
           elevation={3}
           sx={{
             p: 6,
@@ -721,7 +738,7 @@ export default function Careers() {
         </Paper>
 
         {/* Application Process */}
-        <Box sx={{ mb: 8 }}>
+        <Box id="hiring-process" sx={{ mb: 8 }}>
           <Typography variant="h3" fontWeight={700} textAlign="center" gutterBottom>
             Our Hiring Process
           </Typography>
@@ -806,6 +823,11 @@ export default function Careers() {
               variant="contained"
               size="large"
               sx={{ px: 6, py: 2, fontSize: '1.1rem' }}
+              onClick={() => {
+                document.getElementById('open-positions')?.scrollIntoView({ 
+                  behavior: 'smooth' 
+                });
+              }}
             >
               View All Open Positions
             </Button>
@@ -813,6 +835,10 @@ export default function Careers() {
               variant="outlined"
               size="large"
               sx={{ px: 6, py: 2, fontSize: '1.1rem' }}
+              onClick={() => {
+                // Navigate to contact page
+                window.location.href = '/contact';
+              }}
             >
               Join Our Talent Network
             </Button>

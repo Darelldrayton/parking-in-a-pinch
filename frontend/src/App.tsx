@@ -10,6 +10,7 @@ import { NotificationProvider } from './context/NotificationContext';
 import { ThemeModeProvider } from './hooks/useThemeMode';
 import Layout from './components/layout/Layout';
 import notificationService from './services/notifications';
+import ScrollToTop from './components/common/ScrollToTop';
 
 // Lazy load pages for better performance
 const Home = lazy(() => import('./pages/Home'));
@@ -390,6 +391,7 @@ function App() {
               <NotificationProvider>
                 <BookingsProvider>
                   <Router>
+                    <ScrollToTop />
                     <AppRoutes />
                   </Router>
                 </BookingsProvider>
@@ -397,6 +399,7 @@ function App() {
             ) : (
               <BookingsProvider>
                 <Router>
+                  <ScrollToTop />
                   <AppRoutes />
                 </Router>
               </BookingsProvider>

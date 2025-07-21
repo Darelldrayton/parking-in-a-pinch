@@ -71,38 +71,20 @@ const Navigation: React.FC<NavigationProps> = ({ isHost = false }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { toggleTheme, mode } = useThemeMode();
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout, isAuthenticated, refreshUser } = useAuth();
   const { notifications, unreadCount, markAsRead, markAllAsRead, connectionStatus } = useNotifications();
 
 
-  // Debug function to clear cached state - can be called from browser console
+  // No auto-refresh needed - user data loaded from AuthContext is sufficient
+
+  // Debug helpers for message count troubleshooting
   useEffect(() => {
     (window as any).debugMessageCount = () => {
       console.log('=== MESSAGE COUNT DEBUG ===');
       console.log('Current unread message count state:', unreadMessageCount);
       console.log('User:', user);
       console.log('Is authenticated:', isAuthenticated);
-      console.log('localStorage access_token:', !!localStorage.getItem('access_token'));
-      console.log('localStorage token:', !!localStorage.getItem('token'));
-      console.log('localStorage user:', localStorage.getItem('user'));
-      
-      // Force refresh unread count
-      console.log('Forcing unread count refresh...');
-      messagingService.getUnreadCount().then(response => {
-        console.log('Fresh API response:', response);
-        setUnreadMessageCount(response.unread_count);
-      }).catch(error => {
-        console.log('API error:', error);
-        setUnreadMessageCount(0);
-      });
     };
-
-    (window as any).clearMessageCache = () => {
-      console.log('Clearing message count cache...');
-      setUnreadMessageCount(0);
-      localStorage.removeItem('cachedUnreadCount'); // In case any other code caches this
-    };
-
   }, [unreadMessageCount, user, isAuthenticated]);
 
   // Fetch unread message count

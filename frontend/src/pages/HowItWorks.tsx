@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -130,7 +131,7 @@ const hostSteps = [
     description: 'All renters are verified and transactions are secure.',
     details: [
       'All users undergo identity verification',
-      'Insurance coverage for qualifying bookings',
+      'Secure platform with verified users and transactions',
       'Secure payment processing with automatic deposits',
       '24/7 customer support for any issues',
     ],
@@ -161,8 +162,8 @@ const features = [
   },
   {
     icon: <CheckCircle sx={{ fontSize: 32 }} />,
-    title: 'Insurance Coverage',
-    description: 'Qualifying bookings include liability insurance protection.',
+    title: 'Peace of Mind',
+    description: 'Every booking is protected with verified hosts and secure transactions.',
   },
   {
     icon: <Payment sx={{ fontSize: 32 }} />,
@@ -173,6 +174,7 @@ const features = [
 
 export default function HowItWorks() {
   const theme = useTheme();
+  const navigate = useNavigate();
   const [tabValue, setTabValue] = useState(0);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -380,7 +382,7 @@ export default function HowItWorks() {
               </Typography>
               <Typography variant="body1" paragraph>
                 All hosts are verified, and many listings include security features like cameras, 
-                lighting, and gated access. We also provide insurance coverage for qualifying bookings.
+                lighting, and gated access. Our platform ensures secure transactions and verified users.
               </Typography>
 
               <Typography variant="h6" fontWeight={600} gutterBottom>
@@ -423,6 +425,7 @@ export default function HowItWorks() {
             <Button
               variant="contained"
               size="large"
+              onClick={() => navigate('/listings')}
               sx={{ px: 4, py: 1.5 }}
             >
               Find Parking Now
@@ -430,6 +433,7 @@ export default function HowItWorks() {
             <Button
               variant="outlined"
               size="large"
+              onClick={() => navigate('/create-listing')}
               sx={{ px: 4, py: 1.5 }}
             >
               List Your Space

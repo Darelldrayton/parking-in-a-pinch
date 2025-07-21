@@ -9,6 +9,7 @@ interface AuthContextType {
   logout: () => Promise<void>
   updateUser: (userData: Partial<User>) => Promise<void>
   setUserState: (user: User) => void
+  refreshUser: () => Promise<void>
   isLoading: boolean
   isAuthenticated: boolean
 }
@@ -55,6 +56,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (storedToken && storedUser) {
       setToken(storedToken)
       setUser(storedUser)
+      
+      // Only refresh user data if we haven't already done so in this session
+      const hasRefreshedThisSession = sessionStorage.getItem('auth_user_refreshed');
+      if (!hasRefreshedThisSession) {
+        authService.getCurrentUser()
+          .then(freshUserData => {
+            console.log('🔄 AuthContext: Refreshed user data with profile picture:', freshUserData);
+            console.log('🖼️ AuthContext: Profile picture fields:', {
+              profile_picture: freshUserData.profile_picture,
+              profile_picture_url: freshUserData.profile_picture_url,
+              profile_image: freshUserData.profile_image
+            });
+            setUser(freshUserData);
+            localStorage.setItem('user', JSON.stringify(freshUserData));
+            sessionStorage.setItem('auth_user_refreshed', 'true');
+          })
+          .catch(error => {
+            console.warn('Failed to refresh user data:', error);
+            // Keep using stored user data if refresh fails
+          });
+      }
     } else {
       // Clear any partial/stale data
       authService.clearAuthData()
@@ -135,6 +157,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setUser(null)
       setToken(null)
+      // Clear session flags
+      sessionStorage.removeItem('auth_user_refreshed')
+      sessionStorage.removeItem('user_refreshed_for_profile')
       setIsLoading(false)
       window.location.href = '/login'
     }
@@ -155,6 +180,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('user', JSON.stringify(newUser))
   }
 
+  const refreshUser = async () => {
+    try {
+      const currentUser = await authService.getCurrentUser()
+      setUser(currentUser)
+      localStorage.setItem('user', JSON.stringify(currentUser))
+    } catch (error) {
+      console.error('Failed to refresh user data:', error)
+      throw error
+    }
+  }
+
   const isAuthenticated = !!token && !!user
   
   const value = {
@@ -165,6 +201,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     logout,
     updateUser,
     setUserState,
+    refreshUser,
     isLoading,
     isAuthenticated
   }

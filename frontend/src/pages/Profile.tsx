@@ -307,8 +307,65 @@ export default function Profile() {
 
         {/* Tabs */}
         <Card sx={{ borderRadius: 3, boxShadow: theme.shadows[4] }}>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs value={activeTab} onChange={handleTabChange} aria-label="profile tabs">
+          <Box 
+            sx={{ 
+              borderBottom: 1, 
+              borderColor: 'divider',
+              position: 'relative',
+              // Add gradient indicators on mobile
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                bottom: 1,
+                width: 20,
+                background: `linear-gradient(90deg, ${theme.palette.background.paper} 0%, transparent 100%)`,
+                zIndex: 1,
+                pointerEvents: 'none',
+                display: { xs: 'block', sm: 'none' },
+              },
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                bottom: 1,
+                width: 20,
+                background: `linear-gradient(270deg, ${theme.palette.background.paper} 0%, transparent 100%)`,
+                zIndex: 1,
+                pointerEvents: 'none',
+                display: { xs: 'block', sm: 'none' },
+              },
+            }}
+          >
+            <Tabs 
+              value={activeTab} 
+              onChange={handleTabChange} 
+              aria-label="profile tabs"
+              variant="scrollable"
+              scrollButtons="auto"
+              allowScrollButtonsMobile
+              sx={{
+                // Ensure tabs are scrollable on mobile
+                '& .MuiTabs-scrollContainer': {
+                  scrollBehavior: 'smooth',
+                },
+                '& .MuiTabs-flexContainer': {
+                  gap: { xs: 0, sm: 1 },
+                },
+                '& .MuiTab-root': {
+                  minWidth: { xs: 'auto', sm: 160 },
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                  px: { xs: 2, sm: 3 },
+                  // Show full text on all screens
+                  whiteSpace: 'nowrap',
+                },
+                '& .MuiTab-iconWrapper': {
+                  marginBottom: { xs: '2px !important', sm: '4px !important' },
+                },
+              }}
+            >
               <Tab icon={<Person />} label="Profile" />
               <Tab icon={<DirectionsCar />} label="Vehicle Info" />
               <Tab icon={<Verified />} label="Verification" />

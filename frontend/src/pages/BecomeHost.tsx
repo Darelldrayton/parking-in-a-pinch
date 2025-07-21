@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -18,6 +19,10 @@ import {
   Avatar,
   TextField,
   Chip,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material';
 import {
   AttachMoney,
@@ -31,6 +36,10 @@ import {
   LocationOn,
   DirectionsCar,
   Calculate as Calculator,
+  CheckCircle,
+  EmojiEmotions,
+  Groups,
+  Visibility,
 } from '@mui/icons-material';
 
 const benefits = [
@@ -39,24 +48,28 @@ const benefits = [
     title: 'Earn Extra Income',
     description: 'Turn your unused parking space into a steady income stream. Most hosts earn $100-500+ per month.',
     color: 'success',
+    highlight: 'Average $300/month',
   },
   {
     icon: <Schedule sx={{ fontSize: 40 }} />,
     title: 'Flexible Schedule',
     description: 'You control when your space is available. Block dates when you need it for yourself.',
     color: 'primary',
+    highlight: '100% Your Schedule',
   },
   {
     icon: <Security sx={{ fontSize: 40 }} />,
-    title: 'Insurance Protection',
-    description: 'All bookings include liability insurance coverage to protect you and your property.',
+    title: 'Secure Platform',
+    description: 'All users are verified. Secure payment processing and platform protection for every booking.',
     color: 'warning',
+    highlight: 'Verified Users',
   },
   {
     icon: <Support sx={{ fontSize: 40 }} />,
     title: '24/7 Support',
     description: 'Our customer support team is always available to help you and your guests.',
     color: 'info',
+    highlight: 'Always Available',
   },
 ];
 
@@ -105,24 +118,31 @@ const steps = [
 
 const testimonials = [
   {
-    name: 'Sarah M.',
-    location: 'San Francisco, CA',
-    earnings: '$450/month',
-    quote: 'I love earning extra income from my driveway while helping my neighbors find convenient parking.',
+    name: 'Maria G.',
+    location: 'Queens, NY',
+    earnings: '$420/month',
+    quote: 'Living near the subway in Astoria, my driveway is perfect for commuters. Easy extra income!',
     rating: 5,
   },
   {
-    name: 'Mike R.',
-    location: 'Austin, TX',
-    earnings: '$320/month',
-    quote: 'The platform is so easy to use, and the support team is incredibly helpful.',
+    name: 'James R.',
+    location: 'Brooklyn, NY',
+    earnings: '$380/month',
+    quote: 'Williamsburg parking is expensive - I help neighbors save money while earning from my unused spot.',
     rating: 5,
   },
   {
     name: 'Emily L.',
-    location: 'New York, NY',
+    location: 'Manhattan, NY',
     earnings: '$680/month',
-    quote: 'My parking space in Manhattan is in high demand. Great way to monetize unused space!',
+    quote: 'My parking space in the Upper West Side is in high demand. Great way to monetize unused space!',
+    rating: 5,
+  },
+  {
+    name: 'Carlos M.',
+    location: 'Bronx, NY',
+    earnings: '$290/month',
+    quote: 'Near Yankee Stadium, my space is perfect for game days and events. Consistent bookings!',
     rating: 5,
   },
 ];
@@ -138,6 +158,7 @@ const earningsCalculator = {
 
 export default function BecomeHost() {
   const theme = useTheme();
+  const navigate = useNavigate();
   const [calculatorData, setCalculatorData] = useState({
     hourlyRate: 5,
     hoursPerDay: 8,
@@ -176,6 +197,7 @@ export default function BecomeHost() {
                 <Button
                   variant="contained"
                   size="large"
+                  onClick={() => navigate('/signup?type=host')}
                   sx={{
                     bgcolor: 'white',
                     color: 'success.main',
@@ -191,6 +213,11 @@ export default function BecomeHost() {
                 <Button
                   variant="outlined"
                   size="large"
+                  onClick={() => {
+                    document.getElementById('how-to-get-started')?.scrollIntoView({ 
+                      behavior: 'smooth' 
+                    });
+                  }}
                   sx={{
                     borderColor: 'white',
                     color: 'white',
@@ -229,6 +256,58 @@ export default function BecomeHost() {
       </Box>
 
       <Container maxWidth="lg">
+        {/* Quick Stats */}
+        <Grid container spacing={4} sx={{ mb: 8 }}>
+          <Grid item xs={6} md={3}>
+            <Card sx={{ textAlign: 'center', borderRadius: 3, background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.1)} 0%, ${alpha(theme.palette.success.main, 0.05)} 100%)` }}>
+              <CardContent sx={{ p: 3 }}>
+                <Typography variant="h3" fontWeight={700} color="success.main">
+                  5,000+
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  Active Hosts
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={6} md={3}>
+            <Card sx={{ textAlign: 'center', borderRadius: 3, background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)` }}>
+              <CardContent sx={{ p: 3 }}>
+                <Typography variant="h3" fontWeight={700} color="primary.main">
+                  $300
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  Average Monthly Earnings
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={6} md={3}>
+            <Card sx={{ textAlign: 'center', borderRadius: 3, background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.1)} 0%, ${alpha(theme.palette.warning.main, 0.05)} 100%)` }}>
+              <CardContent sx={{ p: 3 }}>
+                <Typography variant="h3" fontWeight={700} color="warning.main">
+                  4.8★
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  Average Host Rating
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={6} md={3}>
+            <Card sx={{ textAlign: 'center', borderRadius: 3, background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.1)} 0%, ${alpha(theme.palette.info.main, 0.05)} 100%)` }}>
+              <CardContent sx={{ p: 3 }}>
+                <Typography variant="h3" fontWeight={700} color="info.main">
+                  95%
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  Host Satisfaction
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
         {/* Benefits Section */}
         <Box sx={{ mb: 8 }}>
           <Typography variant="h3" fontWeight={700} textAlign="center" gutterBottom>
@@ -249,9 +328,15 @@ export default function BecomeHost() {
                     <Typography variant="h6" fontWeight={600} gutterBottom>
                       {benefit.title}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary" paragraph>
                       {benefit.description}
                     </Typography>
+                    <Chip 
+                      label={benefit.highlight}
+                      size="small"
+                      color={benefit.color as any}
+                      sx={{ fontWeight: 600 }}
+                    />
                   </CardContent>
                 </Card>
               </Grid>
@@ -322,7 +407,7 @@ export default function BecomeHost() {
         </Paper>
 
         {/* How to Get Started */}
-        <Box sx={{ mb: 8 }}>
+        <Box id="how-to-get-started" sx={{ mb: 8, scrollMarginTop: 80 }}>
           <Typography variant="h3" fontWeight={700} textAlign="center" gutterBottom>
             How to Get Started
           </Typography>
@@ -383,7 +468,7 @@ export default function BecomeHost() {
           
           <Grid container spacing={4}>
             {testimonials.map((testimonial, index) => (
-              <Grid item xs={12} md={4} key={index}>
+              <Grid item xs={12} sm={6} md={3} key={index}>
                 <Card sx={{ borderRadius: 3, height: '100%' }}>
                   <CardContent sx={{ p: 4 }}>
                     <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
@@ -413,6 +498,87 @@ export default function BecomeHost() {
                 </Card>
               </Grid>
             ))}
+          </Grid>
+        </Box>
+
+        {/* What Makes Us Different */}
+        <Box sx={{ mb: 8 }}>
+          <Typography variant="h3" fontWeight={700} textAlign="center" gutterBottom>
+            What Makes Us Different
+          </Typography>
+          <Typography variant="h6" textAlign="center" color="text.secondary" sx={{ mb: 6 }}>
+            Features designed with hosts in mind
+          </Typography>
+          
+          <Grid container spacing={4}>
+            <Grid item xs={12} md={6}>
+              <Card sx={{ borderRadius: 3, height: '100%', border: `2px solid ${theme.palette.success.main}` }}>
+                <CardContent sx={{ p: 4 }}>
+                  <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
+                    <Avatar sx={{ bgcolor: 'success.main', width: 56, height: 56 }}>
+                      <Visibility />
+                    </Avatar>
+                    <Typography variant="h5" fontWeight={600}>
+                      Full Control
+                    </Typography>
+                  </Stack>
+                  <List>
+                    <ListItem>
+                      <ListItemIcon>
+                        <CheckCircle color="success" />
+                      </ListItemIcon>
+                      <ListItemText primary="Set your own prices and availability" />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon>
+                        <CheckCircle color="success" />
+                      </ListItemIcon>
+                      <ListItemText primary="Approve or decline bookings instantly" />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon>
+                        <CheckCircle color="success" />
+                      </ListItemIcon>
+                      <ListItemText primary="Block dates whenever you need" />
+                    </ListItem>
+                  </List>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Card sx={{ borderRadius: 3, height: '100%', border: `2px solid ${theme.palette.primary.main}` }}>
+                <CardContent sx={{ p: 4 }}>
+                  <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
+                    <Avatar sx={{ bgcolor: 'primary.main', width: 56, height: 56 }}>
+                      <Groups />
+                    </Avatar>
+                    <Typography variant="h5" fontWeight={600}>
+                      Great Community
+                    </Typography>
+                  </Stack>
+                  <List>
+                    <ListItem>
+                      <ListItemIcon>
+                        <CheckCircle color="primary" />
+                      </ListItemIcon>
+                      <ListItemText primary="All users are verified for safety" />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon>
+                        <CheckCircle color="primary" />
+                      </ListItemIcon>
+                      <ListItemText primary="Build relationships with regular renters" />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemIcon>
+                        <CheckCircle color="primary" />
+                      </ListItemIcon>
+                      <ListItemText primary="Join a network of successful hosts" />
+                    </ListItem>
+                  </List>
+                </CardContent>
+              </Card>
+            </Grid>
           </Grid>
         </Box>
 
@@ -479,14 +645,26 @@ export default function BecomeHost() {
           <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
             Join thousands of hosts earning extra income with their parking spaces
           </Typography>
-          <Button
-            variant="contained"
-            size="large"
-            color="success"
-            sx={{ px: 6, py: 2, fontSize: '1.1rem' }}
-          >
-            List Your Space Today
-          </Button>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
+            <Button
+              variant="contained"
+              size="large"
+              color="success"
+              onClick={() => navigate('/signup?type=host')}
+              sx={{ px: 6, py: 2, fontSize: '1.1rem' }}
+            >
+              List Your Space Today
+            </Button>
+            <Button
+              variant="outlined"
+              size="large"
+              color="success"
+              onClick={() => navigate('/create-listing')}
+              sx={{ px: 6, py: 2, fontSize: '1.1rem' }}
+            >
+              View Sample Listing
+            </Button>
+          </Stack>
         </Box>
       </Container>
     </Box>
