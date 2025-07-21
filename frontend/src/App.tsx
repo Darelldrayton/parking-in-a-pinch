@@ -27,7 +27,6 @@ const CreateListing = lazy(() => import('./pages/CreateListing'));
 const MyListings = lazy(() => import('./pages/MyListings'));
 const Bookings = lazy(() => import('./pages/Bookings'));
 const BookingForm = lazy(() => import('./pages/BookingForm'));
-const Checkout = lazy(() => import('./pages/Checkout'));
 const MyBookings = lazy(() => import('./pages/MyBookings'));
 const BookingDetail = lazy(() => import('./pages/BookingDetail'));
 const Messages = lazy(() => import('./pages/Messages'));
@@ -241,14 +240,6 @@ function AppRoutes() {
           element={
             <ProtectedRoute>
               <Layout><BookingForm /></Layout>
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/checkout" 
-          element={
-            <ProtectedRoute>
-              <Layout><Checkout /></Layout>
             </ProtectedRoute>
           } 
         />
