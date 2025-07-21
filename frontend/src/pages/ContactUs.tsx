@@ -27,6 +27,8 @@ import {
   Chat,
   Support,
 } from '@mui/icons-material';
+import api from '../services/api';
+import toast from 'react-hot-toast';
 
 export default function ContactUs() {
   const theme = useTheme();
@@ -39,6 +41,7 @@ export default function ContactUs() {
     message: '',
   });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (field: string) => (event: any) => {
     setFormData(prev => ({
@@ -47,11 +50,43 @@ export default function ContactUs() {
     }));
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    // Here you would typically send the form data to your backend
-    console.log('Contact form submitted:', formData);
-    setSubmitted(true);
+    setLoading(true);
+    
+    try {
+      // Create a dispute with the contact form data
+      const disputeData = {
+        dispute_type: 'general',
+        subject: formData.subject,
+        description: formData.message,
+        priority: 'medium',
+        refund_requested: false
+      };
+
+      const response = await api.post('/disputes/disputes/', disputeData);
+      
+      toast.success('Your message has been sent successfully!');
+      setSubmitted(true);
+      
+      // Reset form after 3 seconds
+      setTimeout(() => {
+        setFormData({
+          name: '',
+          email: '',
+          subject: '',
+          category: '',
+          message: '',
+        });
+        setSubmitted(false);
+      }, 3000);
+      
+    } catch (error: any) {
+      console.error('Error submitting contact form:', error);
+      toast.error('Failed to send message. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const contactMethods = [
@@ -122,7 +157,65 @@ export default function ContactUs() {
       </Box>
 
       <Container maxWidth="lg">
-        {/* Content removed as requested */}
+        {/* Contact Form that creates disputes */}
+        <Box sx={{ mb: 6 }}>
+          <Grid container spacing={6} justifyContent="center">
+            <Grid item xs={12} md={8}>
+              <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
+                <Typography variant="h4" fontWeight={700} gutterBottom>
+                  Send Us a Message
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+                  Fill out the form below and we'll get back to you as soon as possible.
+                </Typography>
+
+                {submitted ? (
+                  <Alert severity="success" sx={{ mb: 3 }}>
+                    Thank you for your message! We'll get back to you within 2-4 hours.
+                  </Alert>
+                ) : (
+                  <Box component="form" onSubmit={handleSubmit}>
+                    <Grid container spacing={3}>
+                      <Grid item xs={12}>
+                        <TextField
+                          fullWidth
+                          label="Subject"
+                          value={formData.subject}
+                          onChange={handleInputChange('subject')}
+                          required
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <TextField
+                          fullWidth
+                          label="Message"
+                          multiline
+                          rows={6}
+                          value={formData.message}
+                          onChange={handleInputChange('message')}
+                          placeholder="Please describe your question or issue in detail..."
+                          required
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Button
+                          type="submit"
+                          variant="contained"
+                          size="large"
+                          startIcon={<Send />}
+                          sx={{ px: 4, py: 1.5 }}
+                          disabled={loading}
+                        >
+                          {loading ? 'Sending...' : 'Send Message'}
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  </Box>
+                )}
+              </Paper>
+            </Grid>
+          </Grid>
+        </Box>
       </Container>
     </Box>
   );
