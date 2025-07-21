@@ -281,187 +281,8 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({
 
       <Container maxWidth="lg">
         <Grid container spacing={4}>
-          {/* Checkout Progress */}
+          {/* Booking Details Card */}
           <Grid item xs={12} md={8}>
-            <Card sx={{ borderRadius: 3, mb: 3 }}>
-              <CardContent sx={{ p: 4 }}>
-                <Typography variant="h5" fontWeight={600} gutterBottom>
-                  Booking Progress
-                </Typography>
-                
-                <Stepper activeStep={activeStep} orientation="vertical">
-                  {steps.map((step, index) => (
-                    <Step key={step.label}>
-                      <StepLabel>
-                        <Typography variant="h6" fontWeight={600}>
-                          {step.label}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {step.description}
-                        </Typography>
-                      </StepLabel>
-                      <StepContent>
-                        <Box sx={{ mt: 2, mb: 1 }}>
-                          {index === 0 && (
-                            <Box>
-                              <Typography variant="body1" sx={{ mb: 3 }}>
-                                Please review your booking details below and proceed to payment.
-                              </Typography>
-                              
-                              {/* Express Checkout Options */}
-                              <Paper 
-                                sx={{ 
-                                  p: 3, 
-                                  mb: 3, 
-                                  borderRadius: 2,
-                                  bgcolor: alpha(theme.palette.primary.main, 0.02),
-                                  border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                                }}
-                              >
-                                <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-                                  <Speed sx={{ color: 'primary.main' }} />
-                                  <Typography variant="h6" fontWeight={600}>
-                                    Express Checkout
-                                  </Typography>
-                                  <Chip label="Fastest" size="small" color="primary" />
-                                </Stack>
-                                
-                                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                                  Complete your booking instantly with your preferred payment method
-                                </Typography>
-                                
-                                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                                  <Button
-                                    variant="outlined"
-                                    fullWidth
-                                    startIcon={<Apple />}
-                                    disabled
-                                    sx={{
-                                      py: 1.5,
-                                      borderColor: 'grey.300',
-                                      color: 'grey.500',
-                                      position: 'relative',
-                                      '&.Mui-disabled': {
-                                        borderColor: 'grey.300',
-                                        color: 'grey.500',
-                                      },
-                                    }}
-                                  >
-                                    Apple Pay
-                                    <Chip 
-                                      label="Coming Soon" 
-                                      size="small" 
-                                      sx={{ 
-                                        position: 'absolute', 
-                                        right: 8, 
-                                        fontSize: '0.7rem',
-                                        height: 20,
-                                        backgroundColor: 'warning.light',
-                                        color: 'warning.contrastText',
-                                      }} 
-                                    />
-                                  </Button>
-                                  <Button
-                                    variant="outlined"
-                                    fullWidth
-                                    startIcon={<Google />}
-                                    disabled
-                                    sx={{
-                                      py: 1.5,
-                                      borderColor: 'grey.300',
-                                      color: 'grey.500',
-                                      position: 'relative',
-                                      '&.Mui-disabled': {
-                                        borderColor: 'grey.300',
-                                        color: 'grey.500',
-                                      },
-                                    }}
-                                  >
-                                    Google Pay
-                                    <Chip 
-                                      label="Coming Soon" 
-                                      size="small" 
-                                      sx={{ 
-                                        position: 'absolute', 
-                                        right: 8, 
-                                        fontSize: '0.7rem',
-                                        height: 20,
-                                        backgroundColor: 'warning.light',
-                                        color: 'warning.contrastText',
-                                      }} 
-                                    />
-                                  </Button>
-                                </Stack>
-                              </Paper>
-                              
-                              <Divider sx={{ my: 2 }}>
-                                <Typography variant="body2" color="text.secondary">
-                                  OR
-                                </Typography>
-                              </Divider>
-                              
-                              <Stack direction="row" spacing={2}>
-                                <Button
-                                  variant="contained"
-                                  onClick={handleProceedToPayment}
-                                  startIcon={<CreditCard />}
-                                >
-                                  Pay with Card
-                                </Button>
-                                <Button onClick={onBack}>
-                                  Back
-                                </Button>
-                              </Stack>
-                            </Box>
-                          )}
-                          {index === 1 && (
-                            <Box>
-                              {!paymentCompleted ? (
-                                <Box>
-                                  <Typography variant="body1" sx={{ mb: 2 }}>
-                                    Complete your payment securely to reserve your parking spot.
-                                  </Typography>
-                                  <Button
-                                    variant="contained"
-                                    onClick={() => setShowPaymentForm(true)}
-                                    startIcon={<PaymentIcon />}
-                                    sx={{ mr: 1 }}
-                                  >
-                                    Open Payment Form
-                                  </Button>
-                                </Box>
-                              ) : (
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                  <CheckCircle sx={{ color: 'success.main' }} />
-                                  <Typography>Payment completed successfully!</Typography>
-                                </Box>
-                              )}
-                            </Box>
-                          )}
-                          {index === 2 && (
-                            <Box>
-                              {isCreatingBooking ? (
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                  <CircularProgress size={24} />
-                                  <Typography>Creating your booking...</Typography>
-                                </Box>
-                              ) : (
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                  <CheckCircle sx={{ color: 'success.main' }} />
-                                  <Typography>Booking created successfully!</Typography>
-                                </Box>
-                              )}
-                            </Box>
-                          )}
-                        </Box>
-                      </StepContent>
-                    </Step>
-                  ))}
-                </Stepper>
-              </CardContent>
-            </Card>
-
-            {/* Booking Details Card */}
             <Card sx={{ borderRadius: 3 }}>
               <CardContent sx={{ p: 4 }}>
                 <Typography variant="h6" fontWeight={600} gutterBottom>
@@ -665,6 +486,58 @@ const CheckoutFlow: React.FC<CheckoutFlowProps> = ({
                   </CardContent>
                 </Card>
               )}
+
+              {/* Booking Progress */}
+              <Card sx={{ borderRadius: 3 }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Typography variant="h6" fontWeight={600} gutterBottom color="text.primary">
+                    Booking Progress
+                  </Typography>
+                  <Box sx={{ mt: 2 }}>
+                    <Stepper activeStep={activeStep} orientation="vertical">
+                      {steps.map((step, index) => (
+                        <Step key={step.label}>
+                          <StepLabel>
+                            <Typography variant="body2" fontWeight={500}>
+                              {step.label}
+                            </Typography>
+                          </StepLabel>
+                          <StepContent>
+                            <Typography variant="body2" color="text.secondary">
+                              {step.description}
+                            </Typography>
+                            {index === 0 && activeStep === 0 && (
+                              <Button
+                                variant="contained"
+                                sx={{ mt: 2 }}
+                                onClick={handleProceedToPayment}
+                                disabled={isCreatingBooking}
+                                startIcon={isCreatingBooking ? <CircularProgress size={20} /> : <PaymentIcon />}
+                              >
+                                {isCreatingBooking ? 'Creating Booking...' : 'Proceed to Payment'}
+                              </Button>
+                            )}
+                            {index === 2 && activeStep === 2 && (
+                              <Stack spacing={1} sx={{ mt: 2 }}>
+                                <Typography variant="body2" color="success.main" fontWeight={500}>
+                                  ✓ Booking confirmed!
+                                </Typography>
+                                <Button
+                                  variant="outlined"
+                                  size="small"
+                                  onClick={() => onSuccess()}
+                                >
+                                  View My Bookings
+                                </Button>
+                              </Stack>
+                            )}
+                          </StepContent>
+                        </Step>
+                      ))}
+                    </Stepper>
+                  </Box>
+                </CardContent>
+              </Card>
             </Stack>
           </Grid>
         </Grid>
