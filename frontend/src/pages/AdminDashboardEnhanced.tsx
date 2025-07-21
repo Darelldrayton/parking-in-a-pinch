@@ -3599,6 +3599,7 @@ const AdminDashboardEnhanced: React.FC = () => {
           {selectedItem?.user_display_name && `Verification Request - ${selectedItem.user_display_name}`}
           {selectedItem?.request_id && `Refund Request - ${selectedItem.request_id}`}
           {selectedItem?.booking_id && `Booking Details - Reservation #${selectedItem.booking_id}`}
+          {selectedItem?.dispute_id && `Dispute Details - ${selectedItem.dispute_id}`}
         </DialogTitle>
         <DialogContent>
           {selectedItem && (
@@ -3993,6 +3994,74 @@ const AdminDashboardEnhanced: React.FC = () => {
                     </Stack>
                   </Box>
                 </Box>
+              )}
+
+              {/* Dispute Details */}
+              {selectedItem.dispute_id && (
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <Typography variant="subtitle2" color="text.secondary">Dispute ID</Typography>
+                    <Typography variant="body1">{selectedItem.dispute_id}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="subtitle2" color="text.secondary">Status</Typography>
+                    {getStatusChip(selectedItem.status, 'dispute')}
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="subtitle2" color="text.secondary">Type</Typography>
+                    <Typography variant="body1">{selectedItem.dispute_type_display || selectedItem.dispute_type}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="subtitle2" color="text.secondary">Priority</Typography>
+                    <Typography variant="body1">{selectedItem.priority_display || selectedItem.priority}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="subtitle2" color="text.secondary">Complainant</Typography>
+                    <Typography variant="body1">{selectedItem.complainant_name || 'N/A'}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="subtitle2" color="text.secondary">Created</Typography>
+                    <Typography variant="body1">{selectedItem.created_at ? format(new Date(selectedItem.created_at), 'MMM d, yyyy HH:mm') : 'N/A'}</Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle2" color="text.secondary">Subject</Typography>
+                    <Typography variant="body1">{selectedItem.subject}</Typography>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle2" color="text.secondary">Description</Typography>
+                    <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>{selectedItem.description}</Typography>
+                  </Grid>
+                  {selectedItem.disputed_amount && (
+                    <Grid item xs={6}>
+                      <Typography variant="subtitle2" color="text.secondary">Disputed Amount</Typography>
+                      <Typography variant="body1">${selectedItem.disputed_amount}</Typography>
+                    </Grid>
+                  )}
+                  {selectedItem.refund_requested && (
+                    <Grid item xs={6}>
+                      <Typography variant="subtitle2" color="text.secondary">Refund Requested</Typography>
+                      <Typography variant="body1">{selectedItem.refund_amount ? `$${selectedItem.refund_amount}` : 'Yes'}</Typography>
+                    </Grid>
+                  )}
+                  {selectedItem.booking_details && (
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle2" color="text.secondary">Related Booking</Typography>
+                      <Typography variant="body1">Booking #{selectedItem.booking_details.booking_id || selectedItem.booking_details.id}</Typography>
+                    </Grid>
+                  )}
+                  {selectedItem.admin_notes && (
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle2" color="text.secondary">Admin Notes</Typography>
+                      <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>{selectedItem.admin_notes}</Typography>
+                    </Grid>
+                  )}
+                  {selectedItem.resolution && (
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle2" color="text.secondary">Resolution</Typography>
+                      <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>{selectedItem.resolution}</Typography>
+                    </Grid>
+                  )}
+                </Grid>
               )}
             </Stack>
           )}
