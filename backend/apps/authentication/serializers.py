@@ -61,7 +61,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             'is_verified': self.user.is_identity_verified,
             'is_email_verified': self.user.is_email_verified,
             'phone_number': self.user.phone_number,
-            'profile_image': self.user.profile_picture.url if self.user.profile_picture else None,
+            'profile_image': self.context['request'].build_absolute_uri(self.user.profile_picture.url) if self.user.profile_picture else None,
         }
         
         return data
