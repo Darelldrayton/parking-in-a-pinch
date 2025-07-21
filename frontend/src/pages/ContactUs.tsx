@@ -59,7 +59,7 @@ export default function ContactUs() {
       const disputeData = {
         dispute_type: 'general',
         subject: formData.subject,
-        description: formData.message,
+        description: `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`,
         priority: 'medium',
         refund_requested: false
       };
@@ -176,6 +176,25 @@ export default function ContactUs() {
                 ) : (
                   <Box component="form" onSubmit={handleSubmit}>
                     <Grid container spacing={3}>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          fullWidth
+                          label="Full Name"
+                          value={formData.name}
+                          onChange={handleInputChange('name')}
+                          required
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          fullWidth
+                          label="Email Address"
+                          type="email"
+                          value={formData.email}
+                          onChange={handleInputChange('email')}
+                          required
+                        />
+                      </Grid>
                       <Grid item xs={12}>
                         <TextField
                           fullWidth
