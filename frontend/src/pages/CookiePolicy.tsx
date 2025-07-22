@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -162,8 +162,25 @@ export default function CookiePolicy() {
   };
 
   const handleViewPrivacyPolicy = () => {
-    navigate('/privacy-policy');
+    navigate('/privacy');
   };
+
+  // Load cookie preferences from localStorage on component mount
+  useEffect(() => {
+    const savedPreferences = localStorage.getItem('cookiePreferences');
+    if (savedPreferences) {
+      try {
+        const preferences = JSON.parse(savedPreferences);
+        setCookiePreferences({
+          performance: preferences.performance || false,
+          functional: preferences.functional || false,
+          marketing: preferences.marketing || false,
+        });
+      } catch (error) {
+        console.error('Error loading cookie preferences:', error);
+      }
+    }
+  }, []);
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
