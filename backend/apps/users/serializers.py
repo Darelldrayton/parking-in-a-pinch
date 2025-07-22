@@ -177,7 +177,7 @@ class FrontendUserSerializer(serializers.ModelSerializer):
     """Serializer compatible with frontend expectations."""
     
     # Map backend fields to frontend field names
-    user_type = serializers.SerializerMethodField()
+    user_type = serializers.CharField()
     is_verified = serializers.BooleanField(read_only=True)  # Use the admin-controlled verification field
     profile_image = serializers.ImageField(source='profile_picture', required=False)
     profile = UserProfileSerializer(read_only=True)
@@ -186,18 +186,9 @@ class FrontendUserSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'id', 'email', 'first_name', 'last_name',
-            'user_type', 'is_verified', 'phone_number', 'profile_image', 'profile'
+            'user_type', 'is_verified', 'phone_number', 'profile_image', 'profile', 'bio'
         )
         read_only_fields = ('id', 'is_verified')
-    
-    def get_user_type(self, obj):
-        """Convert backend user type to frontend format."""
-        type_mapping = {
-            'SEEKER': 'renter',
-            'HOST': 'host',
-            'BOTH': 'both'
-        }
-        return type_mapping.get(obj.user_type, 'renter')
     
     def validate_user_type(self, value):
         """Convert frontend user type to backend format."""
@@ -220,6 +211,17 @@ class FrontendUserSerializer(serializers.ModelSerializer):
             }
             data['user_type'] = type_mapping.get(data['user_type'], 'renter')
         return data
+    
+    def to_internal_value(self, data):
+        """Convert frontend format to backend format."""
+        if 'user_type' in data:
+            type_mapping = {
+                'renter': 'SEEKER',
+                'host': 'HOST',
+                'both': 'BOTH'
+            }
+            data['user_type'] = type_mapping.get(data['user_type'], 'SEEKER')
+        return super().to_internal_value(data)
 
 
 class VerificationRequestSerializer(serializers.ModelSerializer):
