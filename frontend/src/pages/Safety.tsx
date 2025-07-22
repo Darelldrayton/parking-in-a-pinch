@@ -220,10 +220,10 @@ export default function Safety() {
                     Safety Support
                   </Typography>
                   <Typography variant="h4" fontWeight={700} gutterBottom>
-                    Email Us
+                    File a Dispute
                   </Typography>
                   <Typography variant="body2">
-                    safety@parkinginapinch.com - For urgent safety issues
+                    For urgent safety issues
                   </Typography>
                 </CardContent>
               </Card>
