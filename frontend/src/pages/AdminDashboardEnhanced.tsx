@@ -1412,7 +1412,7 @@ const AdminDashboardEnhanced: React.FC = () => {
     </Card>
   );
 
-  const getStatusChip = (status: string, type: 'verification' | 'refund' | 'listing' = 'verification') => {
+  const getStatusChip = (status: string, type: 'verification' | 'refund' | 'listing' | 'dispute' = 'verification') => {
     const configs = {
       verification: {
         PENDING: { label: 'Pending', color: 'warning' as const },
@@ -1431,6 +1431,12 @@ const AdminDashboardEnhanced: React.FC = () => {
         APPROVED: { label: 'Approved', color: 'success' as const },
         REJECTED: { label: 'Rejected', color: 'error' as const },
         REVISION_REQUESTED: { label: 'Revision Required', color: 'info' as const },
+      },
+      dispute: {
+        open: { label: 'Open', color: 'warning' as const },
+        in_review: { label: 'In Review', color: 'info' as const },
+        resolved: { label: 'Resolved', color: 'success' as const },
+        closed: { label: 'Closed', color: 'default' as const },
       }
     };
 
