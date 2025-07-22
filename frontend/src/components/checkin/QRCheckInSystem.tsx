@@ -344,16 +344,6 @@ const QRCheckInSystem: React.FC<QRCheckInSystemProps> = ({
             </Button>
           )}
           
-          {bookingInfo?.status === 'checked_in' && (
-            <Button
-              variant="contained"
-              startIcon={<ExitToApp />}
-              onClick={handleCheckOut}
-              color="info"
-            >
-              Manual Check-Out
-            </Button>
-          )}
         </Stack>
       </Paper>
     </Stack>
@@ -422,17 +412,6 @@ const QRCheckInSystem: React.FC<QRCheckInSystemProps> = ({
               {bookingInfo?.status === 'checked_in' ? 'Already Checked In' : 'Start Scanner'}
             </Button>
 
-            {bookingInfo?.status === 'checked_in' && (
-              <Button
-                variant="outlined"
-                size="large"
-                startIcon={<ExitToApp />}
-                onClick={handleCheckOut}
-                color="info"
-              >
-                Check Out
-              </Button>
-            )}
           </Stack>
         </Paper>
       )}

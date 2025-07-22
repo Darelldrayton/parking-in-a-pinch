@@ -962,17 +962,6 @@ export default function BookingDetail() {
                       </Button>
                     )}
 
-                    {canCheckOut() && (
-                      <Button
-                        variant="contained"
-                        color="warning"
-                        startIcon={<Logout />}
-                        onClick={handleCheckOut}
-                        fullWidth
-                      >
-                        Check Out
-                      </Button>
-                    )}
 
                     {/* Automatic refund cancellation - available until 16 minutes before start time */}
                     {canCancelWithAutomaticRefund() && (

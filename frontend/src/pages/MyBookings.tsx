@@ -335,21 +335,6 @@ const MyBookings: React.FC = () => {
                     
                     return (
                       <Box sx={{ pt: 2, px: 0 }}>
-                        {action === 'checkout' && (
-                          <Button
-                            variant="contained"
-                            color="success"
-                            size="small"
-                            startIcon={<Logout />}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleCheckOut(e, booking.id);
-                            }}
-                            fullWidth
-                          >
-                            Check Out
-                          </Button>
-                        )}
                         {action === 'checkin' && (
                           <Button
                             variant="contained"

@@ -27,6 +27,8 @@ import {
   Chat,
   Support,
 } from '@mui/icons-material';
+import api from '../services/api';
+import toast from 'react-hot-toast';
 
 export default function ContactUs() {
   const theme = useTheme();
@@ -39,6 +41,7 @@ export default function ContactUs() {
     message: '',
   });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (field: string) => (event: any) => {
     setFormData(prev => ({
@@ -47,11 +50,45 @@ export default function ContactUs() {
     }));
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    // Here you would typically send the form data to your backend
-    console.log('Contact form submitted:', formData);
-    setSubmitted(true);
+    setLoading(true);
+    
+    try {
+      // Create a dispute with the contact form data
+      const disputeData = {
+        dispute_type: 'other',
+        subject: formData.subject,
+        description: `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`,
+        priority: 'medium',
+        refund_requested: false
+      };
+
+      console.log('Sending dispute data:', disputeData);
+      const response = await api.post('/disputes/', disputeData);
+      
+      toast.success('Your message has been sent successfully!');
+      setSubmitted(true);
+      
+      // Reset form after 3 seconds
+      setTimeout(() => {
+        setFormData({
+          name: '',
+          email: '',
+          subject: '',
+          category: '',
+          message: '',
+        });
+        setSubmitted(false);
+      }, 3000);
+      
+    } catch (error: any) {
+      console.error('Error submitting contact form:', error);
+      console.error('Error response data:', error.response?.data);
+      toast.error('Failed to send message. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const contactMethods = [
@@ -122,216 +159,82 @@ export default function ContactUs() {
       </Box>
 
       <Container maxWidth="lg">
-        {/* Contact Methods */}
+        {/* Contact Form that creates disputes */}
         <Box sx={{ mb: 6 }}>
-          <Typography variant="h3" fontWeight={700} textAlign="center" gutterBottom>
-            Get in Touch
-          </Typography>
-          <Typography variant="h6" textAlign="center" color="text.secondary" sx={{ mb: 4 }}>
-            Choose the best way to reach us
-          </Typography>
-          
-          <Grid container spacing={4}>
-            {contactMethods.map((method, index) => (
-              <Grid item xs={12} md={4} key={index}>
-                <Card sx={{ textAlign: 'center', borderRadius: 3, height: '100%' }}>
-                  <CardContent sx={{ p: 4 }}>
-                    <Box sx={{ color: `${method.color}.main`, mb: 2 }}>
-                      {method.icon}
-                    </Box>
-                    <Typography variant="h6" fontWeight={600} gutterBottom>
-                      {method.title}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" paragraph>
-                      {method.description}
-                    </Typography>
-                    <Typography variant="h6" color={`${method.color}.main`} gutterBottom>
-                      {method.details}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {method.availability}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
+          <Grid container spacing={6} justifyContent="center">
+            <Grid item xs={12} md={8}>
+              <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
+                <Typography variant="h4" fontWeight={700} gutterBottom>
+                  Send Us a Message
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+                  Fill out the form below and we'll get back to you as soon as possible.
+                </Typography>
 
-        {/* Contact Form */}
-        <Grid container spacing={6} sx={{ mb: 6 }}>
-          <Grid item xs={12} md={8}>
-            <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
-              <Typography variant="h4" fontWeight={700} gutterBottom>
-                Send Us a Message
-              </Typography>
-              <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-                Fill out the form below and we'll get back to you as soon as possible.
-              </Typography>
-
-              {submitted ? (
-                <Alert severity="success" sx={{ mb: 3 }}>
-                  Thank you for your message! We'll get back to you within 2-4 hours.
-                </Alert>
-              ) : (
-                <Box component="form" onSubmit={handleSubmit}>
-                  <Grid container spacing={3}>
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        fullWidth
-                        label="Full Name"
-                        value={formData.name}
-                        onChange={handleInputChange('name')}
-                        required
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        fullWidth
-                        label="Email Address"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleInputChange('email')}
-                        required
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <FormControl fullWidth required>
-                        <InputLabel>Category</InputLabel>
-                        <Select
-                          value={formData.category}
-                          label="Category"
-                          onChange={handleInputChange('category')}
+                {submitted ? (
+                  <Alert severity="success" sx={{ mb: 3 }}>
+                    Thank you for your message! We'll get back to you within 2-4 hours.
+                  </Alert>
+                ) : (
+                  <Box component="form" onSubmit={handleSubmit}>
+                    <Grid container spacing={3}>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          fullWidth
+                          label="Full Name"
+                          value={formData.name}
+                          onChange={handleInputChange('name')}
+                          required
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          fullWidth
+                          label="Email Address"
+                          type="email"
+                          value={formData.email}
+                          onChange={handleInputChange('email')}
+                          required
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <TextField
+                          fullWidth
+                          label="Subject"
+                          value={formData.subject}
+                          onChange={handleInputChange('subject')}
+                          required
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <TextField
+                          fullWidth
+                          label="Message"
+                          multiline
+                          rows={6}
+                          value={formData.message}
+                          onChange={handleInputChange('message')}
+                          placeholder="Please describe your question or issue in detail..."
+                          required
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Button
+                          type="submit"
+                          variant="contained"
+                          size="large"
+                          startIcon={<Send />}
+                          sx={{ px: 4, py: 1.5 }}
+                          disabled={loading}
                         >
-                          <MenuItem value="general">General Question</MenuItem>
-                          <MenuItem value="booking">Booking Issue</MenuItem>
-                          <MenuItem value="payment">Payment Problem</MenuItem>
-                          <MenuItem value="technical">Technical Support</MenuItem>
-                          <MenuItem value="hosting">Hosting Question</MenuItem>
-                          <MenuItem value="safety">Safety Concern</MenuItem>
-                          <MenuItem value="feedback">Feedback</MenuItem>
-                        </Select>
-                      </FormControl>
+                          {loading ? 'Sending...' : 'Send Message'}
+                        </Button>
+                      </Grid>
                     </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        fullWidth
-                        label="Subject"
-                        value={formData.subject}
-                        onChange={handleInputChange('subject')}
-                        required
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <TextField
-                        fullWidth
-                        label="Message"
-                        multiline
-                        rows={6}
-                        value={formData.message}
-                        onChange={handleInputChange('message')}
-                        placeholder="Please describe your question or issue in detail..."
-                        required
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Button
-                        type="submit"
-                        variant="contained"
-                        size="large"
-                        startIcon={<Send />}
-                        sx={{ px: 4, py: 1.5 }}
-                      >
-                        Send Message
-                      </Button>
-                    </Grid>
-                  </Grid>
-                </Box>
-              )}
-            </Paper>
-          </Grid>
-
-          <Grid item xs={12} md={4}>
-            <Stack spacing={3}>
-              {/* Quick Help */}
-              <Card sx={{ borderRadius: 3 }}>
-                <CardContent sx={{ p: 3 }}>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
-                    Need Quick Help?
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" paragraph>
-                    Check out our Help Center for instant answers to common questions.
-                  </Typography>
-                  <Button 
-                    variant="outlined" 
-                    fullWidth 
-                    startIcon={<Support />}
-                    onClick={() => navigate('/help')}
-                  >
-                    Visit Help Center
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Business Hours */}
-              <Card sx={{ borderRadius: 3 }}>
-                <CardContent sx={{ p: 3 }}>
-                  <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
-                    <Schedule />
-                    <Typography variant="h6" fontWeight={600}>
-                      Business Hours
-                    </Typography>
-                  </Stack>
-                  <Stack spacing={1}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Typography variant="body2">Live Chat:</Typography>
-                      <Typography variant="body2" fontWeight={500}>24/7</Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Typography variant="body2">Email Response:</Typography>
-                      <Typography variant="body2" fontWeight={500}>2-4 hours</Typography>
-                    </Box>
-                  </Stack>
-                </CardContent>
-              </Card>
-
-            </Stack>
-          </Grid>
-        </Grid>
-
-        {/* Office Locations */}
-        <Box sx={{ mb: 6 }}>
-          <Typography variant="h3" fontWeight={700} textAlign="center" gutterBottom>
-            Our Offices
-          </Typography>
-          <Typography variant="h6" textAlign="center" color="text.secondary" sx={{ mb: 4 }}>
-            Visit us at one of our locations
-          </Typography>
-          
-          <Grid container spacing={4}>
-            {officeLocations.map((office, index) => (
-              <Grid item xs={12} md={4} key={index}>
-                <Card sx={{ borderRadius: 3, height: '100%' }}>
-                  <CardContent sx={{ p: 4 }}>
-                    <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
-                      <LocationOn />
-                      <Typography variant="h6" fontWeight={600}>
-                        {office.city}
-                      </Typography>
-                    </Stack>
-                    <Typography variant="body1" gutterBottom>
-                      {office.address}
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary" gutterBottom>
-                      {office.zipCode}
-                    </Typography>
-                    <Typography variant="body1">
-                      {office.phone}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
+                  </Box>
+                )}
+              </Paper>
+            </Grid>
           </Grid>
         </Box>
       </Container>
