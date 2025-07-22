@@ -145,13 +145,19 @@ class AuthService {
     }
     
     try {
+      console.log('🔍 Profile update - sending data:', JSON.stringify(updateData, null, 2))
+      
       // Update user data (including flattened profile data)
       const userResponse = await api.patch('/users/me/', updateData)
       let updatedUser = userResponse.data
       
+      console.log('🔍 Profile update - API response:', JSON.stringify(updatedUser, null, 2))
+      
       // Get updated user data with profile to ensure we have the latest data
       const refreshedUserResponse = await api.get('/users/me/')
       updatedUser = refreshedUserResponse.data
+      
+      console.log('🔍 Profile update - refreshed user data:', JSON.stringify(updatedUser, null, 2))
       
       // Update stored user data
       localStorage.setItem('user', JSON.stringify(updatedUser))
@@ -159,6 +165,7 @@ class AuthService {
       return updatedUser
     } catch (error) {
       console.error('Error updating profile:', error)
+      console.error('Error response:', error.response?.data)
       throw error
     }
   }
