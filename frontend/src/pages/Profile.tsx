@@ -70,7 +70,7 @@ const schema = yup.object({
   email: yup.string().email('Invalid email').required('Email is required'),
   phone_number: yup.string(),
   bio: yup.string().max(500, 'Bio must be less than 500 characters'),
-  user_type: yup.string().oneOf(['host', 'renter', 'both']).required(),
+  user_type: yup.string().oneOf(['HOST', 'SEEKER', 'BOTH']).required(),
   profile: yup.object({
     primary_vehicle_make: yup.string(),
     primary_vehicle_model: yup.string(),
@@ -130,7 +130,7 @@ export default function Profile() {
       email: '',
       phone_number: '',
       bio: '',
-      user_type: 'renter',
+      user_type: 'SEEKER',
       profile: {
         primary_vehicle_make: '',
         primary_vehicle_model: '',
@@ -150,7 +150,7 @@ export default function Profile() {
       setValue('email', user.email || '')
       setValue('phone_number', user.phone_number || '')
       setValue('bio', user.bio || '')
-      setValue('user_type', user.user_type || 'renter')
+      setValue('user_type', user.user_type || 'SEEKER')
       setValue('profile.primary_vehicle_make', user.profile?.primary_vehicle_make || '')
       setValue('profile.primary_vehicle_model', user.profile?.primary_vehicle_model || '')
       setValue('profile.primary_vehicle_year', user.profile?.primary_vehicle_year || undefined)
@@ -181,7 +181,7 @@ export default function Profile() {
       setValue('email', user.email || '')
       setValue('phone_number', user.phone_number || '')
       setValue('bio', user.bio || '')
-      setValue('user_type', user.user_type || 'renter')
+      setValue('user_type', user.user_type || 'SEEKER')
       setValue('profile.primary_vehicle_make', user.profile?.primary_vehicle_make || '')
       setValue('profile.primary_vehicle_model', user.profile?.primary_vehicle_model || '')
       setValue('profile.primary_vehicle_year', user.profile?.primary_vehicle_year || undefined)
@@ -290,7 +290,7 @@ export default function Profile() {
                 </Typography>
                 <Stack direction="row" spacing={1}>
                   <Chip 
-                    label={user?.user_type?.charAt(0).toUpperCase() + user?.user_type?.slice(1) || 'Renter'} 
+                    label={user?.user_type?.charAt(0).toUpperCase() + user?.user_type?.slice(1).toLowerCase() || 'Seeker'} 
                     size="small" 
                   />
                   {user?.is_verified && (
@@ -503,9 +503,9 @@ export default function Profile() {
                         control={control}
                         render={({ field }) => (
                           <Select {...field} label="User Type">
-                            <MenuItem value="renter">Renter - I want to find parking</MenuItem>
-                            <MenuItem value="host">Host - I want to list my space</MenuItem>
-                            <MenuItem value="both">Both - I want to find and list parking</MenuItem>
+                            <MenuItem value="SEEKER">Seeker - I want to find parking</MenuItem>
+                            <MenuItem value="HOST">Host - I want to list my space</MenuItem>
+                            <MenuItem value="BOTH">Both - I want to find and list parking</MenuItem>
                           </Select>
                         )}
                       />

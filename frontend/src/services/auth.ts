@@ -24,7 +24,7 @@ export interface User {
   first_name: string
   last_name: string
   username: string
-  user_type: 'seeker' | 'host' | 'both'
+  user_type: 'SEEKER' | 'HOST' | 'BOTH'
   is_verified: boolean
   is_email_verified: boolean
   phone_number?: string
@@ -50,7 +50,7 @@ export interface SignupData {
   password2: string
   first_name: string
   last_name: string
-  user_type: 'seeker' | 'host' | 'both'
+  user_type: 'SEEKER' | 'HOST' | 'BOTH'
   phone_number?: string
   subscribe_to_newsletter?: boolean
 }
