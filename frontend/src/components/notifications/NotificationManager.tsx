@@ -30,6 +30,7 @@ import {
   Payment,
   DirectionsCar,
   Security,
+  Settings,
   Smartphone,
   Email,
   Info,
