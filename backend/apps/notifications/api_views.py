@@ -17,7 +17,7 @@ from .models import (
 from .services import NotificationService, SMSService
 from .push_service import PushNotificationService, PushSubscriptionManager
 from .serializers import (
-    NotificationSerializer, NotificationPreferenceSerializer,
+    NotificationSerializer, NotificationPreferenceSerializer, NotificationPreferenceUpdateSerializer,
     PushSubscriptionSerializer, SendNotificationSerializer
 )
 
@@ -117,7 +117,7 @@ def mark_all_read(request):
         )
 
 
-@api_view(['GET', 'PUT'])
+@api_view(['GET', 'PUT', 'PATCH'])
 @permission_classes([permissions.AllowAny])  # TEMPORARILY DISABLED FOR 403 FIX
 def notification_preferences(request):
     """Get or update notification preferences"""
@@ -147,16 +147,19 @@ def notification_preferences(request):
             serializer = NotificationPreferenceSerializer(prefs)
             return Response(serializer.data)
         
-        elif request.method == 'PUT':
-            serializer = NotificationPreferenceSerializer(
+        elif request.method in ['PUT', 'PATCH']:
+            # Use specialized serializer for updates that handles frontend data structure
+            serializer = NotificationPreferenceUpdateSerializer(
                 prefs, 
                 data=request.data, 
                 partial=True
             )
             
             if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
+                updated_prefs = serializer.save()
+                # Return data in frontend-compatible format
+                response_serializer = NotificationPreferenceSerializer(updated_prefs)
+                return Response(response_serializer.data)
             else:
                 return Response(
                     serializer.errors,
