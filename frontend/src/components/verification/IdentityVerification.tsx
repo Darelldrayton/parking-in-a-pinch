@@ -42,6 +42,7 @@ import {
   Email,
   Verified,
   Cancel,
+  Schedule,
 } from '@mui/icons-material';
 
 interface VerificationStep {
@@ -66,6 +67,7 @@ const IdentityVerification: React.FC<IdentityVerificationProps> = ({
   const theme = useTheme();
   const [activeStep, setActiveStep] = useState(currentStep);
   const [loading, setLoading] = useState(false);
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [verificationData, setVerificationData] = useState({
     personalInfo: {
       firstName: '',
@@ -213,7 +215,7 @@ const IdentityVerification: React.FC<IdentityVerificationProps> = ({
       console.log('Verification request submitted:', response.data);
       
       updateStepStatus('review', 'completed');
-      toast.success('🎉 ID Verification Submitted Successfully! Your documents are now under review. You\'ll receive a notification once the review is complete (typically within 24-48 hours).');
+      setSuccessModalOpen(true);
       
       if (onComplete) {
         onComplete(response.data);
