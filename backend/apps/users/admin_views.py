@@ -12,7 +12,7 @@ import logging
 from .models import User, VerificationRequest
 from .serializers import (
     UserSerializer, VerificationRequestSerializer, 
-    VerificationRequestDetailSerializer
+    VerificationRequestDetailSerializer, AdminUserListSerializer
 )
 
 logger = logging.getLogger(__name__)
@@ -22,7 +22,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
     """
     Admin viewset for managing users
     """
-    serializer_class = UserSerializer
+    serializer_class = AdminUserListSerializer
     permission_classes = []  # Temporarily disabled for admin dashboard
     
     def get_queryset(self):
@@ -33,7 +33,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
         # if not (self.request.user.is_staff or self.request.user.is_superuser or self.request.user.email == 'darelldrayton93@gmail.com'):
         #     return User.objects.none()
         
-        return User.objects.select_related().order_by('-created_at')
+        return User.objects.select_related().prefetch_related('verification_requests').order_by('-created_at')
     
     def get_permissions(self):
         """

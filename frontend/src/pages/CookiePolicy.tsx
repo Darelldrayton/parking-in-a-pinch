@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -18,6 +19,12 @@ import {
   AccordionDetails,
   Button,
   Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Switch,
+  FormControlLabel,
   List,
   ListItem,
   ListItemIcon,
@@ -37,7 +44,9 @@ import {
   CheckCircle,
   Block,
   Email,
+  Save,
 } from '@mui/icons-material';
+import toast from 'react-hot-toast';
 
 const cookieTypes = [
   {
@@ -110,6 +119,68 @@ const cookieDetails = [
 
 export default function CookiePolicy() {
   const theme = useTheme();
+  const navigate = useNavigate();
+  const [preferencesOpen, setPreferencesOpen] = useState(false);
+  const [cookiePreferences, setCookiePreferences] = useState({
+    performance: true,
+    functional: true,
+    marketing: true,
+  });
+
+  const handleManagePreferences = () => {
+    setPreferencesOpen(true);
+  };
+
+  const handleOptOutNonEssential = () => {
+    setCookiePreferences({
+      performance: false,
+      functional: false,
+      marketing: false,
+    });
+    // Save preferences to localStorage
+    localStorage.setItem('cookiePreferences', JSON.stringify({
+      essential: true,
+      performance: false,
+      functional: false,
+      marketing: false,
+    }));
+    toast.success('Non-essential cookies have been disabled');
+  };
+
+  const handleSavePreferences = () => {
+    // Save preferences to localStorage
+    localStorage.setItem('cookiePreferences', JSON.stringify({
+      essential: true,
+      ...cookiePreferences,
+    }));
+    setPreferencesOpen(false);
+    toast.success('Cookie preferences saved successfully');
+  };
+
+  const handleContactPrivacyTeam = () => {
+    navigate('/contact');
+  };
+
+  const handleViewPrivacyPolicy = () => {
+    navigate('/privacy');
+  };
+
+  // Load cookie preferences from localStorage on component mount
+  useEffect(() => {
+    const savedPreferences = localStorage.getItem('cookiePreferences');
+    if (savedPreferences) {
+      try {
+        const preferences = JSON.parse(savedPreferences);
+        setCookiePreferences({
+          performance: preferences.performance || false,
+          functional: preferences.functional || false,
+          marketing: preferences.marketing || false,
+        });
+      } catch (error) {
+        console.error('Error loading cookie preferences:', error);
+      }
+    }
+  }, []);
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
@@ -296,6 +367,7 @@ export default function CookiePolicy() {
                   size="large"
                   startIcon={<Settings />}
                   fullWidth
+                  onClick={handleManagePreferences}
                 >
                   Manage Cookie Preferences
                 </Button>
@@ -304,6 +376,7 @@ export default function CookiePolicy() {
                   size="large"
                   startIcon={<Block />}
                   fullWidth
+                  onClick={handleOptOutNonEssential}
                 >
                   Opt Out of Non-Essential Cookies
                 </Button>
@@ -400,6 +473,7 @@ export default function CookiePolicy() {
               size="large"
               startIcon={<Email />}
               sx={{ px: 4, py: 1.5 }}
+              onClick={handleContactPrivacyTeam}
             >
               Contact Privacy Team
             </Button>
@@ -408,12 +482,93 @@ export default function CookiePolicy() {
               size="large"
               startIcon={<Info />}
               sx={{ px: 4, py: 1.5 }}
+              onClick={handleViewPrivacyPolicy}
             >
               View Privacy Policy
             </Button>
           </Stack>
         </Paper>
       </Container>
+
+      {/* Cookie Preferences Dialog */}
+      <Dialog 
+        open={preferencesOpen} 
+        onClose={() => setPreferencesOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          <Typography variant="h5" fontWeight={600}>
+            Cookie Preferences
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Choose which types of cookies you want to allow
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          <Stack spacing={3} sx={{ mt: 2 }}>
+            <Box>
+              <FormControlLabel
+                control={<Switch checked={true} disabled />}
+                label="Essential Cookies"
+              />
+              <Typography variant="body2" color="text.secondary" sx={{ ml: 4 }}>
+                Required for the website to function properly. Cannot be disabled.
+              </Typography>
+            </Box>
+            <Box>
+              <FormControlLabel
+                control={
+                  <Switch 
+                    checked={cookiePreferences.performance} 
+                    onChange={(e) => setCookiePreferences(prev => ({...prev, performance: e.target.checked}))}
+                  />
+                }
+                label="Performance Cookies"
+              />
+              <Typography variant="body2" color="text.secondary" sx={{ ml: 4 }}>
+                Help us understand how visitors interact with our website.
+              </Typography>
+            </Box>
+            <Box>
+              <FormControlLabel
+                control={
+                  <Switch 
+                    checked={cookiePreferences.functional} 
+                    onChange={(e) => setCookiePreferences(prev => ({...prev, functional: e.target.checked}))}
+                  />
+                }
+                label="Functional Cookies"
+              />
+              <Typography variant="body2" color="text.secondary" sx={{ ml: 4 }}>
+                Enable enhanced functionality and personalization.
+              </Typography>
+            </Box>
+            <Box>
+              <FormControlLabel
+                control={
+                  <Switch 
+                    checked={cookiePreferences.marketing} 
+                    onChange={(e) => setCookiePreferences(prev => ({...prev, marketing: e.target.checked}))}
+                  />
+                }
+                label="Marketing Cookies"
+              />
+              <Typography variant="body2" color="text.secondary" sx={{ ml: 4 }}>
+                Used to deliver relevant advertisements and track campaign effectiveness.
+              </Typography>
+            </Box>
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button onClick={() => setPreferencesOpen(false)} variant="outlined">
+            Cancel
+          </Button>
+          <Button onClick={handleSavePreferences} variant="contained" startIcon={<Save />}>
+            Save Preferences
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

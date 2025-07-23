@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -245,6 +246,7 @@ const reviewStandards = [
 
 export default function HostGuidelines() {
   const theme = useTheme();
+  const navigate = useNavigate();
   const [tabValue, setTabValue] = useState(0);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -638,6 +640,7 @@ export default function HostGuidelines() {
               size="large"
               startIcon={<Support />}
               sx={{ px: 4, py: 1.5 }}
+              onClick={() => navigate('/contact')}
             >
               Contact Host Support
             </Button>
@@ -646,6 +649,7 @@ export default function HostGuidelines() {
               size="large"
               startIcon={<Settings />}
               sx={{ px: 4, py: 1.5 }}
+              onClick={() => navigate('/dashboard')}
             >
               Manage Your Listing
             </Button>

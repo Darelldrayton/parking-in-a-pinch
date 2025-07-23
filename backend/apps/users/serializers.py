@@ -297,6 +297,10 @@ class AdminUserListSerializer(serializers.ModelSerializer):
     
     full_name = serializers.CharField(source='get_full_name', read_only=True)
     pending_verifications = serializers.SerializerMethodField()
+    latest_verification_request = serializers.SerializerMethodField()
+    id_document_front = serializers.SerializerMethodField()
+    id_document_back = serializers.SerializerMethodField()
+    selfie_with_id = serializers.SerializerMethodField()
     
     class Meta:
         model = User
@@ -304,7 +308,8 @@ class AdminUserListSerializer(serializers.ModelSerializer):
             'id', 'username', 'email', 'full_name', 'first_name', 'last_name',
             'user_type', 'is_email_verified', 'is_phone_verified', 'is_identity_verified',
             'is_active', 'is_staff', 'is_superuser', 'created_at', 'last_login',
-            'pending_verifications'
+            'pending_verifications', 'latest_verification_request',
+            'id_document_front', 'id_document_back', 'selfie_with_id'
         )
     
     def get_pending_verifications(self, obj):
@@ -312,6 +317,42 @@ class AdminUserListSerializer(serializers.ModelSerializer):
         return obj.verification_requests.filter(
             status=VerificationRequest.VerificationStatus.PENDING
         ).count()
+    
+    def get_latest_verification_request(self, obj):
+        """Get the latest verification request."""
+        return obj.verification_requests.filter(
+            verification_type='IDENTITY'
+        ).order_by('-created_at').first()
+    
+    def get_id_document_front(self, obj):
+        """Get the front ID document from latest verification request."""
+        latest_request = self.get_latest_verification_request(obj)
+        if latest_request and latest_request.id_document_front:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(latest_request.id_document_front.url)
+            return latest_request.id_document_front.url
+        return None
+    
+    def get_id_document_back(self, obj):
+        """Get the back ID document from latest verification request."""
+        latest_request = self.get_latest_verification_request(obj)
+        if latest_request and latest_request.id_document_back:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(latest_request.id_document_back.url)
+            return latest_request.id_document_back.url
+        return None
+    
+    def get_selfie_with_id(self, obj):
+        """Get the selfie with ID from latest verification request."""
+        latest_request = self.get_latest_verification_request(obj)
+        if latest_request and latest_request.selfie_with_id:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(latest_request.selfie_with_id.url)
+            return latest_request.selfie_with_id.url
+        return None
 
 
 class VerificationRequestDetailSerializer(VerificationRequestSerializer):

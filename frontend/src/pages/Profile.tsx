@@ -70,7 +70,7 @@ const schema = yup.object({
   email: yup.string().email('Invalid email').required('Email is required'),
   phone_number: yup.string(),
   bio: yup.string().max(500, 'Bio must be less than 500 characters'),
-  user_type: yup.string().oneOf(['HOST', 'SEEKER', 'BOTH']).required(),
+  user_type: yup.string().oneOf(['HOST', 'SEEKER', 'BOTH', 'host', 'renter', 'both']).required(),
   profile: yup.object({
     primary_vehicle_make: yup.string(),
     primary_vehicle_model: yup.string(),

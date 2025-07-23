@@ -449,63 +449,6 @@ export default function Accessibility() {
           </Box>
         </Box>
 
-        {/* Contact & Feedback */}
-        <Paper
-          elevation={3}
-          sx={{
-            p: 6,
-            borderRadius: 3,
-            mb: 6,
-            textAlign: 'center',
-            background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.1)} 0%, ${alpha(theme.palette.primary.main, 0.1)} 100%)`,
-          }}
-        >
-          <Typography variant="h4" fontWeight={700} gutterBottom>
-            Accessibility Feedback & Support
-          </Typography>
-          <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
-            Help us improve accessibility - your feedback matters
-          </Typography>
-          
-          <Grid container spacing={4} justifyContent="center">
-            <Grid item xs={12} md={6}>
-              <Card sx={{ textAlign: 'center', borderRadius: 3 }}>
-                <CardContent sx={{ p: 3 }}>
-                  <Email sx={{ fontSize: 40, color: 'primary.main', mb: 2 }} />
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
-                    Email Support
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    accessibility@parkinginapinch.com
-                  </Typography>
-                  <Button variant="outlined" size="small">
-                    Send Email
-                  </Button>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Card sx={{ textAlign: 'center', borderRadius: 3 }}>
-                <CardContent sx={{ p: 3 }}>
-                  <Feedback sx={{ fontSize: 40, color: 'success.main', mb: 2 }} />
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
-                    Feedback Form
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Report issues or suggest improvements
-                  </Typography>
-                  <Button variant="outlined" size="small">
-                    Submit Feedback
-                  </Button>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-          
-          <Typography variant="body1" sx={{ mt: 4, fontStyle: 'italic' }}>
-            We are committed to responding to accessibility inquiries within 24 hours.
-          </Typography>
-        </Paper>
       </Container>
     </Box>
   );
