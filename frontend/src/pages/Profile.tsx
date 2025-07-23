@@ -741,7 +741,7 @@ export default function Profile() {
               <IdentityVerification
                 onComplete={(data) => {
                   console.log('Verification completed:', data);
-                  toast.success('Identity verification submitted successfully!');
+                  // Success message is already handled in IdentityVerification component
                 }}
                 onCancel={() => {
                   console.log('Verification cancelled');

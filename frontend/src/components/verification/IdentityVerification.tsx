@@ -213,7 +213,7 @@ const IdentityVerification: React.FC<IdentityVerificationProps> = ({
       console.log('Verification request submitted:', response.data);
       
       updateStepStatus('review', 'completed');
-      toast.success('Verification request submitted successfully! You will be notified once it\'s reviewed.');
+      toast.success('🎉 ID Verification Submitted Successfully! Your documents are now under review. You\'ll receive a notification once the review is complete (typically within 24-48 hours).');
       
       if (onComplete) {
         onComplete(response.data);
