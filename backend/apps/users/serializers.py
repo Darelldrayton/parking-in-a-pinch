@@ -260,6 +260,45 @@ class CreateVerificationRequestSerializer(serializers.ModelSerializer):
             'verification_data'
         )
     
+    def validate_id_document_front(self, value):
+        """Validate front ID document."""
+        if value:
+            # Validate file size (max 10MB)
+            if value.size > 10 * 1024 * 1024:
+                raise serializers.ValidationError("Image file too large. Maximum size is 10MB")
+            
+            # Validate file type
+            allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+            if hasattr(value, 'content_type') and value.content_type not in allowed_types:
+                raise serializers.ValidationError("Invalid file format. Allowed formats: JPEG, PNG, WebP")
+        return value
+    
+    def validate_id_document_back(self, value):
+        """Validate back ID document."""
+        if value:
+            # Validate file size (max 10MB)
+            if value.size > 10 * 1024 * 1024:
+                raise serializers.ValidationError("Image file too large. Maximum size is 10MB")
+            
+            # Validate file type
+            allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+            if hasattr(value, 'content_type') and value.content_type not in allowed_types:
+                raise serializers.ValidationError("Invalid file format. Allowed formats: JPEG, PNG, WebP")
+        return value
+    
+    def validate_selfie_with_id(self, value):
+        """Validate selfie with ID."""
+        if value:
+            # Validate file size (max 10MB)
+            if value.size > 10 * 1024 * 1024:
+                raise serializers.ValidationError("Image file too large. Maximum size is 10MB")
+            
+            # Validate file type
+            allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+            if hasattr(value, 'content_type') and value.content_type not in allowed_types:
+                raise serializers.ValidationError("Invalid file format. Allowed formats: JPEG, PNG, WebP")
+        return value
+    
     def create(self, validated_data):
         """Create verification request for the current user."""
         user = self.context['request'].user
