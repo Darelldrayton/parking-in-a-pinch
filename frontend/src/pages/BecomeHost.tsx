@@ -650,16 +650,16 @@ export default function BecomeHost() {
               variant="contained"
               size="large"
               color="success"
-              onClick={() => navigate('/signup?type=host')}
+              onClick={() => navigate('/create-listing')}
               sx={{ px: 6, py: 2, fontSize: '1.1rem' }}
             >
-              List Your Space Today
+              List Your Space
             </Button>
             <Button
               variant="outlined"
               size="large"
               color="success"
-              onClick={() => navigate('/create-listing')}
+              onClick={() => navigate('/listings')}
               sx={{ px: 6, py: 2, fontSize: '1.1rem' }}
             >
               View Sample Listing
