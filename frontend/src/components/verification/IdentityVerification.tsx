@@ -701,6 +701,84 @@ const IdentityVerification: React.FC<IdentityVerificationProps> = ({
           )}
         </Stack>
       </CardContent>
+
+      {/* Success Modal */}
+      <Dialog 
+        open={successModalOpen} 
+        onClose={() => setSuccessModalOpen(false)}
+        maxWidth="sm" 
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            p: 2
+          }
+        }}
+      >
+        <DialogContent sx={{ textAlign: 'center', py: 4 }}>
+          <Stack spacing={3} alignItems="center">
+            <Box
+              sx={{
+                width: 80,
+                height: 80,
+                borderRadius: '50%',
+                bgcolor: 'success.main',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mb: 2
+              }}
+            >
+              <CheckCircle sx={{ fontSize: 48, color: 'white' }} />
+            </Box>
+            
+            <Typography variant="h4" fontWeight={700} color="success.main">
+              🎉 Success!
+            </Typography>
+            
+            <Typography variant="h6" fontWeight={600}>
+              ID Verification Submitted Successfully
+            </Typography>
+            
+            <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 400 }}>
+              Your verification documents have been uploaded and are now under review. 
+              You'll receive a notification once the review is complete.
+            </Typography>
+            
+            <Box
+              sx={{
+                bgcolor: alpha(theme.palette.info.main, 0.1),
+                borderRadius: 2,
+                p: 3,
+                width: '100%'
+              }}
+            >
+              <Stack direction="row" alignItems="center" spacing={2}>
+                <Schedule sx={{ color: 'info.main' }} />
+                <Box>
+                  <Typography variant="subtitle2" fontWeight={600}>
+                    Review Timeline
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Typically completed within 24-48 hours
+                  </Typography>
+                </Box>
+              </Stack>
+            </Box>
+          </Stack>
+        </DialogContent>
+        
+        <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
+          <Button
+            variant="contained"
+            size="large"
+            onClick={() => setSuccessModalOpen(false)}
+            sx={{ minWidth: 120 }}
+          >
+            Got it!
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 };
