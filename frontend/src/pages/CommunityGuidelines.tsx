@@ -384,7 +384,7 @@ export default function CommunityGuidelines() {
                   </ListItemIcon>
                   <ListItemText 
                     primary="Contact our support team directly"
-                    secondary="Email support@parkinginapinch.com"
+                    secondary="Through the Contact Us page"
                   />
                 </ListItem>
                 <ListItem sx={{ px: 0 }}>
