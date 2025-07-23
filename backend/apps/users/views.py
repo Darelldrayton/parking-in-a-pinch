@@ -220,6 +220,7 @@ class VerificationRequestViewSet(ModelViewSet):
     queryset = VerificationRequest.objects.all()
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = VerificationRequestSerializer
+    parser_classes = [MultiPartParser, FormParser]
     
     def get_serializer_class(self):
         """Return appropriate serializer class based on action."""
