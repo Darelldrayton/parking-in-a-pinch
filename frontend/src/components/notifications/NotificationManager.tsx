@@ -73,6 +73,18 @@ interface NotificationSettings {
 const NotificationManager: React.FC = () => {
   const theme = useTheme();
   const { user } = useAuth();
+  
+  // Add error boundary for useNotifications hook
+  const [contextError, setContextError] = React.useState<string | null>(null);
+  
+  let notificationContext;
+  try {
+    notificationContext = useNotifications();
+  } catch (error) {
+    console.error('NotificationContext error:', error);
+    setContextError(error instanceof Error ? error.message : 'Failed to load notification context');
+  }
+  
   const { 
     preferences, 
     settings: contextSettings, 
@@ -80,7 +92,7 @@ const NotificationManager: React.FC = () => {
     updateSettings,
     subscribeToNotifications,
     unsubscribeFromNotifications
-  } = useNotifications();
+  } = notificationContext || {};
   const [loading, setLoading] = useState(false);
   const [permissionStatus, setPermissionStatus] = useState<NotificationPermission>('default');
   const [subscriptionStatus, setSubscriptionStatus] = useState<'subscribed' | 'unsubscribed' | 'unknown'>('unknown');
@@ -114,17 +126,46 @@ const NotificationManager: React.FC = () => {
   });
 
   useEffect(() => {
-    initializeNotifications();
-    loadSettings();
-  }, []);
+    // Only initialize if we have a valid user and no context error
+    if (!user || contextError) {
+      console.warn('Skipping notification initialization:', { user: !!user, contextError });
+      return;
+    }
+
+    const initializeAsync = async () => {
+      try {
+        // Initialize notifications and load settings sequentially to avoid race conditions
+        await initializeNotifications();
+        await loadSettings();
+      } catch (error) {
+        console.error('Failed to initialize notifications:', error);
+        // Don't throw error to prevent component crash
+      }
+    };
+
+    initializeAsync();
+  }, [user, contextError]);
 
   const initializeNotifications = async () => {
-    const initialized = await notificationService.initialize();
-    if (initialized) {
-      setPermissionStatus(Notification.permission);
+    try {
+      const initialized = await notificationService.initialize();
       
-      const subscription = await notificationService.getSubscription();
-      setSubscriptionStatus(subscription ? 'subscribed' : 'unsubscribed');
+      // Even if service worker is disabled, we can still check browser notification support
+      if ('Notification' in window) {
+        setPermissionStatus(Notification.permission);
+      }
+      
+      if (initialized) {
+        const subscription = await notificationService.getSubscription();
+        setSubscriptionStatus(subscription ? 'subscribed' : 'unsubscribed');
+      } else {
+        // Service worker not available/disabled
+        setSubscriptionStatus('unknown');
+      }
+    } catch (error) {
+      console.error('Error initializing notifications:', error);
+      setPermissionStatus('denied');
+      setSubscriptionStatus('unknown');
     }
   };
 
@@ -191,7 +232,15 @@ const NotificationManager: React.FC = () => {
     try {
       // Update local state immediately for responsive UI
       setSettings(newSettings);
-      localStorage.setItem(`notification_settings_${user?.id}`, JSON.stringify(newSettings));
+      
+      // Guard against missing user
+      if (!user?.id) {
+        console.warn('Cannot save settings: user ID not available');
+        toast.error('Unable to save settings: user not found');
+        return;
+      }
+      
+      localStorage.setItem(`notification_settings_${user.id}`, JSON.stringify(newSettings));
       
       // Prepare preferences array for backend
       const preferences = Object.entries(newSettings.categories).map(([key, enabled]) => ({
@@ -217,6 +266,11 @@ const NotificationManager: React.FC = () => {
   };
 
   const handleEnablePushNotifications = async () => {
+    if (!subscribeToNotifications) {
+      toast.error('Notification service unavailable');
+      return;
+    }
+    
     setLoading(true);
     try {
       const permission = await notificationService.requestPermission();
@@ -246,6 +300,11 @@ const NotificationManager: React.FC = () => {
   };
 
   const handleDisablePushNotifications = async () => {
+    if (!unsubscribeFromNotifications) {
+      toast.error('Notification service unavailable');
+      return;
+    }
+    
     setLoading(true);
     try {
       const unsubscribed = await notificationService.unsubscribeFromPush();
@@ -340,6 +399,34 @@ const NotificationManager: React.FC = () => {
       icon: <CheckCircle />,
     },
   ];
+
+  // Show error state if context is not available
+  if (contextError) {
+    return (
+      <Box sx={{ p: 4 }}>
+        <Alert severity="error">
+          <Typography variant="h6" gutterBottom>
+            Notification Settings Unavailable
+          </Typography>
+          <Typography variant="body2">
+            {contextError}
+          </Typography>
+          <Typography variant="body2" sx={{ mt: 1 }}>
+            Please refresh the page or contact support if this issue persists.
+          </Typography>
+        </Alert>
+      </Box>
+    );
+  }
+
+  // Show loading state if user is not available
+  if (!user) {
+    return (
+      <Box sx={{ p: 4, display: 'flex', justifyContent: 'center' }}>
+        <Typography>Loading user information...</Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box>
