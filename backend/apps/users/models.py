@@ -400,6 +400,10 @@ class VerificationRequest(models.Model):
         # Update user verification status
         if self.verification_type == self.VerificationType.IDENTITY:
             self.user.is_identity_verified = True
+            # Also set the manual verification flag for frontend badge
+            self.user.is_verified = True
+            self.user.verified_at = timezone.now()
+            self.user.verified_by = admin_user
             self.user.save()
         elif self.verification_type == self.VerificationType.PHONE:
             self.user.is_phone_verified = True
