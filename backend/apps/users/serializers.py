@@ -359,9 +359,12 @@ class AdminUserListSerializer(serializers.ModelSerializer):
     
     def get_latest_verification_request(self, obj):
         """Get the latest verification request."""
-        return obj.verification_requests.filter(
-            verification_type='IDENTITY'
-        ).order_by('-created_at').first()
+        try:
+            return obj.verification_requests.filter(
+                verification_type='IDENTITY'
+            ).order_by('-created_at').first()
+        except Exception:
+            return None
     
     def get_id_document_front(self, obj):
         """Get the front ID document from latest verification request."""

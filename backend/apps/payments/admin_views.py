@@ -100,7 +100,7 @@ class RefundRequestViewSet(viewsets.ModelViewSet):
                 refund_request.status = RefundRequest.RequestStatus.APPROVED
                 refund_request.approved_amount = approved_amount
                 refund_request.admin_notes = admin_notes
-                refund_request.reviewed_by = request.user
+                refund_request.reviewed_by = request.user if hasattr(request, 'user') and request.user.is_authenticated else None if hasattr(request, 'user') and request.user.is_authenticated else None
                 refund_request.reviewed_at = timezone.now()
                 refund_request.save()
                 
@@ -117,7 +117,8 @@ class RefundRequestViewSet(viewsets.ModelViewSet):
                 refund_request.processed_at = timezone.now()
                 refund_request.save()
                 
-                logger.info(f"Refund request {refund_request.request_id} approved and processed by {request.user.email}")
+                admin_email = request.user.email if hasattr(request, 'user') and hasattr(request.user, 'email') else 'anonymous'
+                logger.info(f"Refund request {refund_request.request_id} approved and processed by {admin_email}")
                 
                 # Return updated request
                 serializer = RefundRequestDetailSerializer(refund_request)
@@ -168,11 +169,12 @@ class RefundRequestViewSet(viewsets.ModelViewSet):
             refund_request.status = RefundRequest.RequestStatus.REJECTED
             refund_request.rejection_reason = rejection_reason
             refund_request.admin_notes = admin_notes
-            refund_request.reviewed_by = request.user
+            refund_request.reviewed_by = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
             refund_request.reviewed_at = timezone.now()
             refund_request.save()
             
-            logger.info(f"Refund request {refund_request.request_id} rejected by {request.user.email}")
+            admin_email = request.user.email if hasattr(request, 'user') and hasattr(request.user, 'email') else 'anonymous'
+            logger.info(f"Refund request {refund_request.request_id} rejected by {admin_email}")
             
             # Return updated request
             serializer = RefundRequestDetailSerializer(refund_request)
@@ -323,11 +325,12 @@ class PayoutRequestViewSet(viewsets.ModelViewSet):
                 payout_request.status = PayoutRequest.RequestStatus.APPROVED
                 payout_request.approved_amount = approved_amount
                 payout_request.admin_notes = admin_notes
-                payout_request.reviewed_by = request.user
+                payout_request.reviewed_by = request.user if hasattr(request, 'user') and request.user.is_authenticated else None if hasattr(request, 'user') and request.user.is_authenticated else None
                 payout_request.reviewed_at = timezone.now()
                 payout_request.save()
                 
-                logger.info(f"Payout request {payout_request.request_id} approved by {request.user.email}")
+                admin_email = request.user.email if hasattr(request, 'user') and hasattr(request.user, 'email') else 'anonymous'
+                logger.info(f"Payout request {payout_request.request_id} approved by {admin_email}")
                 
                 # Return updated request
                 serializer = PayoutRequestDetailSerializer(payout_request)
@@ -369,11 +372,12 @@ class PayoutRequestViewSet(viewsets.ModelViewSet):
             payout_request.status = PayoutRequest.RequestStatus.REJECTED
             payout_request.rejection_reason = rejection_reason
             payout_request.admin_notes = admin_notes
-            payout_request.reviewed_by = request.user
+            payout_request.reviewed_by = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
             payout_request.reviewed_at = timezone.now()
             payout_request.save()
             
-            logger.info(f"Payout request {payout_request.request_id} rejected by {request.user.email}")
+            admin_email = request.user.email if hasattr(request, 'user') and hasattr(request.user, 'email') else 'anonymous'
+            logger.info(f"Payout request {payout_request.request_id} rejected by {admin_email}")
             
             # Return updated request
             serializer = PayoutRequestDetailSerializer(payout_request)
@@ -436,7 +440,8 @@ class PayoutRequestViewSet(viewsets.ModelViewSet):
                     payout_request.admin_notes = f"{payout_request.admin_notes}\n{admin_notes}".strip()
                 payout_request.save()
                 
-                logger.info(f"Payout request {payout_request.request_id} completed by {request.user.email}")
+                admin_email = request.user.email if hasattr(request, 'user') and hasattr(request.user, 'email') else 'anonymous'
+                logger.info(f"Payout request {payout_request.request_id} completed by {admin_email}")
                 
                 # Return updated request
                 serializer = PayoutRequestDetailSerializer(payout_request)
