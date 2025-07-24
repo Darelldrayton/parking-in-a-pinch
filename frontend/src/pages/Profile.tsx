@@ -62,6 +62,7 @@ import NotificationManager from '../components/notifications/NotificationManager
 import DisputeDialog from '../components/common/DisputeDialog'
 import PasswordChangeDialog from '../components/common/PasswordChangeDialog'
 import DeleteAccountDialog from '../components/common/DeleteAccountDialog'
+import ErrorBoundary from '../components/common/ErrorBoundary'
 import { VerifiedBadge, VerifiedAvatar } from '../components/common/VerifiedBadge'
 
 const schema = yup.object({
@@ -394,7 +395,7 @@ export default function Profile() {
 
               <Box component="form" onSubmit={handleSubmit(onSubmit)}>
                 <Grid container spacing={3}>
-                  <Grid size={12}>
+                  <Grid item xs={12}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
                       <VerifiedAvatar
                         src={getSecureImageUrl(user?.profile_image)}
@@ -449,7 +450,7 @@ export default function Profile() {
                     </Box>
                   </Grid>
 
-                  <Grid size={{ xs: 12, md: 6 }}>
+                  <Grid item xs={12} md={6}>
                     <TextField
                       {...register('first_name')}
                       fullWidth
@@ -460,7 +461,7 @@ export default function Profile() {
                     />
                   </Grid>
 
-                  <Grid size={{ xs: 12, md: 6 }}>
+                  <Grid item xs={12} md={6}>
                     <TextField
                       {...register('last_name')}
                       fullWidth
@@ -471,7 +472,7 @@ export default function Profile() {
                     />
                   </Grid>
 
-                  <Grid size={{ xs: 12, md: 6 }}>
+                  <Grid item xs={12} md={6}>
                     <TextField
                       {...register('email')}
                       fullWidth
@@ -483,7 +484,7 @@ export default function Profile() {
                     />
                   </Grid>
 
-                  <Grid size={{ xs: 12, md: 6 }}>
+                  <Grid item xs={12} md={6}>
                     <TextField
                       {...register('phone_number')}
                       fullWidth
@@ -495,7 +496,7 @@ export default function Profile() {
                     />
                   </Grid>
 
-                  <Grid size={12}>
+                  <Grid item xs={12}>
                     <FormControl fullWidth disabled={!isEditing}>
                       <InputLabel>User Type</InputLabel>
                       <Controller
@@ -512,7 +513,7 @@ export default function Profile() {
                     </FormControl>
                   </Grid>
 
-                  <Grid size={12}>
+                  <Grid item xs={12}>
                     <TextField
                       {...register('bio')}
                       fullWidth
@@ -574,7 +575,7 @@ export default function Profile() {
 
               <Box component="form" onSubmit={handleSubmit(onSubmit)}>
                 <Grid container spacing={3}>
-                  <Grid size={{ xs: 12, md: 6 }}>
+                  <Grid item xs={12} md={6}>
                     <TextField
                       {...register('profile.primary_vehicle_make')}
                       fullWidth
@@ -586,7 +587,7 @@ export default function Profile() {
                     />
                   </Grid>
 
-                  <Grid size={{ xs: 12, md: 6 }}>
+                  <Grid item xs={12} md={6}>
                     <TextField
                       {...register('profile.primary_vehicle_model')}
                       fullWidth
@@ -598,7 +599,7 @@ export default function Profile() {
                     />
                   </Grid>
 
-                  <Grid size={{ xs: 12, md: 6 }}>
+                  <Grid item xs={12} md={6}>
                     <TextField
                       {...register('profile.primary_vehicle_year')}
                       fullWidth
@@ -617,7 +618,7 @@ export default function Profile() {
                     />
                   </Grid>
 
-                  <Grid size={{ xs: 12, md: 6 }}>
+                  <Grid item xs={12} md={6}>
                     <TextField
                       {...register('profile.primary_vehicle_color')}
                       fullWidth
@@ -629,7 +630,7 @@ export default function Profile() {
                     />
                   </Grid>
 
-                  <Grid size={{ xs: 12, md: 6 }}>
+                  <Grid item xs={12} md={6}>
                     <TextField
                       {...register('profile.primary_vehicle_license_plate')}
                       fullWidth
@@ -641,7 +642,7 @@ export default function Profile() {
                     />
                   </Grid>
 
-                  <Grid size={{ xs: 12, md: 6 }}>
+                  <Grid item xs={12} md={6}>
                     <FormControl fullWidth disabled={!isEditing}>
                       <InputLabel>Vehicle Registration State</InputLabel>
                       <Controller
@@ -753,7 +754,9 @@ export default function Profile() {
           {/* Preferences Tab */}
           <TabPanel value={activeTab} index={3}>
             <CardContent sx={{ p: 4 }}>
-              <NotificationManager />
+              <ErrorBoundary>
+                <NotificationManager />
+              </ErrorBoundary>
             </CardContent>
           </TabPanel>
 

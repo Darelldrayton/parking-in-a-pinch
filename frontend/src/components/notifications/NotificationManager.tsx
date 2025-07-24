@@ -20,17 +20,6 @@ import {
   ListItemSecondaryAction,
   Divider,
   useTheme,
-  alpha,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Slider,
 } from '@mui/material';
 import {
   Notifications,
@@ -42,10 +31,7 @@ import {
   DirectionsCar,
   Security,
   Settings,
-  VolumeUp,
-  Vibration,
   Smartphone,
-  Computer,
   Email,
   Info,
   CheckCircle,
@@ -87,6 +73,18 @@ interface NotificationSettings {
 const NotificationManager: React.FC = () => {
   const theme = useTheme();
   const { user } = useAuth();
+  
+  // Add error boundary for useNotifications hook
+  const [contextError, setContextError] = React.useState<string | null>(null);
+  
+  let notificationContext;
+  try {
+    notificationContext = useNotifications();
+  } catch (error) {
+    console.error('NotificationContext error:', error);
+    setContextError(error instanceof Error ? error.message : 'Failed to load notification context');
+  }
+  
   const { 
     preferences, 
     settings: contextSettings, 
@@ -94,12 +92,10 @@ const NotificationManager: React.FC = () => {
     updateSettings,
     subscribeToNotifications,
     unsubscribeFromNotifications
-  } = useNotifications();
+  } = notificationContext || {};
   const [loading, setLoading] = useState(false);
   const [permissionStatus, setPermissionStatus] = useState<NotificationPermission>('default');
   const [subscriptionStatus, setSubscriptionStatus] = useState<'subscribed' | 'unsubscribed' | 'unknown'>('unknown');
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [testNotificationSent, setTestNotificationSent] = useState(false);
   
   const [settings, setSettings] = useState<NotificationSettings>({
     pushEnabled: false,
@@ -130,41 +126,59 @@ const NotificationManager: React.FC = () => {
   });
 
   useEffect(() => {
-    initializeNotifications();
-    loadSettings();
-  }, []);
+    // Only initialize if we have a valid user and no context error
+    if (!user || contextError) {
+      console.warn('Skipping notification initialization:', { user: !!user, contextError });
+      return;
+    }
+
+    const initializeAsync = async () => {
+      try {
+        // Initialize notifications and load settings sequentially to avoid race conditions
+        await initializeNotifications();
+        await loadSettings();
+      } catch (error) {
+        console.error('Failed to initialize notifications:', error);
+        // Don't throw error to prevent component crash
+      }
+    };
+
+    initializeAsync();
+  }, [user, contextError]);
 
   const initializeNotifications = async () => {
-    const initialized = await notificationService.initialize();
-    if (initialized) {
-      setPermissionStatus(Notification.permission);
+    try {
+      const initialized = await notificationService.initialize();
       
-      const subscription = await notificationService.getSubscription();
-      setSubscriptionStatus(subscription ? 'subscribed' : 'unsubscribed');
+      // Even if service worker is disabled, we can still check browser notification support
+      if ('Notification' in window) {
+        setPermissionStatus(Notification.permission);
+      }
+      
+      if (initialized) {
+        const subscription = await notificationService.getSubscription();
+        setSubscriptionStatus(subscription ? 'subscribed' : 'unsubscribed');
+      } else {
+        // Service worker not available/disabled
+        setSubscriptionStatus('unknown');
+      }
+    } catch (error) {
+      console.error('Error initializing notifications:', error);
+      setPermissionStatus('denied');
+      setSubscriptionStatus('unknown');
     }
   };
 
   const loadSettings = async () => {
     try {
-      // First, try to load from backend
+      // Load from backend
       const response = await api.get('/notifications/preferences/');
       
       if (response.data) {
-        // Convert backend format to local format
-        const backendSettings = response.data;
-        const categories: any = {};
+        const backendData = response.data;
         
-        // Map backend preferences to local categories
-        if (backendSettings.results && Array.isArray(backendSettings.results)) {
-          backendSettings.results.forEach((pref: any) => {
-            if (pref.notification_type) {
-              categories[pref.notification_type] = pref.enabled;
-            }
-          });
-        }
-        
-        // Set default values if not present
-        const defaultCategories = {
+        // Use the categories directly from backend response
+        const categories = backendData.categories || {
           bookingUpdates: true,
           paymentActivity: true,
           messageNotifications: true,
@@ -175,25 +189,27 @@ const NotificationManager: React.FC = () => {
           hostNotifications: true,
         };
         
-        // Merge with defaults
-        Object.keys(defaultCategories).forEach(key => {
-          if (!(key in categories)) {
-            categories[key] = defaultCategories[key as keyof typeof defaultCategories];
-          }
-        });
-        
         const newSettings = {
           ...settings,
-          emailEnabled: backendSettings.email_enabled ?? settings.emailEnabled,
-          pushEnabled: backendSettings.push_enabled ?? settings.pushEnabled,
+          emailEnabled: backendData.email_enabled ?? true,
+          pushEnabled: backendData.push_enabled ?? false,
           categories: categories,
-          schedule: backendSettings.schedule || settings.schedule,
-          sound: backendSettings.sound || settings.sound,
-          vibration: backendSettings.vibration || settings.vibration,
+          schedule: {
+            enabled: false,
+            startTime: '08:00',
+            endTime: '22:00',
+          },
+          sound: {
+            enabled: true,
+            volume: 50,
+          },
+          vibration: {
+            enabled: true,
+            pattern: 'medium' as const,
+          },
         };
         
         setSettings(newSettings);
-        // Save to localStorage as cache
         localStorage.setItem(`notification_settings_${user?.id}`, JSON.stringify(newSettings));
       }
     } catch (error) {
@@ -214,36 +230,47 @@ const NotificationManager: React.FC = () => {
 
   const saveSettings = async (newSettings: NotificationSettings) => {
     try {
+      // Update local state immediately for responsive UI
       setSettings(newSettings);
-      localStorage.setItem(`notification_settings_${user?.id}`, JSON.stringify(newSettings));
       
-      // Sync with backend
+      // Guard against missing user
+      if (!user?.id) {
+        console.warn('Cannot save settings: user ID not available');
+        toast.error('Unable to save settings: user not found');
+        return;
+      }
+      
+      localStorage.setItem(`notification_settings_${user.id}`, JSON.stringify(newSettings));
+      
+      // Prepare preferences array for backend
       const preferences = Object.entries(newSettings.categories).map(([key, enabled]) => ({
         notification_type: key,
-        enabled: enabled,
-        email_enabled: newSettings.emailEnabled,
-        push_enabled: newSettings.pushEnabled
+        enabled: enabled
       }));
       
-      await api.patch('/notifications/preferences/', {
+      // Send to backend with proper structure
+      const response = await api.patch('/notifications/preferences/', {
         preferences: preferences,
         email_enabled: newSettings.emailEnabled,
-        push_enabled: newSettings.pushEnabled,
-        schedule: newSettings.schedule,
-        sound: newSettings.sound,
-        vibration: newSettings.vibration
+        push_enabled: newSettings.pushEnabled
       });
       
+      console.log('Settings saved successfully:', response.data);
       toast.success('Notification settings saved');
     } catch (error) {
       console.error('Failed to save notification settings:', error);
       toast.error('Failed to save settings. Please try again.');
-      // Revert local state on error
-      loadSettings();
+      // Revert to previous state on error
+      await loadSettings();
     }
   };
 
   const handleEnablePushNotifications = async () => {
+    if (!subscribeToNotifications) {
+      toast.error('Notification service unavailable');
+      return;
+    }
+    
     setLoading(true);
     try {
       const permission = await notificationService.requestPermission();
@@ -273,6 +300,11 @@ const NotificationManager: React.FC = () => {
   };
 
   const handleDisablePushNotifications = async () => {
+    if (!unsubscribeFromNotifications) {
+      toast.error('Notification service unavailable');
+      return;
+    }
+    
     setLoading(true);
     try {
       const unsubscribed = await notificationService.unsubscribeFromPush();
@@ -294,24 +326,6 @@ const NotificationManager: React.FC = () => {
     }
   };
 
-  const handleTestNotification = async () => {
-    try {
-      await notificationService.showLocalNotification({
-        title: 'Test Notification',
-        body: 'This is a test notification from Parking in a Pinch',
-        icon: '/favicon.ico',
-        tag: 'test-notification',
-        actions: [
-          { action: 'view', title: 'View Details' },
-        ],
-      });
-      setTestNotificationSent(true);
-      toast.success('Test notification sent!');
-    } catch (error) {
-      console.error('Failed to send test notification:', error);
-      toast.error('Failed to send test notification');
-    }
-  };
 
   const getPermissionStatusColor = (status: NotificationPermission) => {
     switch (status) {
@@ -386,6 +400,34 @@ const NotificationManager: React.FC = () => {
     },
   ];
 
+  // Show error state if context is not available
+  if (contextError) {
+    return (
+      <Box sx={{ p: 4 }}>
+        <Alert severity="error">
+          <Typography variant="h6" gutterBottom>
+            Notification Settings Unavailable
+          </Typography>
+          <Typography variant="body2">
+            {contextError}
+          </Typography>
+          <Typography variant="body2" sx={{ mt: 1 }}>
+            Please refresh the page or contact support if this issue persists.
+          </Typography>
+        </Alert>
+      </Box>
+    );
+  }
+
+  // Show loading state if user is not available
+  if (!user) {
+    return (
+      <Box sx={{ p: 4, display: 'flex', justifyContent: 'center' }}>
+        <Typography>Loading user information...</Typography>
+      </Box>
+    );
+  }
+
   return (
     <Box>
       {/* Header */}
@@ -402,26 +444,6 @@ const NotificationManager: React.FC = () => {
           </Box>
         </Stack>
         
-        <Stack direction="row" spacing={2}>
-          <Button
-            variant="outlined"
-            startIcon={<Settings />}
-            onClick={() => setSettingsOpen(true)}
-          >
-            Advanced Settings
-          </Button>
-          
-          {settings.pushEnabled && (
-            <Button
-              variant="outlined"
-              startIcon={<Notifications />}
-              onClick={handleTestNotification}
-              disabled={testNotificationSent}
-            >
-              {testNotificationSent ? 'Test Sent' : 'Test Notification'}
-            </Button>
-          )}
-        </Stack>
       </Stack>
 
       {/* Permission Status */}
@@ -587,168 +609,6 @@ const NotificationManager: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Advanced Settings Dialog */}
-      <Dialog open={settingsOpen} onClose={() => setSettingsOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <Settings />
-            <Typography variant="h6">Advanced Notification Settings</Typography>
-          </Stack>
-        </DialogTitle>
-        
-        <DialogContent>
-          <Stack spacing={4} sx={{ mt: 1 }}>
-            {/* Quiet Hours */}
-            <Box>
-              <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                Quiet Hours
-              </Typography>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={settings.schedule.enabled}
-                    onChange={(e) => setSettings(prev => ({
-                      ...prev,
-                      schedule: { ...prev.schedule, enabled: e.target.checked }
-                    }))}
-                  />
-                }
-                label="Enable quiet hours"
-              />
-              
-              {settings.schedule.enabled && (
-                <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
-                  <FormControl size="small">
-                    <InputLabel>Start Time</InputLabel>
-                    <Select
-                      value={settings.schedule.startTime}
-                      onChange={(e) => setSettings(prev => ({
-                        ...prev,
-                        schedule: { ...prev.schedule, startTime: e.target.value }
-                      }))}
-                      label="Start Time"
-                    >
-                      {Array.from({ length: 24 }, (_, i) => (
-                        <MenuItem key={i} value={`${i.toString().padStart(2, '0')}:00`}>
-                          {`${i.toString().padStart(2, '0')}:00`}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  
-                  <FormControl size="small">
-                    <InputLabel>End Time</InputLabel>
-                    <Select
-                      value={settings.schedule.endTime}
-                      onChange={(e) => setSettings(prev => ({
-                        ...prev,
-                        schedule: { ...prev.schedule, endTime: e.target.value }
-                      }))}
-                      label="End Time"
-                    >
-                      {Array.from({ length: 24 }, (_, i) => (
-                        <MenuItem key={i} value={`${i.toString().padStart(2, '0')}:00`}>
-                          {`${i.toString().padStart(2, '0')}:00`}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Stack>
-              )}
-            </Box>
-
-            {/* Sound Settings */}
-            <Box>
-              <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                Sound
-              </Typography>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={settings.sound.enabled}
-                    onChange={(e) => setSettings(prev => ({
-                      ...prev,
-                      sound: { ...prev.sound, enabled: e.target.checked }
-                    }))}
-                  />
-                }
-                label="Enable notification sounds"
-              />
-              
-              {settings.sound.enabled && (
-                <Box sx={{ mt: 2 }}>
-                  <Stack direction="row" alignItems="center" spacing={2}>
-                    <VolumeUp />
-                    <Slider
-                      value={settings.sound.volume}
-                      onChange={(_, value) => setSettings(prev => ({
-                        ...prev,
-                        sound: { ...prev.sound, volume: value as number }
-                      }))}
-                      min={0}
-                      max={100}
-                      valueLabelDisplay="auto"
-                      sx={{ flex: 1 }}
-                    />
-                  </Stack>
-                </Box>
-              )}
-            </Box>
-
-            {/* Vibration Settings */}
-            <Box>
-              <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                Vibration
-              </Typography>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={settings.vibration.enabled}
-                    onChange={(e) => setSettings(prev => ({
-                      ...prev,
-                      vibration: { ...prev.vibration, enabled: e.target.checked }
-                    }))}
-                  />
-                }
-                label="Enable vibration"
-              />
-              
-              {settings.vibration.enabled && (
-                <FormControl size="small" sx={{ mt: 2, minWidth: 120 }}>
-                  <InputLabel>Pattern</InputLabel>
-                  <Select
-                    value={settings.vibration.pattern}
-                    onChange={(e) => setSettings(prev => ({
-                      ...prev,
-                      vibration: { ...prev.vibration, pattern: e.target.value as any }
-                    }))}
-                    label="Pattern"
-                  >
-                    <MenuItem value="light">Light</MenuItem>
-                    <MenuItem value="medium">Medium</MenuItem>
-                    <MenuItem value="strong">Strong</MenuItem>
-                  </Select>
-                </FormControl>
-              )}
-            </Box>
-          </Stack>
-        </DialogContent>
-        
-        <DialogActions>
-          <Button onClick={() => setSettingsOpen(false)}>
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            onClick={async () => {
-              await saveSettings(settings);
-              setSettingsOpen(false);
-            }}
-          >
-            Save Settings
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };
