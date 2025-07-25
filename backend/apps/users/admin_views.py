@@ -24,6 +24,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
     """
     serializer_class = AdminUserListSerializer
     permission_classes = []  # Temporarily disabled for admin dashboard
+    filter_backends = []  # Disable filters to prevent query_params error
     
     def get_queryset(self):
         """
@@ -327,6 +328,7 @@ class VerificationRequestViewSet(viewsets.ModelViewSet):
     """
     serializer_class = VerificationRequestDetailSerializer
     permission_classes = []  # Temporarily disabled for admin dashboard
+    filter_backends = []  # Disable filters to prevent query_params error
     
     def get_queryset(self):
         """
