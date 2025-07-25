@@ -372,7 +372,11 @@ class AdminUserListSerializer(serializers.ModelSerializer):
         if latest_request and latest_request.id_document_front:
             request = self.context.get('request')
             if request:
-                return request.build_absolute_uri(latest_request.id_document_front.url)
+                try:
+                    return request.build_absolute_uri(latest_request.id_document_front.url)
+                except:
+                    # Fallback for test environments or invalid hosts
+                    return latest_request.id_document_front.url
             return latest_request.id_document_front.url
         return None
     
@@ -382,7 +386,11 @@ class AdminUserListSerializer(serializers.ModelSerializer):
         if latest_request and latest_request.id_document_back:
             request = self.context.get('request')
             if request:
-                return request.build_absolute_uri(latest_request.id_document_back.url)
+                try:
+                    return request.build_absolute_uri(latest_request.id_document_back.url)
+                except:
+                    # Fallback for test environments or invalid hosts
+                    return latest_request.id_document_back.url
             return latest_request.id_document_back.url
         return None
     
@@ -392,7 +400,11 @@ class AdminUserListSerializer(serializers.ModelSerializer):
         if latest_request and latest_request.selfie_with_id:
             request = self.context.get('request')
             if request:
-                return request.build_absolute_uri(latest_request.selfie_with_id.url)
+                try:
+                    return request.build_absolute_uri(latest_request.selfie_with_id.url)
+                except:
+                    # Fallback for test environments or invalid hosts
+                    return latest_request.selfie_with_id.url
             return latest_request.selfie_with_id.url
         return None
 
