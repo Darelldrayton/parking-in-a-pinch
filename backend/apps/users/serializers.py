@@ -345,8 +345,9 @@ class AdminUserListSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'id', 'username', 'email', 'full_name', 'first_name', 'last_name',
+            'phone_number', 'subscribe_to_newsletter',
             'user_type', 'is_email_verified', 'is_phone_verified', 'is_identity_verified',
-            'is_active', 'is_staff', 'is_superuser', 'created_at', 'last_login',
+            'is_verified', 'is_active', 'is_staff', 'is_superuser', 'created_at', 'last_login',
             'pending_verifications', 'latest_verification_request',
             'id_document_front', 'id_document_back', 'selfie_with_id'
         )
