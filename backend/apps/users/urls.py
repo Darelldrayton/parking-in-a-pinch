@@ -237,7 +237,7 @@ def admin_users_list(request):
         from .serializers import AdminUserListSerializer
         
         User = get_user_model()
-        users = User.objects.prefetch_related('verification_requests').order_by('-created_at')
+        users = User.objects.order_by('-date_joined')
         
         # Serialize the data manually to avoid DRF issues
         user_data = []
