@@ -33,7 +33,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
         # if not (self.request.user.is_staff or self.request.user.is_superuser or self.request.user.email == 'darelldrayton93@gmail.com'):
         #     return User.objects.none()
         
-        return User.objects.select_related().prefetch_related('verification_requests').order_by('-created_at')
+        return User.objects.prefetch_related('verification_requests').order_by('-created_at')
     
     def get_permissions(self):
         """
@@ -69,7 +69,10 @@ class AdminUserViewSet(viewsets.ModelViewSet):
             user.is_active = False
             user.save()
             
-            logger.info(f"User {user.email} suspended by {request.user.email}")
+            if hasattr(request, 'user') and hasattr(request.user, 'email'):
+                logger.info(f"User {user.email} suspended by {request.user.email}")
+            else:
+                logger.info(f"User {user.email} suspended by anonymous admin")
             
             # Send notification to user about suspension
             try:
@@ -123,7 +126,10 @@ class AdminUserViewSet(viewsets.ModelViewSet):
             user.is_active = True
             user.save()
             
-            logger.info(f"User {user.email} activated by {request.user.email}")
+            if hasattr(request, 'user') and hasattr(request.user, 'email'):
+                logger.info(f"User {user.email} activated by {request.user.email}")
+            else:
+                logger.info(f"User {user.email} activated by anonymous admin")
             
             # Send notification to user about activation
             try:
@@ -201,84 +207,6 @@ class AdminUserViewSet(viewsets.ModelViewSet):
         
         return Response(stats)
     
-    @action(detail=True, methods=['post'])
-    def suspend(self, request, pk=None):
-        """
-        Suspend a user account
-        """
-        # Temporarily disabled admin check
-        # if not (request.user.is_staff or request.user.is_superuser or request.user.email == 'darelldrayton93@gmail.com'):
-        #     return Response(
-        #         {'error': 'Only admin users can suspend accounts'}, 
-        #         status=status.HTTP_403_FORBIDDEN
-        #     )
-        
-        user = self.get_object()
-        
-        if user.is_staff:
-            return Response(
-                {'error': 'Cannot suspend admin accounts'}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        try:
-            reason = request.data.get('reason', '')
-            admin_notes = request.data.get('admin_notes', '')
-            
-            # Deactivate the user account
-            user.is_active = False
-            user.save()
-            
-            logger.info(f"User {user.email} suspended by {request.user.email}")
-            
-            serializer = UserSerializer(user)
-            return Response({
-                'message': 'User account suspended successfully',
-                'user': serializer.data
-            })
-            
-        except Exception as e:
-            logger.error(f"Error suspending user: {str(e)}")
-            return Response(
-                {'error': f'Failed to suspend user: {str(e)}'}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-    
-    @action(detail=True, methods=['post'])
-    def activate(self, request, pk=None):
-        """
-        Activate a suspended user account
-        """
-        # Temporarily disabled admin check
-        # if not (request.user.is_staff or request.user.is_superuser or request.user.email == 'darelldrayton93@gmail.com'):
-        #     return Response(
-        #         {'error': 'Only admin users can activate accounts'}, 
-        #         status=status.HTTP_403_FORBIDDEN
-        #     )
-        
-        user = self.get_object()
-        
-        try:
-            admin_notes = request.data.get('admin_notes', '')
-            
-            # Activate the user account
-            user.is_active = True
-            user.save()
-            
-            logger.info(f"User {user.email} activated by {request.user.email}")
-            
-            serializer = UserSerializer(user)
-            return Response({
-                'message': 'User account activated successfully',
-                'user': serializer.data
-            })
-            
-        except Exception as e:
-            logger.error(f"Error activating user: {str(e)}")
-            return Response(
-                {'error': f'Failed to activate user: {str(e)}'}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
     
     @action(detail=True, methods=['post'])
     def verify_user(self, request, pk=None):
@@ -299,10 +227,11 @@ class AdminUserViewSet(viewsets.ModelViewSet):
             # Set verification fields
             user.is_verified = True
             user.verified_at = timezone.now()
-            user.verified_by = request.user
+            user.verified_by = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
             user.save()
             
-            logger.info(f"User {user.email} manually verified by {request.user.email}")
+            admin_email = request.user.email if hasattr(request, 'user') and hasattr(request.user, 'email') else 'anonymous'
+            logger.info(f"User {user.email} manually verified by {admin_email}")
             
             # Send notification to user about verification
             try:
@@ -357,7 +286,8 @@ class AdminUserViewSet(viewsets.ModelViewSet):
             user.verified_by = None
             user.save()
             
-            logger.info(f"User {user.email} verification removed by {request.user.email}. Reason: {reason}")
+            admin_email = request.user.email if hasattr(request, 'user') and hasattr(request.user, 'email') else 'anonymous'
+            logger.info(f"User {user.email} verification removed by {admin_email}. Reason: {reason}")
             
             # Send notification to user about verification removal
             try:
@@ -436,7 +366,8 @@ class VerificationRequestViewSet(viewsets.ModelViewSet):
                 admin_notes = request.data.get('admin_notes', '')
                 
                 # Approve the verification request
-                verification_request.approve(request.user, admin_notes)
+                reviewer = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
+                verification_request.approve(reviewer, admin_notes)
                 
                 # Send notification to user about approval
                 try:
@@ -457,7 +388,8 @@ class VerificationRequestViewSet(viewsets.ModelViewSet):
                 except Exception as e:
                     logger.warning(f"Failed to send approval notification: {str(e)}")
                 
-                logger.info(f"Verification request {verification_request.id} approved by {request.user.email}")
+                admin_email = request.user.email if hasattr(request, 'user') and hasattr(request.user, 'email') else 'anonymous'
+                logger.info(f"Verification request {verification_request.id} approved by {admin_email}")
                 
                 # Return updated request
                 serializer = VerificationRequestDetailSerializer(verification_request)
@@ -504,7 +436,8 @@ class VerificationRequestViewSet(viewsets.ModelViewSet):
                 )
             
             # Reject the verification request
-            verification_request.reject(request.user, rejection_reason, admin_notes)
+            reviewer = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
+            verification_request.reject(reviewer, rejection_reason, admin_notes)
             
             # Send notification to user about rejection
             try:
@@ -526,7 +459,8 @@ class VerificationRequestViewSet(viewsets.ModelViewSet):
             except Exception as e:
                 logger.warning(f"Failed to send rejection notification: {str(e)}")
             
-            logger.info(f"Verification request {verification_request.id} rejected by {request.user.email}")
+            admin_email = request.user.email if hasattr(request, 'user') and hasattr(request.user, 'email') else 'anonymous'
+            logger.info(f"Verification request {verification_request.id} rejected by {admin_email}")
             
             # Return updated request
             serializer = VerificationRequestDetailSerializer(verification_request)
@@ -573,7 +507,8 @@ class VerificationRequestViewSet(viewsets.ModelViewSet):
                 )
             
             # Request revision for the verification request
-            verification_request.request_revision(request.user, revision_reason, admin_notes)
+            reviewer = request.user if hasattr(request, 'user') and request.user.is_authenticated else None
+            verification_request.request_revision(reviewer, revision_reason, admin_notes)
             
             # Send notification to user about revision request
             try:
@@ -595,7 +530,8 @@ class VerificationRequestViewSet(viewsets.ModelViewSet):
             except Exception as e:
                 logger.warning(f"Failed to send revision notification: {str(e)}")
             
-            logger.info(f"Verification request {verification_request.id} revision requested by {request.user.email}")
+            admin_email = request.user.email if hasattr(request, 'user') and hasattr(request.user, 'email') else 'anonymous'
+            logger.info(f"Verification request {verification_request.id} revision requested by {admin_email}")
             
             # Return updated request
             serializer = VerificationRequestDetailSerializer(verification_request)

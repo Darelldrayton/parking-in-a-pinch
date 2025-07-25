@@ -380,14 +380,24 @@ class RefundRequestSerializer(serializers.ModelSerializer):
     
     def get_requested_by_name(self, obj):
         """Get the name of the user who requested the refund."""
-        user = obj.requested_by
-        return f"{user.first_name} {user.last_name}".strip() or user.email
+        try:
+            user = obj.requested_by
+            if hasattr(user, 'get_full_name'):
+                return user.get_full_name()
+            return f"{user.first_name or ''} {user.last_name or ''}".strip() or user.email
+        except Exception:
+            return 'Unknown'
     
     def get_reviewed_by_name(self, obj):
         """Get the name of the admin who reviewed the request."""
-        if obj.reviewed_by:
-            user = obj.reviewed_by
-            return f"{user.first_name} {user.last_name}".strip() or user.email
+        try:
+            if obj.reviewed_by:
+                user = obj.reviewed_by
+                if hasattr(user, 'get_full_name'):
+                    return user.get_full_name()
+                return f"{user.first_name or ''} {user.last_name or ''}".strip() or user.email
+        except Exception:
+            pass
         return None
     
     def get_booking_details(self, obj):
@@ -536,15 +546,26 @@ class PayoutRequestSerializer(serializers.ModelSerializer):
     
     def get_host_name(self, obj):
         """Get host's full name."""
-        return f"{obj.host.first_name} {obj.host.last_name}".strip()
+        try:
+            if hasattr(obj.host, 'get_full_name'):
+                return obj.host.get_full_name()
+            return f"{obj.host.first_name or ''} {obj.host.last_name or ''}".strip() or obj.host.email
+        except Exception:
+            return obj.host.email if obj.host else 'Unknown'
     
     def get_host_email(self, obj):
         """Get host's email."""
-        return obj.host.email
+        try:
+            return obj.host.email if obj.host else ''
+        except Exception:
+            return ''
     
     def get_payment_count(self, obj):
         """Get number of payments in this payout request."""
-        return obj.payments.count()
+        try:
+            return obj.payments.count()
+        except Exception:
+            return 0
 
 
 class PayoutRequestDetailSerializer(PayoutRequestSerializer):
