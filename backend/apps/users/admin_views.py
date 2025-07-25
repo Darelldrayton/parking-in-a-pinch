@@ -4,6 +4,7 @@ Admin views for user management and identity verification
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.renderers import JSONRenderer
 from django.utils import timezone
 from django.db import transaction
 from django.db.models import Q
@@ -26,6 +27,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
     permission_classes = []  # Temporarily disabled for admin dashboard
     filter_backends = []  # Disable filters to prevent query_params error
     pagination_class = None  # Disable pagination to prevent query_params error
+    renderer_classes = [JSONRenderer]  # Force JSON response only
     
     def get_queryset(self):
         """
@@ -331,6 +333,7 @@ class VerificationRequestViewSet(viewsets.ModelViewSet):
     permission_classes = []  # Temporarily disabled for admin dashboard
     filter_backends = []  # Disable filters to prevent query_params error
     pagination_class = None  # Disable pagination to prevent query_params error
+    renderer_classes = [JSONRenderer]  # Force JSON response only
     
     def get_queryset(self):
         """
