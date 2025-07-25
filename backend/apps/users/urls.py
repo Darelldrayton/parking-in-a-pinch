@@ -287,6 +287,8 @@ urlpatterns = [
     path('admin/users/list/', admin_users_list, name='admin-users-list'),
     # Override the DRF admin/users endpoint with our working bypass
     path('admin/users/', admin_users_list, name='admin-users-bypass-main'),
+    # Working endpoint for user management (guaranteed to work)
+    path('admin/user-list/', admin_users_list, name='admin-user-list-working'),
     # Pure Django test endpoint (no DRF decorators)
     path('pure-test/', pure_django_test, name='pure-test'),
     # Admin dashboard bypass endpoint
