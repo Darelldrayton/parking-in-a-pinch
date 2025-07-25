@@ -8,13 +8,16 @@ sys.path.append('/opt/backend')
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.production')
 django.setup()
 
-from django.test import RequestFactory
+from rest_framework.test import APIRequestFactory
 from django.contrib.auth.models import AnonymousUser
 from apps.users.admin_views import AdminUserViewSet
+from apps.payments.admin_views import PayoutRequestViewSet
 from apps.users.models import User
 
-# Test the endpoint that's failing
-factory = RequestFactory()
+# Test the endpoints that were failing
+factory = APIRequestFactory()
+
+print("Testing Admin User endpoint...")
 request = factory.get('/api/v1/users/admin/users/')
 request.user = AnonymousUser()
 
@@ -25,13 +28,35 @@ view.format_kwarg = None
 try:
     # Test get_queryset
     queryset = view.get_queryset()
-    print(f"✅ get_queryset works: {queryset.count()} users found")
+    print(f"✅ User get_queryset works: {queryset.count()} users found")
     
     # Test list view
     response = view.list(request)
-    print(f"✅ list view works: status {response.status_code}")
+    print(f"✅ User list view works: status {response.status_code}")
     
 except Exception as e:
-    print(f"❌ Error: {e}")
+    print(f"❌ User endpoint error: {e}")
+    import traceback
+    traceback.print_exc()
+
+print("\nTesting Payout Request endpoint...")
+request2 = factory.get('/api/v1/payments/admin/payout-requests/')
+request2.user = AnonymousUser()
+
+view2 = PayoutRequestViewSet()
+view2.request = request2
+view2.format_kwarg = None
+
+try:
+    # Test get_queryset
+    queryset2 = view2.get_queryset()
+    print(f"✅ Payout get_queryset works: {queryset2.count()} requests found")
+    
+    # Test list view
+    response2 = view2.list(request2)
+    print(f"✅ Payout list view works: status {response2.status_code}")
+    
+except Exception as e:
+    print(f"❌ Payout endpoint error: {e}")
     import traceback
     traceback.print_exc()
