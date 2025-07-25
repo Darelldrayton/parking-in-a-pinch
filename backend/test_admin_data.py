@@ -46,6 +46,8 @@ try:
             print(f"  Verified: {user.get('is_verified')}")
             print(f"  Identity Verified: {user.get('is_identity_verified')}")
             print(f"  Active: {user.get('is_active')}")
+            print(f"  Phone: {user.get('phone_number')}")
+            print(f"  Newsletter: {user.get('subscribe_to_newsletter')}")
             print(f"  Created: {user.get('created_at')}")
             
             # Check what fields are actually present
