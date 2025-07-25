@@ -29,6 +29,7 @@ class RefundRequestViewSet(viewsets.ModelViewSet):
     serializer_class = RefundRequestSerializer
     permission_classes = []  # Temporarily disabled for admin dashboard
     filter_backends = []  # Disable filters to prevent query_params error
+    pagination_class = None  # Disable pagination to prevent query_params error
     
     def get_queryset(self):
         """
@@ -271,6 +272,7 @@ class PayoutRequestViewSet(viewsets.ModelViewSet):
     serializer_class = PayoutRequestSerializer
     permission_classes = []  # Temporarily disabled for admin dashboard
     filter_backends = []  # Disable filters to prevent query_params error
+    pagination_class = None  # Disable pagination to prevent query_params error
     
     def get_queryset(self):
         """
