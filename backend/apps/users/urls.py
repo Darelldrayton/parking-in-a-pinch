@@ -278,6 +278,109 @@ def admin_users_list(request):
             'traceback': traceback.format_exc()
         }, status=500)
 
+@csrf_exempt
+def admin_verification_requests_list(request):
+    """Admin verification requests list endpoint - bypasses DRF middleware issues"""
+    try:
+        from .models import VerificationRequest
+        
+        requests = VerificationRequest.objects.select_related('user', 'reviewed_by').order_by('-created_at')
+        
+        # Serialize the data manually to avoid DRF issues
+        request_data = []
+        for req in requests:
+            request_dict = {
+                'id': req.id,
+                'user': req.user.id,
+                'user_display_name': f"{req.user.first_name} {req.user.last_name}".strip() or req.user.username,
+                'user_email': req.user.email,
+                'verification_type': req.verification_type,
+                'verification_type_display': req.get_verification_type_display(),
+                'status': req.status,
+                'status_display': req.get_status_display(),
+                'id_document_front': req.id_document_front.url if req.id_document_front else None,
+                'id_document_back': req.id_document_back.url if req.id_document_back else None,
+                'selfie_with_id': req.selfie_with_id.url if req.selfie_with_id else None,
+                'document_type': req.document_type,
+                'document_number': req.document_number,
+                'document_expiry_date': req.document_expiry_date.isoformat() if req.document_expiry_date else None,
+                'verification_data': req.verification_data,
+                'reviewed_by': req.reviewed_by.id if req.reviewed_by else None,
+                'reviewed_at': req.reviewed_at.isoformat() if req.reviewed_at else None,
+                'admin_notes': req.admin_notes,
+                'rejection_reason': req.rejection_reason,
+                'created_at': req.created_at.isoformat(),
+                'updated_at': req.updated_at.isoformat(),
+                'can_be_reviewed': req.can_be_reviewed(),
+            }
+            request_data.append(request_dict)
+        
+        return JsonResponse({
+            'count': len(request_data),
+            'next': None,
+            'previous': None,
+            'results': request_data
+        })
+        
+    except Exception as e:
+        import traceback
+        return JsonResponse({
+            'error': f'Admin verification requests error: {str(e)}',
+            'traceback': traceback.format_exc()
+        }, status=500)
+
+@csrf_exempt
+def admin_verification_requests_list(request):
+    """Admin verification requests list endpoint - bypasses DRF middleware issues"""
+    try:
+        from .models import VerificationRequest
+        
+        requests = VerificationRequest.objects.select_related('user', 'reviewed_by').order_by('-created_at')
+        
+        # Serialize the data manually to avoid DRF issues
+        request_data = []
+        for req in requests:
+            request_dict = {
+                'id': req.id,
+                'user': req.user.id,
+                'user_display_name': f"{req.user.first_name} {req.user.last_name}".strip() or req.user.username,
+                'user_email': req.user.email,
+                'verification_type': req.verification_type,
+                'verification_type_display': req.get_verification_type_display(),
+                'status': req.status,
+                'status_display': req.get_status_display(),
+                'id_document_front': req.id_document_front.url if req.id_document_front else None,
+                'id_document_back': req.id_document_back.url if req.id_document_back else None,
+                'selfie_with_id': req.selfie_with_id.url if req.selfie_with_id else None,
+                'document_type': req.document_type,
+                'document_number': req.document_number,
+                'document_expiry_date': req.document_expiry_date.isoformat() if req.document_expiry_date else None,
+                'verification_data': req.verification_data,
+                'reviewed_by': req.reviewed_by.id if req.reviewed_by else None,
+                'reviewed_at': req.reviewed_at.isoformat() if req.reviewed_at else None,
+                'admin_notes': req.admin_notes,
+                'rejection_reason': req.rejection_reason,
+                'created_at': req.created_at.isoformat(),
+                'updated_at': req.updated_at.isoformat(),
+                'can_be_reviewed': req.can_be_reviewed(),
+            }
+            request_data.append(request_dict)
+        
+        # Return in DRF pagination format that frontend expects
+        return JsonResponse({
+            'count': len(request_data),
+            'next': None,
+            'previous': None,  
+            'results': request_data
+        })
+        
+    except Exception as e:
+        import traceback
+        return JsonResponse({
+            'error': f'Admin verification requests error: {str(e)}',
+            'traceback': traceback.format_exc()
+        }, status=500)
+
 urlpatterns = [
     # Photo upload endpoints are now handled by UserViewSet actions
     # Stats endpoints that frontend expects as fallbacks
@@ -289,6 +392,8 @@ urlpatterns = [
     path('admin/users/', admin_users_list, name='admin-users-bypass-main'),
     # Working endpoint for user management (guaranteed to work)
     path('admin/user-list/', admin_users_list, name='admin-user-list-working'),
+    # Admin verification requests bypass endpoint
+    path('admin/verification-requests/', admin_verification_requests_list, name='admin-verification-requests-bypass'),
     # Pure Django test endpoint (no DRF decorators)
     path('pure-test/', pure_django_test, name='pure-test'),
     # Admin dashboard bypass endpoint
