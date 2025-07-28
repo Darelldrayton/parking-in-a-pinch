@@ -861,8 +861,8 @@ const AdminDashboardEnhanced: React.FC = () => {
   const fetchUsers = async () => {
     setUsersLoading(true);
     try {
-      console.log('🔍 Fetching users from: /users/admin/users/');
-      const response = await api.get('/users/admin/users/');
+      console.log('🔍 Fetching users from: /users/admin/user-list/');
+      const response = await api.get('/users/admin/user-list/');
       console.log('✅ Users loaded:', response.data);
       
       const userData = response.data.results || response.data || [];
