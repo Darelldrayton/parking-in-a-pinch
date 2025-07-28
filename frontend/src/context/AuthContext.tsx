@@ -21,6 +21,7 @@ interface SignupData {
   first_name: string
   last_name: string
   user_type: 'seeker' | 'host' | 'both'
+  subscribe_to_newsletter?: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -121,7 +122,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         password2: data.password2 || data.password,
         first_name: data.first_name,
         last_name: data.last_name,
-        user_type: data.user_type
+        user_type: data.user_type,
+        subscribe_to_newsletter: data.subscribe_to_newsletter || false
       }
       
       const response = await authService.signup(signupData)

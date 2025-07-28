@@ -105,7 +105,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'email', 'username', 'first_name', 'last_name',
             'password', 'password2', 'user_type', 'phone_number',
-            'tokens'
+            'subscribe_to_newsletter', 'tokens'
         ]
         extra_kwargs = {
             'email': {'required': True},
