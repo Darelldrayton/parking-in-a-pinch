@@ -991,35 +991,6 @@ function Home() {
             </Grid>
           </Grid>
 
-          {/* Call to Action */}
-          <Box sx={{ textAlign: 'center', mt: 6 }}>
-            <Typography variant="h5" gutterBottom fontWeight="600" color="text.primary">
-              Ready to start earning?
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-              Join thousands of hosts already making money with their parking spaces
-            </Typography>
-            <Button
-              variant="contained"
-              size="large"
-              onClick={() => navigate('/create-listing')}
-              startIcon={<Add />}
-              sx={{
-                px: 4,
-                py: 1.5,
-                fontSize: '1.1rem',
-                borderRadius: 3,
-                background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
-                  transform: 'translateY(-2px)',
-                  boxShadow: theme.shadows[8],
-                },
-              }}
-            >
-              List Your Space Now
-            </Button>
-          </Box>
         </Container>
       </Box>
 
