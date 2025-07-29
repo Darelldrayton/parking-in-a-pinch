@@ -1,0 +1,54 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Booking Confirmed - Parking in a Pinch{% endblock %}
+
+{% block header_subtitle %}Your parking is confirmed!{% endblock %}
+
+{% block content %}
+<h2>✅ Booking Confirmed!</h2>
+
+<p>Hi {{ user.first_name }},</p>
+
+<p>Your parking reservation has been confirmed! Here are your booking details:</p>
+
+<div class="highlight-box">
+    <p><strong>Booking Confirmation #{{ booking_id }}</strong></p>
+    <p><strong>Location:</strong> {{ listing_title }}</p>
+    <p><strong>Address:</strong> {{ listing_address }}</p>
+    <p><strong>Date:</strong> {{ booking_date }}</p>
+    <p><strong>Time:</strong> {{ start_time }} - {{ end_time }}</p>
+    <p><strong>Duration:</strong> {{ duration }} hours</p>
+    <p><strong>Total Paid:</strong> ${{ total_amount }}</p>
+</div>
+
+<p><strong>Before you arrive:</strong></p>
+
+<ul>
+    <li>📍 Save the address to your GPS: {{ listing_address }}</li>
+    <li>📱 You'll receive check-in instructions 30 minutes before your arrival</li>
+    <li>🚗 Make sure your vehicle matches the size restrictions</li>
+    <li>⏰ Please arrive on time to ensure your space is ready</li>
+</ul>
+
+<p><strong>Special Instructions:</strong></p>
+<div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 15px 0;">
+    <p>{{ special_instructions|default:"No special instructions provided." }}</p>
+</div>
+
+<p>
+    <a href="{{ frontend_url }}/bookings/{{ booking_id }}" class="cta-button">
+        View Booking Details
+    </a>
+</p>
+
+<p>
+    <a href="{{ frontend_url }}/messages?booking={{ booking_id }}" class="cta-button" style="background: #17a2b8;">
+        Message Your Host
+    </a>
+</p>
+
+<p>Need to make changes? You can cancel or modify your booking up to 2 hours before your scheduled arrival time.</p>
+
+<p>Safe travels,<br>
+The Parking in a Pinch Team</p>
+{% endblock %}

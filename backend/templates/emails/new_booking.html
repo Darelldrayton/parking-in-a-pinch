@@ -1,0 +1,49 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}New Booking Received - Parking in a Pinch{% endblock %}
+
+{% block header_subtitle %}You have a new booking!{% endblock %}
+
+{% block content %}
+<h2>🚗 New Booking Received!</h2>
+
+<p>Hi {{ user.first_name }},</p>
+
+<p>Great news! Someone just booked your parking space. Here are the details:</p>
+
+<div class="highlight-box">
+    <p><strong>Booking Details:</strong></p>
+    <p><strong>Guest:</strong> {{ guest_name }}</p>
+    <p><strong>Listing:</strong> {{ listing_title }}</p>
+    <p><strong>Date:</strong> {{ booking_date }}</p>
+    <p><strong>Time:</strong> {{ start_time }} - {{ end_time }}</p>
+    <p><strong>Duration:</strong> {{ duration }} hours</p>
+    <p><strong>Total Earned:</strong> ${{ total_amount }}</p>
+</div>
+
+<p><strong>What you need to do:</strong></p>
+
+<ul>
+    <li>✅ Your space should be ready for the guest at {{ start_time }}</li>
+    <li>📱 You'll receive a notification when the guest checks in</li>
+    <li>💰 Payment will be deposited to your account after the booking</li>
+    <li>⭐ Don't forget to leave a review for your guest</li>
+</ul>
+
+<p>
+    <a href="{{ frontend_url }}/bookings/{{ booking_id }}" class="cta-button">
+        View Booking Details
+    </a>
+</p>
+
+<p>
+    <a href="{{ frontend_url }}/messages?booking={{ booking_id }}" class="cta-button" style="background: #17a2b8;">
+        Message Your Guest
+    </a>
+</p>
+
+<p>If you have any questions or concerns about this booking, please don't hesitate to contact us.</p>
+
+<p>Happy hosting,<br>
+The Parking in a Pinch Team</p>
+{% endblock %}

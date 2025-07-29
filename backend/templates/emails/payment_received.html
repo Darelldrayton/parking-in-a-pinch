@@ -1,0 +1,51 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Payment Received - Parking in a Pinch{% endblock %}
+
+{% block header_subtitle %}Your earnings have been processed{% endblock %}
+
+{% block content %}
+<h2>💰 Payment Received!</h2>
+
+<p>Hi {{ user.first_name }},</p>
+
+<p>Great news! We've processed your payment for a recent booking. Here are the details:</p>
+
+<div class="highlight-box">
+    <p><strong>Payment Details:</strong></p>
+    <p><strong>Booking:</strong> {{ listing_title }}</p>
+    <p><strong>Guest:</strong> {{ guest_name }}</p>
+    <p><strong>Date:</strong> {{ booking_date }}</p>
+    <p><strong>Duration:</strong> {{ duration }} hours</p>
+    <p><strong>Gross Amount:</strong> ${{ gross_amount }}</p>
+    <p><strong>Service Fee ({{ fee_percentage }}%):</strong> -${{ service_fee }}</p>
+    <p><strong>Net Earnings:</strong> <strong>${{ net_amount }}</strong></p>
+</div>
+
+<p>Your payment has been deposited to your registered bank account and should appear within 1-2 business days.</p>
+
+<p><strong>Payment Summary:</strong></p>
+<ul>
+    <li>Processing Date: {{ payment_date }}</li>
+    <li>Transaction ID: {{ transaction_id }}</li>
+    <li>Payment Method: Bank Transfer</li>
+    <li>Status: Completed</li>
+</ul>
+
+<p>
+    <a href="{{ frontend_url }}/dashboard/earnings" class="cta-button">
+        View Earnings Dashboard
+    </a>
+</p>
+
+<p>
+    <a href="{{ frontend_url }}/dashboard/payouts" class="cta-button" style="background: #28a745;">
+        Payout History
+    </a>
+</p>
+
+<p>Keep up the great work hosting! The more you list, the more you earn.</p>
+
+<p>Best regards,<br>
+The Parking in a Pinch Team</p>
+{% endblock %}

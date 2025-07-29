@@ -1,0 +1,44 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Listing Approved - Parking in a Pinch{% endblock %}
+
+{% block header_subtitle %}Your listing has been approved!{% endblock %}
+
+{% block content %}
+<h2>🎉 Congratulations, {{ user.first_name }}!</h2>
+
+<p>Great news! Your parking listing has been approved and is now live on our platform.</p>
+
+<div class="highlight-box">
+    <p><strong>Listing Details:</strong></p>
+    <p><strong>Title:</strong> {{ listing_title }}</p>
+    <p><strong>Address:</strong> {{ listing_address }}</p>
+    <p><strong>Rate:</strong> ${{ hourly_rate }}/hour</p>
+</div>
+
+<p>Your listing is now visible to thousands of users looking for parking in your area. Here's what happens next:</p>
+
+<ul>
+    <li>📱 You'll receive notifications when someone books your space</li>
+    <li>💰 Payments are processed automatically and deposited to your account</li>
+    <li>⭐ Guests can leave reviews to help build your reputation</li>
+    <li>📊 Track your earnings in your host dashboard</li>
+</ul>
+
+<p>
+    <a href="{{ frontend_url }}/listings/{{ listing_id }}" class="cta-button">
+        View Your Listing
+    </a>
+</p>
+
+<p>
+    <a href="{{ frontend_url }}/dashboard/host" class="cta-button" style="background: #28a745;">
+        Manage Your Listings
+    </a>
+</p>
+
+<p>Thank you for joining our community of hosts. We're excited to help you earn money with your parking space!</p>
+
+<p>Happy hosting,<br>
+The Parking in a Pinch Team</p>
+{% endblock %}
