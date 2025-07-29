@@ -845,7 +845,7 @@ function Home() {
             Turn your unused parking space into a source of income with our simple process
           </Typography>
           
-          <Grid container spacing={4} sx={{ mt: 4 }}>
+          <Grid container spacing={4} sx={{ mt: 4 }} justifyContent="center">
             {/* Step 1 */}
             <Grid item xs={12} md={4}>
               <Card 
