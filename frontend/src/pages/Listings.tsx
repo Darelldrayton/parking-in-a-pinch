@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -43,6 +43,8 @@ import {
   AccessTime,
   Block,
   Schedule,
+  MyLocation,
+  Navigation,
 } from '@mui/icons-material';
 import type { ParkingListing, SearchFilters } from '../types/parking';
 import api from '../services/api';
@@ -85,6 +87,9 @@ interface Listing {
   is_covered?: boolean;
   has_ev_charging?: boolean;
   has_security?: boolean;
+  latitude?: number;
+  longitude?: number;
+  distance?: number; // Calculated distance from user location
 }
 
 interface AvailabilityStatus {
@@ -122,6 +127,86 @@ export default function Listings() {
   const [selectedNeighborhood, setSelectedNeighborhood] = useState<string>('');
   const [showOnlyAvailable, setShowOnlyAvailable] = useState(false);
   const [lastAvailabilityCheck, setLastAvailabilityCheck] = useState<Date | null>(null);
+  const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
+  const [sortByDistance, setSortByDistance] = useState(false);
+
+  // Calculate distance between two coordinates using Haversine formula
+  const calculateDistance = useCallback((lat1: number, lng1: number, lat2: number, lng2: number): number => {
+    const R = 3959; // Earth's radius in miles
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c; // Distance in miles
+  }, []);
+
+  // Get user's current location
+  const getUserLocation = (): Promise<{lat: number, lng: number}> => {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Geolocation is not supported by this browser'));
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+        },
+        (error) => {
+          reject(error);
+        },
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 300000 }
+      );
+    });
+  };
+
+  // Handle finding nearest listings
+  const handleFindNearest = async () => {
+    if (sortByDistance && userLocation) {
+      // Already sorted by distance, turn off
+      setSortByDistance(false);
+      setUserLocation(null);
+      toast.success('Showing all listings');
+      return;
+    }
+
+    setIsGettingLocation(true);
+    try {
+      const location = await getUserLocation();
+      setUserLocation(location);
+      setSortByDistance(true);
+      toast.success('Listings sorted by distance from your location');
+    } catch (error) {
+      console.error('Error getting location:', error);
+      if (error instanceof GeolocationPositionError) {
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            toast.error('Location access denied. Please enable location permissions.');
+            break;
+          case error.POSITION_UNAVAILABLE:
+            toast.error('Location information unavailable.');
+            break;
+          case error.TIMEOUT:
+            toast.error('Location request timed out.');
+            break;
+          default:
+            toast.error('An unknown error occurred while getting your location.');
+            break;
+        }
+      } else {
+        toast.error('Unable to get your location. Please try again.');
+      }
+    } finally {
+      setIsGettingLocation(false);
+    }
+  };
 
   // Get search parameters from URL
   useEffect(() => {
@@ -480,15 +565,35 @@ export default function Listings() {
   };
 
   // Client-side filtering for availability filter only (search is now handled server-side)
-  const filteredListings = listings.filter(listing => {
-    // Availability filter
-    if (showOnlyAvailable) {
-      const availabilityStatus = availabilityStatuses[listing.id];
-      return availabilityStatus?.isAvailable === true;
+  const filteredListings = useMemo(() => {
+    let filtered = listings.filter(listing => {
+      // Availability filter
+      if (showOnlyAvailable) {
+        const availabilityStatus = availabilityStatuses[listing.id];
+        return availabilityStatus?.isAvailable === true;
+      }
+      
+      return true;
+    });
+
+    // Calculate distances and sort by distance if location-based sorting is enabled
+    if (sortByDistance && userLocation) {
+      filtered = filtered.map(listing => {
+        if (listing.latitude && listing.longitude) {
+          const distance = calculateDistance(
+            userLocation.lat,
+            userLocation.lng,
+            listing.latitude,
+            listing.longitude
+          );
+          return { ...listing, distance };
+        }
+        return { ...listing, distance: Infinity }; // Push listings without coordinates to the end
+      }).sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
     }
-    
-    return true;
-  });
+
+    return filtered;
+  }, [listings, showOnlyAvailable, availabilityStatuses, sortByDistance, userLocation, calculateDistance]);
 
   const handleHeartClick = (id: number) => {
     if (!user) {
@@ -682,7 +787,7 @@ export default function Listings() {
           }}
         >
           <Grid container spacing={2} alignItems="center">
-            <Grid size={{ xs: 12, md: 6 }}>
+            <Grid size={{ xs: 12, md: 5 }}>
               <SmartLocationSearch
                 value={searchQuery}
                 onChange={(value, selectedLocation) => {
@@ -803,6 +908,34 @@ export default function Listings() {
             <Grid size={{ xs: 6, md: 1 }}>
               <Button
                 fullWidth
+                variant={sortByDistance ? 'contained' : 'outlined'}
+                startIcon={isGettingLocation ? <CircularProgress size={16} /> : (sortByDistance ? <Navigation /> : <MyLocation />)}
+                onClick={handleFindNearest}
+                disabled={isGettingLocation}
+                sx={{ 
+                  height: '56px',
+                  borderRadius: 2,
+                  borderColor: alpha(theme.palette.secondary.main, 0.3),
+                  color: sortByDistance ? 'white' : 'secondary.main',
+                  bgcolor: sortByDistance ? 'secondary.main' : 'transparent',
+                  '&:hover': {
+                    borderColor: theme.palette.secondary.main,
+                    backgroundColor: sortByDistance 
+                      ? theme.palette.secondary.dark 
+                      : alpha(theme.palette.secondary.main, 0.05),
+                  },
+                  '&:disabled': {
+                    borderColor: alpha(theme.palette.secondary.main, 0.2),
+                    color: alpha(theme.palette.secondary.main, 0.5),
+                  },
+                }}
+              >
+                {isGettingLocation ? 'Getting...' : (sortByDistance ? 'Nearest' : 'Nearest')}
+              </Button>
+            </Grid>
+            <Grid size={{ xs: 6, md: 1 }}>
+              <Button
+                fullWidth
                 variant="outlined"
                 startIcon={<FilterList />}
                 onClick={() => setFiltersOpen(true)}
@@ -852,6 +985,46 @@ export default function Listings() {
                 }}
               >
                 Show All
+              </Button>
+            </Stack>
+          </Paper>
+        )}
+
+        {/* Distance Sort Banner */}
+        {sortByDistance && userLocation && (
+          <Paper 
+            elevation={0} 
+            sx={{ 
+              p: 2, 
+              mb:  3, 
+              borderRadius: 3,
+              border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+              bgcolor: alpha(theme.palette.secondary.main, 0.05),
+            }}
+          >
+            <Stack direction="row" spacing={2} alignItems="center" justifyContent="center">
+              <Navigation sx={{ color: 'secondary.main', fontSize: 20 }} />
+              <Typography variant="body2" color="secondary.main" fontWeight={600}>
+                Listings sorted by distance from your current location
+              </Typography>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => {
+                  setSortByDistance(false);
+                  setUserLocation(null);
+                  toast.success('Distance sorting disabled');
+                }}
+                sx={{
+                  borderColor: 'secondary.main',
+                  color: 'secondary.main',
+                  '&:hover': {
+                    borderColor: 'secondary.dark',
+                    backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+                  },
+                }}
+              >
+                Clear Sort
               </Button>
             </Stack>
           </Paper>
@@ -1074,6 +1247,11 @@ export default function Listings() {
                               listing.borough || 'NYC',
                               listing.neighborhood
                             )} • {listing.space_type}
+                            {sortByDistance && listing.distance !== undefined && listing.distance !== Infinity && (
+                              <Typography component="span" sx={{ ml: 1, fontWeight: 600, color: 'secondary.main' }}>
+                                • {listing.distance.toFixed(1)} mi away
+                              </Typography>
+                            )}
                           </Typography>
                         </Stack>
 
