@@ -42,10 +42,14 @@ import {
   EmojiTransportation,
   HourglassEmpty,
   Place,
+  PhotoCamera,
+  Map,
+  CheckCircle,
+  Home as HomeIcon,
+  Add,
 } from '@mui/icons-material';
 import { formatDistanceToNow } from 'date-fns';
 import { getListings } from '../services/listings';
-import InteractiveMap from '../components/maps/InteractiveMap';
 import { useAuth } from '../context/AuthContext';
 import { useBookings } from '../context/BookingsContext';
 import { PrivateImage } from '../components/common/PrivateImage';
@@ -831,18 +835,190 @@ function Home() {
       </Box>
 
 
-      {/* Interactive Map Section */}
+      {/* List Your Driveway Section */}
       <Box sx={{ bgcolor: 'background.paper', py: 8 }}>
         <Container maxWidth="lg">
           <Typography variant="h3" align="center" gutterBottom fontWeight="bold">
-            Explore Parking Locations
+            List Your Driveway in Minutes
           </Typography>
           <Typography variant="h6" align="center" color="text.secondary" sx={{ mb: 6 }}>
-            Interactive map showing available parking spots in real-time
+            Turn your unused parking space into a source of income with our simple process
           </Typography>
           
-          <Box sx={{ opacity: 1 }}>
-            <InteractiveMap />
+          <Grid container spacing={4} sx={{ mt: 4 }}>
+            {/* Step 1 */}
+            <Grid item xs={12} md={4}>
+              <Card 
+                sx={{ 
+                  height: '100%',
+                  textAlign: 'center',
+                  p: 3,
+                  border: '2px solid transparent',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    border: '2px solid',
+                    borderColor: 'primary.main',
+                    transform: 'translateY(-4px)',
+                    boxShadow: theme.shadows[8],
+                  }
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: '50%',
+                    bgcolor: 'primary.main',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 24px',
+                    mb: 3,
+                  }}
+                >
+                  <Typography variant="h4" color="white" fontWeight="bold">
+                    1
+                  </Typography>
+                </Box>
+                <Typography variant="h5" gutterBottom fontWeight="600" color="text.primary">
+                  Add Your Space
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                  Tell us about your parking space - location, size, and availability. It takes just 2 minutes!
+                </Typography>
+                <Stack direction="row" spacing={1} justifyContent="center" flexWrap="wrap">
+                  <Chip icon={<HomeIcon />} label="Location" size="small" />
+                  <Chip icon={<Map />} label="Details" size="small" />
+                  <Chip icon={<AccessTime />} label="Schedule" size="small" />
+                </Stack>
+              </Card>
+            </Grid>
+
+            {/* Step 2 */}
+            <Grid item xs={12} md={4}>
+              <Card 
+                sx={{ 
+                  height: '100%',
+                  textAlign: 'center',
+                  p: 3,
+                  border: '2px solid transparent',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    border: '2px solid',
+                    borderColor: 'primary.main',
+                    transform: 'translateY(-4px)',
+                    boxShadow: theme.shadows[8],
+                  }
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: '50%',
+                    bgcolor: 'secondary.main',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 24px',
+                    mb: 3,
+                  }}
+                >
+                  <Typography variant="h4" color="white" fontWeight="bold">
+                    2
+                  </Typography>
+                </Box>
+                <Typography variant="h5" gutterBottom fontWeight="600" color="text.primary">
+                  Upload Photos
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                  Add clear photos of your parking space to help guests know exactly what to expect.
+                </Typography>
+                <Stack direction="row" spacing={1} justifyContent="center" flexWrap="wrap">
+                  <Chip icon={<PhotoCamera />} label="Clear Photos" size="small" />
+                  <Chip icon={<DirectionsCar />} label="Space View" size="small" />
+                  <Chip icon={<Security />} label="Safety" size="small" />
+                </Stack>
+              </Card>
+            </Grid>
+
+            {/* Step 3 */}
+            <Grid item xs={12} md={4}>
+              <Card 
+                sx={{ 
+                  height: '100%',
+                  textAlign: 'center',
+                  p: 3,
+                  border: '2px solid transparent',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    border: '2px solid',
+                    borderColor: 'primary.main',
+                    transform: 'translateY(-4px)',
+                    boxShadow: theme.shadows[8],
+                  }
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: '50%',
+                    bgcolor: 'success.main',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 24px',
+                    mb: 3,
+                  }}
+                >
+                  <Typography variant="h4" color="white" fontWeight="bold">
+                    3
+                  </Typography>
+                </Box>
+                <Typography variant="h5" gutterBottom fontWeight="600" color="text.primary">
+                  Start Earning
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                  Once approved, your listing goes live and you start earning money from day one!
+                </Typography>
+                <Stack direction="row" spacing={1} justifyContent="center" flexWrap="wrap">
+                  <Chip icon={<AttachMoney />} label="Earn Daily" size="small" />
+                  <Chip icon={<CheckCircle />} label="Get Paid" size="small" />
+                  <Chip icon={<Star />} label="5-Star Host" size="small" />
+                </Stack>
+              </Card>
+            </Grid>
+          </Grid>
+
+          {/* Call to Action */}
+          <Box sx={{ textAlign: 'center', mt: 6 }}>
+            <Typography variant="h5" gutterBottom fontWeight="600" color="text.primary">
+              Ready to start earning?
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+              Join thousands of hosts already making money with their parking spaces
+            </Typography>
+            <Button
+              variant="contained"
+              size="large"
+              onClick={() => navigate('/create-listing')}
+              startIcon={<Add />}
+              sx={{
+                px: 4,
+                py: 1.5,
+                fontSize: '1.1rem',
+                borderRadius: 3,
+                background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
+                  transform: 'translateY(-2px)',
+                  boxShadow: theme.shadows[8],
+                },
+              }}
+            >
+              List Your Space Now
+            </Button>
           </Box>
         </Container>
       </Box>
