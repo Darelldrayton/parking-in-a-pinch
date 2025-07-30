@@ -305,23 +305,23 @@ class RefundService:
     
     CANCELLATION_POLICIES = {
         'simple': {
-            'full_refund_hours': 2,
+            'full_refund_hours': 0.27,  # 16 minutes (16/60 = 0.27)
             'partial_refund_hours': 0,
             'partial_refund_percentage': 0
         },
         'flexible': {
-            'full_refund_hours': 24,
-            'partial_refund_hours': 1,
-            'partial_refund_percentage': 50
+            'full_refund_hours': 0.27,  # 16 minutes
+            'partial_refund_hours': 0,  
+            'partial_refund_percentage': 0
         },
         'moderate': {
-            'full_refund_hours': 2,  # Updated to match new policy
+            'full_refund_hours': 0.27,  # 16 minutes
             'partial_refund_hours': 0,
             'partial_refund_percentage': 0
         },
         'strict': {
-            'full_refund_hours': 168,  # 7 days
-            'partial_refund_hours': 48,
+            'full_refund_hours': 0.27,  # 16 minutes
+            'partial_refund_hours': 0,
             'partial_refund_percentage': 0
         }
     }
@@ -357,14 +357,11 @@ class RefundService:
         policy_rules = RefundService.CANCELLATION_POLICIES[policy]
         
         return {
-            'flexible': f"Full refund if cancelled {policy_rules['full_refund_hours']} hours before check-in. "
-                       f"50% refund if cancelled {policy_rules['partial_refund_hours']} hour before check-in.",
+            'flexible': f"Full refund if cancelled 16 minutes before check-in.",
             
-            'moderate': f"Full refund if cancelled {policy_rules['full_refund_hours']} hours before check-in. "
-                       f"50% refund if cancelled {policy_rules['partial_refund_hours']} hours before check-in.",
+            'moderate': f"Full refund if cancelled 16 minutes before check-in.",
             
-            'strict': f"Full refund if cancelled {policy_rules['full_refund_hours']} hours (7 days) before check-in. "
-                     f"No refund if cancelled less than {policy_rules['partial_refund_hours']} hours before check-in."
+            'strict': f"Full refund if cancelled 16 minutes before check-in."
         }[policy]
 
 

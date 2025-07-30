@@ -118,27 +118,38 @@ class BookingViewSet(viewsets.ModelViewSet):
             booking.status = BookingStatus.CANCELLED
             booking.save()
             
-            # Create refund request instead of processing immediately
-            from ..payments.models import RefundRequest
-            from ..payments.services import RefundService
+            # Process automatic refund
+            from ..payments.models import RefundRequest, Payment
+            from ..payments.services import RefundService, PaymentService
             try:
                 # Check if there's a payment to refund
-                payment = booking.payment_set.filter(status='completed').first()
-                if payment:
+                payment = Payment.objects.filter(booking=booking, status='succeeded').first()
+                if payment and payment.stripe_charge_id:
                     refund_amount = RefundService.calculate_refund_amount(booking)
                     if refund_amount > 0:
-                        # Create refund request for admin approval
+                        # Process refund automatically through Stripe
+                        result = PaymentService.process_refund(
+                            booking_id=booking.id,
+                            refund_reason='cancelled_by_user',
+                            refund_amount=refund_amount
+                        )
+                        
+                        # Create RefundRequest record for tracking (already processed)
                         RefundRequest.objects.create(
                             booking=booking,
                             payment=payment,
                             requested_amount=refund_amount,
+                            approved_amount=refund_amount,
                             reason='cancelled_by_user',
                             requested_by=request.user,
-                            status='pending'
+                            status='processed',
+                            stripe_refund_id=result.stripe_refund_id,
+                            admin_notes='Automatically processed based on 16-minute cancellation policy'
                         )
-                        logger.info(f"Refund request created for booking {booking.id}: ${refund_amount}")
+                        
+                        logger.info(f"Auto-refund processed: ${refund_amount} for booking {booking.id}")
             except Exception as e:
-                logger.error(f"Error creating refund request for booking {booking.id}: {str(e)}")
+                logger.error(f"Error processing automatic refund for booking {booking.id}: {str(e)}")
             
             serializer = self.get_serializer(booking)
             return Response({
@@ -419,27 +430,38 @@ class BookingViewSet(viewsets.ModelViewSet):
             booking.status = BookingStatus.CANCELLED
             booking.save()
             
-            # Process refund if payment was made
+            # Process automatic refund for host rejection
             try:
-                from ..payments.models import RefundRequest
-                from ..payments.services import RefundService
+                from ..payments.models import RefundRequest, Payment
+                from ..payments.services import RefundService, PaymentService
                 
-                payment = booking.payment_set.filter(status='completed').first()
-                if payment:
+                payment = Payment.objects.filter(booking=booking, status='succeeded').first()
+                if payment and payment.stripe_charge_id:
                     refund_amount = RefundService.calculate_refund_amount(booking)
                     if refund_amount > 0:
-                        # Create refund request for admin approval
+                        # Process full refund automatically for host rejections
+                        result = PaymentService.process_refund(
+                            booking_id=booking.id,
+                            refund_reason='rejected_by_host',
+                            refund_amount=booking.total_amount  # Full refund for host rejections
+                        )
+                        
+                        # Create RefundRequest record for tracking (already processed)
                         RefundRequest.objects.create(
                             booking=booking,
                             payment=payment,
-                            requested_amount=refund_amount,
+                            requested_amount=booking.total_amount,
+                            approved_amount=booking.total_amount,
                             reason='rejected_by_host',
                             requested_by=booking.user,
-                            status='pending'
+                            status='processed',
+                            stripe_refund_id=result.stripe_refund_id,
+                            admin_notes='Automatically processed - full refund for host rejection'
                         )
-                        logger.info(f"Refund request created for rejected booking {booking.id}: ${refund_amount}")
+                        
+                        logger.info(f"Auto-refund processed for host rejection: ${booking.total_amount} for booking {booking.id}")
             except Exception as e:
-                logger.error(f"Error creating refund request for rejected booking {booking.id}: {str(e)}")
+                logger.error(f"Error processing automatic refund for rejected booking {booking.id}: {str(e)}")
             
             # Send notification to user about rejection with reason
             try:
